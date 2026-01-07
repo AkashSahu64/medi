@@ -8,6 +8,15 @@ if (!BASE_URL) {
 }
 
 
+const axiosInstance = axios.create({
+  baseURL: BASE_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 10000,
+});
+
 /* ================= REQUEST ================= */
 axiosInstance.interceptors.request.use(
   (config) => {
