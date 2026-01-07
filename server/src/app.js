@@ -23,24 +23,33 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(helmet());
 
 /* ================= CORS (🔥 FIXED) ================= */
+app.set('trust proxy', 1);
+
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://medihope-beta.vercel.app/'
+  'https://medihope-beta.vercel.app',
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // Postman / curl
+      if (!origin) return callback(null, true);
+
       if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`CORS blocked for origin: ${origin}`));
+        return callback(null, true);
       }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+
+// ✅ PRE-FLIGHT FIX
+app.options('*', cors());
+
 
 /* ================= RATE LIMIT ================= */
 const limiter = rateLimit({

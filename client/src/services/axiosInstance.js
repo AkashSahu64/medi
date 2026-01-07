@@ -1,17 +1,12 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:5000/api' || 'https://medi-gxxy.onrender.com';
+const BASE_URL = import.meta.env.VITE_API_URL;
 
-const axiosInstance = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000,
-});
+if (!BASE_URL) {
+  throw new Error('VITE_API_URL is not defined');
+}
+
 
 /* ================= REQUEST ================= */
 axiosInstance.interceptors.request.use(
