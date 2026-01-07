@@ -25,7 +25,7 @@ app.use(helmet());
 /* ================= CORS (🔥 FIXED) ================= */
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://medihop.vercel.app'
+  'https://medihope-beta.vercel.app/'
 ];
 
 app.use(
