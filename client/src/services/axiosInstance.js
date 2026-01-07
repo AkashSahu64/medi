@@ -1,17 +1,19 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api' || 'https://medihope-livid.vercel.app';
+const BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 10000,
 });
 
-// Request interceptor
+/* ================= REQUEST ================= */
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -20,26 +22,24 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor
+/* ================= RESPONSE ================= */
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message || error.message;
-    
-    // Show error toast
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      'Something went wrong';
+
     if (error.response?.status !== 401) {
-      toast.error(message || 'Something went wrong');
+      toast.error(message);
     }
 
-    // Handle 401 - Unauthorized
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.clear();
       window.location.href = '/login';
     }
 
