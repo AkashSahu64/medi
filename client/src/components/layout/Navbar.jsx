@@ -9,6 +9,7 @@ import { CLINIC_INFO } from '../../utils/constants';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
@@ -17,9 +18,21 @@ const Navbar = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    
+
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', checkMobile);
+    
+    // Initial check
+    checkMobile();
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   useEffect(() => {
@@ -44,31 +57,31 @@ const Navbar = () => {
         scrolled ? 'bg-white shadow-lg' : 'bg-white/95 backdrop-blur-sm'
       }`}
     >
-      <div className="container-padding">
-        <div className="flex items-center justify-between h-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
             <motion.div
               whileHover={{ scale: 1.05 }}
               className="flex items-center space-x-2"
             >
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">M</span>
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg md:text-xl">M</span>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-primary-700">MEDIHOPE</h1>
+              <div className="hidden sm:block">
+                <h1 className="text-lg md:text-xl font-bold text-primary-700">MEDIHOPE</h1>
                 <p className="text-xs text-secondary-500">Physiotherapy Centre</p>
               </div>
             </motion.div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`font-medium transition-colors relative ${
+                className={`font-medium transition-colors relative px-2 py-1 ${
                   isActive(link.path)
                     ? 'text-primary-600'
                     : 'text-secondary-600 hover:text-primary-600'
@@ -87,21 +100,33 @@ const Navbar = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
+            <div className="hidden lg:flex items-center space-x-2">
               <a
                 href={`tel:${CLINIC_INFO.phone}`}
-                className="flex items-center space-x-2 text-secondary-600 hover:text-primary-600"
+                className="flex items-center space-x-2 text-secondary-600 hover:text-primary-600 transition-colors"
               >
-                <FaPhoneAlt />
-                <span className="font-medium">{CLINIC_INFO.phone}</span>
+                <FaPhoneAlt className="flex-shrink-0" />
+                <span className="font-medium whitespace-nowrap">{CLINIC_INFO.phone}</span>
+              </a>
+              <span className="text-secondary-300 mx-2">|</span>
+              <a
+                href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-green-600 hover:text-green-700 transition-colors"
+              >
+                <FaWhatsapp className="flex-shrink-0" />
+                <span className="font-medium whitespace-nowrap">WhatsApp</span>
               </a>
             </div>
             
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <FaUser className="text-secondary-500" />
-                  <span className="font-medium">{user?.name}</span>
+                <div className="hidden lg:flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                    <FaUser className="text-primary-600 text-sm" />
+                  </div>
+                  <span className="font-medium max-w-[120px] truncate">{user?.name}</span>
                 </div>
                 <Button
                   variant="outline"
@@ -113,6 +138,7 @@ const Navbar = () => {
                       navigate('/profile');
                     }
                   }}
+                  className="whitespace-nowrap"
                 >
                   Dashboard
                 </Button>
@@ -120,6 +146,7 @@ const Navbar = () => {
                   variant="secondary"
                   size="sm"
                   onClick={logout}
+                  className="whitespace-nowrap"
                 >
                   Logout
                 </Button>
@@ -130,6 +157,7 @@ const Navbar = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/login')}
+                  className="whitespace-nowrap"
                 >
                   Login
                 </Button>
@@ -137,6 +165,7 @@ const Navbar = () => {
                   variant="primary"
                   size="sm"
                   onClick={() => navigate('/register')}
+                  className="whitespace-nowrap"
                 >
                   Register
                 </Button>
@@ -144,93 +173,138 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-secondary-100"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
-          </button>
+          {/* Mobile Menu Button & Phone */}
+          <div className="flex items-center space-x-4 md:hidden">
+            <a
+              href={`tel:${CLINIC_INFO.phone}`}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-50 text-primary-600"
+            >
+              <FaPhoneAlt />
+            </a>
+            <button
+              className="p-2 rounded-lg hover:bg-secondary-100 transition-colors"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Menu"
+            >
+              {isOpen ? (
+                <FaTimes size={20} className="text-primary-600" />
+              ) : (
+                <FaBars size={20} className="text-secondary-600" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
-        <motion.div
-          initial={false}
-          animate={isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 }}
-          className="md:hidden overflow-hidden"
-        >
-          <div className="py-4 space-y-4 border-t border-secondary-200 mt-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`block px-4 py-2 rounded-lg font-medium ${
-                  isActive(link.path)
-                    ? 'bg-primary-50 text-primary-600'
-                    : 'text-secondary-600 hover:bg-secondary-100'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            
-            <div className="px-4 pt-4 border-t border-secondary-200">
-              {isAuthenticated ? (
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2 py-2">
-                    <FaUser className="text-secondary-500" />
-                    <span className="font-medium">{user?.name}</span>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden bg-white shadow-lg rounded-b-lg"
+          >
+            <div className="py-4 px-4 space-y-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`block px-4 py-3 rounded-lg font-medium transition-colors ${
+                    isActive(link.path)
+                      ? 'bg-primary-50 text-primary-600 border-l-4 border-primary-600'
+                      : 'text-secondary-600 hover:bg-secondary-50'
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              
+              {/* Mobile Contact Info */}
+              <div className="pt-4 mt-4 border-t border-secondary-200 space-y-3">
+                <div className="flex items-center justify-center space-x-4">
+                  <a
+                    href={`tel:${CLINIC_INFO.phone}`}
+                    className="flex items-center space-x-2 text-primary-600 font-medium"
+                  >
+                    <FaPhoneAlt />
+                    <span>{CLINIC_INFO.phone}</span>
+                  </a>
+                  <a
+                    href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 text-green-600 font-medium"
+                  >
+                    <FaWhatsapp />
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+                
+                {isAuthenticated ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center space-x-2 py-2">
+                      <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                        <FaUser className="text-primary-600" />
+                      </div>
+                      <div>
+                        <span className="font-medium block">{user?.name}</span>
+                        <span className="text-sm text-secondary-500">{user?.email}</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        fullWidth
+                        onClick={() => {
+                          if (user?.role === 'admin') {
+                            navigate('/admin');
+                          } else {
+                            navigate('/profile');
+                          }
+                          setIsOpen(false);
+                        }}
+                      >
+                        Dashboard
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        fullWidth
+                        onClick={() => {
+                          logout();
+                          setIsOpen(false);
+                        }}
+                      >
+                        Logout
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    fullWidth
-                    onClick={() => {
-                      if (user?.role === 'admin') {
-                        navigate('/admin');
-                      } else {
-                        navigate('/profile');
-                      }
-                      setIsOpen(false);
-                    }}
-                  >
-                    Dashboard
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    fullWidth
-                    onClick={() => {
-                      logout();
-                      setIsOpen(false);
-                    }}
-                  >
-                    Logout
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Button
-                    fullWidth
-                    onClick={() => {
-                      navigate('/login');
-                      setIsOpen(false);
-                    }}
-                  >
-                    Login
-                  </Button>
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    onClick={() => {
-                      navigate('/register');
-                      setIsOpen(false);
-                    }}
-                  >
-                    Register
-                  </Button>
-                </div>
-              )}
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      fullWidth
+                      onClick={() => {
+                        navigate('/login');
+                        setIsOpen(false);
+                      }}
+                    >
+                      Login
+                    </Button>
+                    <Button
+                      variant="outline"
+                      fullWidth
+                      onClick={() => {
+                        navigate('/register');
+                        setIsOpen(false);
+                      }}
+                    >
+                      Register
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
       </div>
     </motion.nav>
   );

@@ -27,7 +27,7 @@ app.set('trust proxy', 1);
 
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://medihope-beta.vercel.app',
+  'https://medihope-alpha.vercel.app',
 ];
 
 app.use(
