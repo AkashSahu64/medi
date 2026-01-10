@@ -91,3 +91,28 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-primary-600;
 }
+
+/* Custom slick dots styling */
+.slick-dots.custom-dots {
+  bottom: -40px !important;
+}
+
+.slick-dots.custom-dots li button:before {
+  font-size: 12px !important;
+  color: #4f46e5 !important;
+}
+
+.slick-dots.custom-dots li.slick-active button:before {
+  color: #4f46e5 !important;
+}
+
+/* For mobile devices */
+@media (max-width: 640px) {
+  .slick-dots.custom-dots {
+    bottom: -30px !important;
+  }
+  
+  .slick-dots.custom-dots li button:before {
+    font-size: 10px !important;
+  }
+}

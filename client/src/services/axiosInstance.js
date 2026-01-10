@@ -31,16 +31,16 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      'Something went wrong';
+    const status = error.response?.status;
+    const url = error.config?.url || '';
 
-    if (error.response?.status !== 401) {
-      toast.error(message);
-    }
+    // ❌ Auth APIs par redirect mat karo
+    const isAuthApi =
+      url.includes('/auth/login') ||
+      url.includes('/auth/register') ||
+      url.includes('/auth/me');
 
-    if (error.response?.status === 401) {
+    if (status === 401 && !isAuthApi) {
       localStorage.clear();
       window.location.href = '/login';
     }
@@ -48,5 +48,6 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 export default axiosInstance;

@@ -18,8 +18,14 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+  const token = localStorage.getItem('token');
+  if (token) {
     checkAuthStatus();
-  }, []);
+  } else {
+    setLoading(false);
+  }
+}, []);
+
 
   const checkAuthStatus = async () => {
     try {

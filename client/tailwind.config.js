@@ -7,33 +7,62 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Primary Medical Colors
         primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+          DEFAULT: '#0077B6', // Medical Teal Blue (Main brand color)
+          50: '#E6F2F8',
+          100: '#CCE4F1',
+          200: '#99C9E3',
+          300: '#66AED5',
+          400: '#3393C7',
+          500: '#0077B6', // Main
+          600: '#005F92',
+          700: '#00476E',
+          800: '#002F4A',
+          900: '#001726',
         },
+        // Secondary Colors
         secondary: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
+          DEFAULT: '#28A745', // Leaf Green (Accent only)
+          50: '#E8F5E9',
+          100: '#C8E6C9',
+          200: '#A5D6A7',
+          300: '#81C784',
+          400: '#66BB6A',
+          500: '#28A745', // Main
+          600: '#23903D',
+          700: '#1B7A32',
+          800: '#146428',
+          900: '#0D4E1E',
         },
-        success: '#10b981',
-        warning: '#f59e0b',
-        danger: '#ef4444',
+        // Alert/Medical Accent
+        alert: {
+          DEFAULT: '#DC3545', // Medical Red (Very minimal use)
+          50: '#FCE8EA',
+          100: '#F8D1D5',
+          200: '#F1A3AB',
+          300: '#EA7581',
+          400: '#E34757',
+          500: '#DC3545', // Main
+          600: '#B02A37',
+          700: '#842029',
+          800: '#58151B',
+          900: '#2C0B0D',
+        },
+        // Neutral Colors
+        neutral: {
+          DEFAULT: '#111827', // Dark Gray/Black
+          50: '#F9FAFB',
+          100: '#F3F4F6',
+          200: '#E5E7EB',
+          300: '#D1D5DB',
+          400: '#9CA3AF',
+          500: '#6B7280',
+          600: '#4B5563',
+          700: '#374151',
+          800: '#1F2937',
+          900: '#111827',
+        }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
