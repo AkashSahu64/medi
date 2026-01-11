@@ -110,7 +110,7 @@ const AdminDashboard = () => {
       title: 'Total Appointments',
       value: dashboardStats.totalAppointments,
       icon: <FaCalendarAlt className="text-2xl" />,
-      color: 'bg-blue-500',
+      color: 'bg-cyan-500',
       change: '+12%',
       link: '/admin/appointments'
     },
@@ -289,7 +289,7 @@ const AdminDashboard = () => {
                 {/* Messages */}
                 <button className="relative p-2 rounded-lg hover:bg-gray-100">
                   <FaEnvelope />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-cyan-500 rounded-full"></span>
                 </button>
 
                 {/* Admin Profile */}
@@ -328,7 +328,7 @@ const AdminDashboard = () => {
                             <div className={`p-3 rounded-lg ${stat.color} text-white`}>
                               {stat.icon}
                             </div>
-                            <span className={`text-sm font-medium ${stat.change.startsWith('+') ? 'text-green-600' : 'text-blue-600'}`}>
+                            <span className={`text-sm font-medium ${stat.change.startsWith('+') ? 'text-green-600' : 'text-cyan-600'}`}>
                               {stat.change}
                             </span>
                           </div>
@@ -402,14 +402,14 @@ const AdminDashboard = () => {
                                     appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                                     appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                     appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                                    'bg-blue-100 text-blue-800'
+                                    'bg-cyan-100 text-cyan-800'
                                   }`}>
                                     {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                                   </span>
                                 </td>
                                 <td className="py-4">
                                   <div className="flex space-x-2">
-                                    <button className="p-1 text-blue-600 hover:text-blue-700">
+                                    <button className="p-1 text-cyan-600 hover:text-cyan-700">
                                       View
                                     </button>
                                     <button className="p-1 text-green-600 hover:text-green-700">

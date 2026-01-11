@@ -130,7 +130,7 @@ const AdminAppointments = () => {
     { value: '', label: 'All Status' },
     { value: 'pending', label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
     { value: 'confirmed', label: 'Confirmed', color: 'bg-green-100 text-green-800' },
-    { value: 'completed', label: 'Completed', color: 'bg-blue-100 text-blue-800' },
+    { value: 'completed', label: 'Completed', color: 'bg-cyan-100 text-cyan-800' },
     { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-800' }
   ];
 
@@ -322,7 +322,7 @@ const AdminAppointments = () => {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleViewDetails(appointment)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                            className="p-2 text-cyan-600 hover:bg-cyan-50 rounded-lg"
                             title="View Details"
                           >
                             <FaEye />

@@ -9,7 +9,7 @@ export default {
       colors: {
         // Primary Medical Colors
         primary: {
-          DEFAULT: '#0077B6', // Medical Teal Blue (Main brand color)
+          DEFAULT: '#0077B6', // Medical Teal cyan (Main brand color)
           50: '#E6F2F8',
           100: '#CCE4F1',
           200: '#99C9E3',
@@ -85,5 +85,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/line-clamp')],
 }

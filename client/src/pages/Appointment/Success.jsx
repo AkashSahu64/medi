@@ -126,11 +126,11 @@ const AppointmentSuccess = () => {
               </div>
 
               {/* Instructions */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8 text-left">
-                <h4 className="text-lg font-semibold text-blue-900 mb-3">
+              <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-6 mb-8 text-left">
+                <h4 className="text-lg font-semibold text-cyan-900 mb-3">
                   📋 Before Your Visit
                 </h4>
-                <ul className="space-y-2 text-blue-800 text-sm">
+                <ul className="space-y-2 text-cyan-800 text-sm">
                   <li className="flex items-start">
                     <span className="mr-2">•</span>
                     <span>Arrive 10 minutes before your scheduled time</span>

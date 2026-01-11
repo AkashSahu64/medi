@@ -205,7 +205,7 @@ const AdminUsers = () => {
 
   const roleColors = {
     admin: 'bg-purple-100 text-purple-800',
-    user: 'bg-blue-100 text-blue-800',
+    user: 'bg-cyan-100 text-cyan-800',
     therapist: 'bg-green-100 text-green-800'
   };
 
@@ -236,7 +236,7 @@ const AdminUsers = () => {
                 <p className="text-sm text-gray-600">Total Users</p>
                 <p className="text-2xl font-bold text-gray-900">{users.length}</p>
               </div>
-              <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
+              <div className="p-3 bg-cyan-100 text-cyan-600 rounded-lg">
                 <FaUser className="text-xl" />
               </div>
             </div>
@@ -443,7 +443,7 @@ const AdminUsers = () => {
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleView(user)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          className="p-2 text-cyan-600 hover:bg-cyan-50 rounded-lg"
                           title="View Details"
                         >
                           <FaEye />

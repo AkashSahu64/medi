@@ -300,7 +300,7 @@ const AdminSettings = () => {
                   <Input
                     label="Facebook URL"
                     type="url"
-                    leftIcon={<FaFacebook className="text-blue-600" />}
+                    leftIcon={<FaFacebook className="text-cyan-600" />}
                     placeholder="https://facebook.com/yourclinic"
                     {...register('facebookUrl')}
                   />
@@ -308,7 +308,7 @@ const AdminSettings = () => {
                   <Input
                     label="Twitter URL"
                     type="url"
-                    leftIcon={<FaTwitter className="text-blue-400" />}
+                    leftIcon={<FaTwitter className="text-cyan-400" />}
                     placeholder="https://twitter.com/yourclinic"
                     {...register('twitterUrl')}
                   />
@@ -324,7 +324,7 @@ const AdminSettings = () => {
                   <Input
                     label="LinkedIn URL"
                     type="url"
-                    leftIcon={<FaLinkedin className="text-blue-700" />}
+                    leftIcon={<FaLinkedin className="text-cyan-700" />}
                     placeholder="https://linkedin.com/company/yourclinic"
                     {...register('linkedinUrl')}
                   />
@@ -452,7 +452,7 @@ const AdminSettings = () => {
                           className="sr-only peer"
                           {...register('requireEmailVerification')}
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
                       </label>
                     </div>
 
@@ -481,10 +481,10 @@ const AdminSettings = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Backup Card */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                    <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-6">
                       <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                          <FaCloudUploadAlt className="text-blue-600 text-xl" />
+                        <div className="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mr-4">
+                          <FaCloudUploadAlt className="text-cyan-600 text-xl" />
                         </div>
                         <div>
                           <h3 className="font-semibold text-gray-900">Create Backup</h3>
@@ -558,7 +558,7 @@ const AdminSettings = () => {
                           <div className="text-right">
                             <p className="font-medium text-gray-900">{backup.size}</p>
                             <div className="flex space-x-2">
-                              <button className="text-sm text-blue-600 hover:text-blue-700">
+                              <button className="text-sm text-cyan-600 hover:text-cyan-700">
                                 Download
                               </button>
                               <button className="text-sm text-red-600 hover:text-red-700">

@@ -112,8 +112,8 @@ const ForgotPassword = () => {
                   Please check your inbox and follow the instructions to reset your password.
                 </p>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
-                  <p className="text-sm text-blue-800">
+                <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-4 mb-6 text-left">
+                  <p className="text-sm text-cyan-800">
                     <strong>Didn't receive the email?</strong> Check your spam folder or try resending the link.
                   </p>
                 </div>

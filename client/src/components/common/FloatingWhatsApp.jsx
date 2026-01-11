@@ -99,11 +99,11 @@ const FloatingWhatsApp = () => {
                 </div>
 
                 {/* Clinic Info */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                  <h4 className="font-medium text-blue-900 text-sm mb-2">
+                <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 mb-4">
+                  <h4 className="font-medium text-cyan-900 text-sm mb-2">
                     📍 Clinic Information
                   </h4>
-                  <div className="space-y-1 text-xs text-blue-800">
+                  <div className="space-y-1 text-xs text-cyan-800">
                     <p className="flex items-center">
                       <FaClock className="mr-2" />
                       {CLINIC_INFO.workingHours.weekdays} (Mon-Fri)

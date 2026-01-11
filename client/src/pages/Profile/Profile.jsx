@@ -607,7 +607,7 @@ const Profile = () => {
                             { label: 'Pain Level', value: '2/10', trend: '↓', color: 'green' },
                             { label: 'Mobility', value: '85%', trend: '↑', color: 'green' },
                             { label: 'Flexibility', value: '70%', trend: '↑', color: 'green' },
-                            { label: 'Sessions Completed', value: '18', trend: '', color: 'blue' }
+                            { label: 'Sessions Completed', value: '18', trend: '', color: 'cyan' }
                           ].map((metric, index) => (
                             <div key={index} className="bg-secondary-50 rounded-lg p-4 text-center">
                               <p className="text-sm text-secondary-600 mb-1">
@@ -618,7 +618,7 @@ const Profile = () => {
                               </p>
                               {metric.trend && (
                                 <p className={`text-sm font-medium ${
-                                  metric.color === 'green' ? 'text-green-600' : 'text-blue-600'
+                                  metric.color === 'green' ? 'text-green-600' : 'text-cyan-600'
                                 }`}>
                                   {metric.trend} Improved
                                 </p>

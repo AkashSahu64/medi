@@ -333,7 +333,7 @@ const AdminServices = () => {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleEdit(service)}
-                        className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium"
+                        className="px-4 py-2 text-cyan-600 hover:bg-cyan-50 rounded-lg text-sm font-medium"
                       >
                         <FaEdit className="inline mr-2" />
                         Edit

@@ -133,7 +133,7 @@ const About = () => {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-16 bg-gradient-to-r from-primary-50 to-blue-50">
+      <section className="py-16 bg-gradient-to-r from-primary-50 to-cyan-50">
         <div className="container-padding">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <motion.div

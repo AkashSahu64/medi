@@ -419,7 +419,7 @@ const AdminTestimonials = () => {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleEdit(testimonial)}
-                        className="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium"
+                        className="px-3 py-2 text-cyan-600 hover:bg-cyan-50 rounded-lg text-sm font-medium"
                       >
                         <FaEdit className="inline mr-2" />
                         Edit
@@ -473,7 +473,7 @@ const AdminTestimonials = () => {
                 <p className="text-sm text-gray-600">Total Testimonials</p>
                 <p className="text-2xl font-bold text-gray-900">{testimonials.length}</p>
               </div>
-              <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
+              <div className="p-3 bg-cyan-100 text-cyan-600 rounded-lg">
                 <FaUser className="text-xl" />
               </div>
             </div>

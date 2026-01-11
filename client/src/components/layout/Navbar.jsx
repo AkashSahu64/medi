@@ -50,7 +50,7 @@ const Navbar = () => {
       icon: <FaPhoneAlt />,
       text: CLINIC_INFO.phone,
       href: `tel:${CLINIC_INFO.phone}`,
-      color: "text-[#0077B6]", // Medical Teal Blue
+      color: "text-[#0077B6]", // Medical Teal cyan
       hoverColor: "text-[#005B8D]",
       bgColor: "bg-[#0077B6]/10",
     },

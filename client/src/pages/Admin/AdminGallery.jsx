@@ -270,7 +270,7 @@ const AdminGallery = () => {
                 <p className="text-sm text-gray-600">Total Items</p>
                 <p className="text-2xl font-bold text-gray-900">{gallery.length}</p>
               </div>
-              <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
+              <div className="p-3 bg-cyan-100 text-cyan-600 rounded-lg">
                 <FaImages className="text-xl" />
               </div>
             </div>
@@ -470,7 +470,7 @@ const AdminGallery = () => {
                     <div className="absolute bottom-4 left-4 right-4">
                       <div className="flex justify-between items-center">
                         <span className={`px-2 py-1 text-xs font-medium rounded ${
-                          item.type === 'image' ? 'bg-blue-500 text-white' : 'bg-purple-500 text-white'
+                          item.type === 'image' ? 'bg-cyan-500 text-white' : 'bg-purple-500 text-white'
                         }`}>
                           {item.type.toUpperCase()}
                         </span>
@@ -533,7 +533,7 @@ const AdminGallery = () => {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleView(item)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                        className="p-2 text-cyan-600 hover:bg-cyan-50 rounded-lg"
                         title="View"
                       >
                         <FaEye />
@@ -794,7 +794,7 @@ const AdminGallery = () => {
                 href={selectedItem.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                className="flex items-center px-4 py-2 text-cyan-600 hover:bg-cyan-50 rounded-lg"
               >
                 <FaExternalLinkAlt className="mr-2" />
                 Open in New Tab
