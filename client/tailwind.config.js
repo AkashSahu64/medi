@@ -23,18 +23,19 @@ export default {
         },
         // Secondary Colors
         secondary: {
-          DEFAULT: '#28A745', // Leaf Green (Accent only)
-          50: '#E8F5E9',
-          100: '#C8E6C9',
-          200: '#A5D6A7',
-          300: '#81C784',
-          400: '#66BB6A',
-          500: '#28A745', // Main
-          600: '#23903D',
-          700: '#1B7A32',
-          800: '#146428',
-          900: '#0D4E1E',
+          DEFAULT: '#6B7280', // Neutral Gray (Accent only)
+          50: '#F9FAFB',
+          100: '#F3F4F6',
+          200: '#E5E7EB',
+          300: '#D1D5DB',
+          400: '#9CA3AF',
+          500: '#6B7280', // Main
+          600: '#4B5563',
+          700: '#374151',
+          800: '#1F2937',
+          900: '#111827',
         },
+
         // Alert/Medical Accent
         alert: {
           DEFAULT: '#DC3545', // Medical Red (Very minimal use)

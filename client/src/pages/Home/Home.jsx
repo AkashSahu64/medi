@@ -384,7 +384,7 @@ const Home = () => {
                 </Link>
 
                 <div className="flex gap-4 justify-center sm:justify-start">
-                  <a href={`tel:${CLINIC_INFO.phone}`} className="group">
+                  <a href={`tel:${CLINIC_INFO.PHONE_FULL}`} className="group">
                     <div
                       className="flex items-center space-x-2 bg-white/70 backdrop-blur-md
                       border border-red-100/60
@@ -393,11 +393,21 @@ const Home = () => {
                       <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors">
                         <FaPhoneAlt />
                       </div>
+
                       <div className="text-left">
                         <div className="text-xs font-semibold ml-1">
                           Emergency Call
                         </div>
-                        <div className="font-bold">{CLINIC_INFO.phone}</div>
+
+                        {/* Desktop / Laptop */}
+                        <div className="hidden md:block font-bold">
+                          {CLINIC_INFO.PHONE_FULL}
+                        </div>
+
+                        {/* Mobile */}
+                        <div className="block md:hidden font-bold">
+                          {CLINIC_INFO.PHONE_MOBILE}
+                        </div>
                       </div>
                     </div>
                   </a>
@@ -492,7 +502,7 @@ const Home = () => {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.7 }}
-                className="absolute -bottom-8 -left-12 bg-gradient-to-r from-cyan-600 to-cyan-500 text-white p-6 rounded-2xl shadow-2xl max-w-sm"
+                className="absolute bottom-1 lg:-bottom-8 -left-3 lg:-left-12 bg-gradient-to-r from-cyan-600 to-cyan-500 text-white p-6 rounded-2xl shadow-2xl max-w-sm"
               >
                 <div className="flex items-center space-x-4">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white/30">
@@ -698,13 +708,13 @@ const Home = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <div className="inline-flex items-center space-x-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            <div className="inline-flex items-center space-x-2 bg-cyan-100 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
               <FaStar />
               <span>Patient Success Stories</span>
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
               Hear From Our{" "}
-              <span className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-cyan-600 to-cyan-500 bg-clip-text text-transparent">
                 Patients
               </span>
             </h2>
@@ -714,10 +724,10 @@ const Home = () => {
             </p>
           </motion.div>
 
-          <div className="testimonial-slider px-4">
+          <div className="testimonial-slider md:px-4">
             <Slider {...sliderSettings}>
               {testimonials.map((testimonial, index) => (
-                <div key={testimonial.id} className="px-4">
+                <div key={testimonial.id} className="px-1 md:px-4">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
@@ -736,7 +746,6 @@ const Home = () => {
         </div>
       </section>
       {/* Emergency CTA Section */}
-      {/* Emergency CTA Section - Professional Medical Design */}
       <section className="py-16 md:py-20 bg-gradient-to-r from-cyan-600 to-cyan-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
@@ -879,8 +888,8 @@ const Home = () => {
                         Additional Details
                       </label>
                       <textarea
-                        rows="3"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                        rows="8"
+                        className="w-full px-4 py-3 resize-none border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
                         placeholder="Brief description of the emergency..."
                       ></textarea>
                     </div>
@@ -964,22 +973,20 @@ const Home = () => {
           </div>
         </div>
       </section>
+
       {/* Clinic Location Section */}
-      {/* Clinic Location Section - Professional Medical Design */}
       <section className="py-16 md:py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             {/* Section Header */}
             <div className="text-center mb-16">
               <div className="inline-flex items-center space-x-3 mb-6">
-                <div className="w-12 h-1 bg-cyan-600 rounded-full"></div>
                 <div className="text-center">
                   <div className="inline-flex items-center space-x-2 bg-cyan-50 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold">
                     <FaClock />
                     <span>Visit Our Facility</span>
                   </div>
                 </div>
-                <div className="w-12 h-1 bg-cyan-600 rounded-full"></div>
               </div>
 
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
@@ -997,7 +1004,7 @@ const Home = () => {
               <div className="space-y-8">
                 {/* Clinic Hours Card */}
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8">
-                  <div className="flex items-center space-x-3 mb-6">
+                  <div className="flex items-center space-x-3 mb-3">
                     <div className="w-12 h-12 rounded-xl bg-cyan-100 flex items-center justify-center">
                       <FaClock className="text-2xl text-cyan-600" />
                     </div>
@@ -1011,7 +1018,7 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="">
                     {[
                       {
                         day: "Monday - Friday",
@@ -1054,7 +1061,7 @@ const Home = () => {
                     ))}
                   </div>
 
-                  <div className="mt-8 p-4 bg-cyan-50 rounded-xl">
+                  <div className="mt-6 p-3 bg-cyan-50 rounded-xl">
                     <div className="flex items-center">
                       <FaClock className="text-cyan-600 mr-3" />
                       <div>
@@ -1076,7 +1083,7 @@ const Home = () => {
                       <FaAward className="text-2xl text-cyan-600" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">
+                      <h3 className="lg:text-xl font-bold text-gray-900">
                         Facilities & Amenities
                       </h3>
                       <p className="text-sm text-gray-600">
@@ -1212,62 +1219,64 @@ const Home = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+                    <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-xl p-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                            <FaPhoneAlt className="text-lg" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs">
+                              Phone Consultation
+                            </h4>
+                            <a
+                              href={`tel:${CLINIC_INFO.phone}`}
+                              className="text-sm md:text-md semi-bold hover:text-cyan-100"
+                            >
+                              {CLINIC_INFO.PHONE_FULL}
+                            </a>
+                          </div>
+                        </div>
+                      </div>
 
-            {/* Contact Information Footer */}
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-2xl p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                    <FaPhoneAlt className="text-xl" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold">Phone Consultation</h4>
-                    <a
-                      href={`tel:${CLINIC_INFO.phone}`}
-                      className="text-2xl font-bold hover:text-cyan-100"
-                    >
-                      {CLINIC_INFO.phone}
-                    </a>
-                  </div>
-                </div>
-              </div>
+                      <div className="bg-gradient-to-r from-cyan-600 to-cyan-500 text-white rounded-xl p-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                            <FaWhatsapp className="text-lg" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs">
+                              WhatsApp Support
+                            </h4>
+                            <a
+                              href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className=" text-sm md:text-md semi-bold hover:text-cyan-100"
+                            >
+                              Chat Now
+                            </a>
+                          </div>
+                        </div>
+                      </div>
 
-              <div className="bg-gradient-to-r from-cyan-600 to-cyan-500 text-white rounded-2xl p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                    <FaWhatsapp className="text-xl" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold">WhatsApp Support</h4>
-                    <a
-                      href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xl font-bold hover:text-cyan-100"
-                    >
-                      Chat Now
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-2xl p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                    <FaClock className="text-xl" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold">Email Support</h4>
-                    <a
-                      href={`mailto:${CLINIC_INFO.email}`}
-                      className="text-xl font-bold hover:text-gray-100"
-                    >
-                      {CLINIC_INFO.email}
-                    </a>
+                      <div className="bg-gradient-to-r from-cyan-800 to-cyan-900 text-white rounded-xl p-2">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                            <FaClock className="text-md" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs">Email Support</h4>
+                            <a
+                              href={`mailto:${CLINIC_INFO.email}`}
+                              className="text-sm md:text-md semi-bold hover:text-gray-100"
+                            >
+                              {CLINIC_INFO.email}
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -96,13 +96,13 @@ const Appointment = () => {
   };
 
   // Date picker configuration
-  const isDateDisabled = (date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Disable past dates and Sundays
-    return isBefore(date, today) || isSunday(date);
-  };
+  const isDateEnabled = (date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Enable only future dates except Sunday
+  return !isBefore(date, today) && !isSunday(date);
+};
 
   // Highlight available dates
   const highlightDates = [
@@ -297,7 +297,7 @@ const Appointment = () => {
                           selected={selectedDate}
                           onChange={(date) => setSelectedDate(date)}
                           minDate={new Date()}
-                          filterDate={isDateDisabled}
+                          filterDate={isDateEnabled}
                           highlightDates={highlightDates}
                           placeholderText="Select appointment date"
                           className="w-full pl-12 pr-4 py-3 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
