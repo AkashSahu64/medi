@@ -46,6 +46,7 @@ export const SERVICE_CATEGORY_LABELS = {
 export const CLINIC_INFO = {
   name: 'MEDIHOPE Physiotherapy Centre',
   address: '123 Health Street, Medical City, MC 12345',
+  phone: '+91-9876543210',
   PHONE_FULL: '+91-9876543210',
   PHONE_MOBILE: '9876543210',
   email: 'info@medihope.com',

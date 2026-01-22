@@ -12,33 +12,45 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   console.warn('⚠️ Google OAuth credentials missing. Google login disabled.');
 } else {
   passport.use(
-    new GoogleStrategy(
-      {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: '/api/auth/google/callback',
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        try {
-          let user = await User.findOne({ googleId: profile.id });
-          
-          if (!user) {
-            user = await User.create({
-              googleId: profile.id,
-              name: profile.displayName,
-              email: profile.emails[0].value,
-              avatar: profile.photos[0].value,
-              isVerified: true,
-            });
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: '/api/auth/google/callback',
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails[0].value;
+
+        // 1. First check by email
+        let user = await User.findOne({ email });
+
+        if (user) {
+          // 2. If user exists but googleId missing → link account
+          if (!user.googleId) {
+            user.googleId = profile.id;
+            user.isVerified = true;
+            await user.save();
           }
-          
-          return done(null, user);
-        } catch (error) {
-          return done(error, null);
+        } else {
+          // 3. Create new user only if not exists
+          user = await User.create({
+            googleId: profile.id,
+            name: profile.displayName,
+            email,
+            avatar: profile.photos[0].value,
+            isVerified: true,
+            password: Math.random().toString(36), // dummy
+          });
         }
+
+        return done(null, user);
+      } catch (error) {
+        return done(error, null);
       }
-    )
-  );
+    }
+  )
+);
 }
 
 passport.serializeUser((user, done) => {

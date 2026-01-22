@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { motion } from 'framer-motion';
-import { useSearchParams } from 'react-router-dom';
-import DatePicker from 'react-datepicker';
-import { format, parseISO } from 'date-fns';
-import { appointmentService } from '../../services/appointment.service';
-import { useApi } from '../../hooks/useApi';
-import Button from '../../components/common/Button';
-import Modal from '../../components/common/Modal';
-import Input from '../../components/common/Input';
-import Loader from '../../components/common/Loader';
-import { 
-  FaSearch, 
-  FaFilter, 
-  FaCalendarAlt, 
-  FaUser, 
-  FaPhone, 
+import React, { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
+import { motion } from "framer-motion";
+import { useSearchParams } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import { format, parseISO } from "date-fns";
+import { appointmentService } from "../../services/appointment.service";
+import { useApi } from "../../hooks/useApi";
+import Button from "../../components/common/Button";
+import Modal from "../../components/common/Modal";
+import Input from "../../components/common/Input";
+import Loader from "../../components/common/Loader";
+import {
+  FaSearch,
+  FaFilter,
+  FaCalendarAlt,
+  FaUser,
+  FaPhone,
   FaEnvelope,
   FaClock,
   FaCheck,
@@ -23,9 +23,9 @@ import {
   FaEdit,
   FaTrash,
   FaEye,
-  FaWhatsapp
-} from 'react-icons/fa';
-import toast from 'react-hot-toast';
+  FaWhatsapp,
+} from "react-icons/fa";
+import toast from "react-hot-toast";
 
 const AdminAppointments = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -33,17 +33,19 @@ const AdminAppointments = () => {
   const [loading, setLoading] = useState(true);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('view');
+  const [modalType, setModalType] = useState("view");
   const [filters, setFilters] = useState({
-    status: searchParams.get('status') || '',
-    date: searchParams.get('date') || '',
-    search: searchParams.get('search') || '',
+    status: searchParams.get("status") || "",
+    date: searchParams.get("date") || "",
+    search: searchParams.get("search") || "",
     page: 1,
-    limit: 10
+    limit: 10,
   });
   const [totalPages, setTotalPages] = useState(1);
 
-  const { execute: fetchAppointments } = useApi(appointmentService.getAllAppointments);
+  const { execute: fetchAppointments } = useApi(
+    appointmentService.getAllAppointments,
+  );
 
   useEffect(() => {
     loadAppointments();
@@ -52,9 +54,9 @@ const AdminAppointments = () => {
   useEffect(() => {
     // Update URL with filters
     const params = new URLSearchParams();
-    if (filters.status) params.set('status', filters.status);
-    if (filters.date) params.set('date', filters.date);
-    if (filters.search) params.set('search', filters.search);
+    if (filters.status) params.set("status", filters.status);
+    if (filters.date) params.set("date", filters.date);
+    if (filters.search) params.set("search", filters.search);
     setSearchParams(params);
   }, [filters, setSearchParams]);
 
@@ -69,13 +71,13 @@ const AdminAppointments = () => {
       params.limit = filters.limit;
 
       const response = await fetchAppointments(params);
-      
+
       if (response) {
         setAppointments(response.data || []);
         setTotalPages(response.pages || 1);
       }
     } catch (error) {
-      console.error('Error loading appointments:', error);
+      console.error("Error loading appointments:", error);
     } finally {
       setLoading(false);
     }
@@ -83,35 +85,36 @@ const AdminAppointments = () => {
 
   const handleStatusUpdate = async (id, status) => {
     try {
-      const notes = status === 'confirmed' ? 'Appointment confirmed by admin' : '';
+      const notes =
+        status === "confirmed" ? "Appointment confirmed by admin" : "";
       await appointmentService.updateAppointmentStatus(id, status, notes);
       toast.success(`Appointment ${status} successfully`);
       loadAppointments();
     } catch (error) {
-      toast.error('Failed to update status');
+      toast.error("Failed to update status");
     }
   };
 
   const handleViewDetails = (appointment) => {
     setSelectedAppointment(appointment);
-    setModalType('view');
+    setModalType("view");
     setIsModalOpen(true);
   };
 
   const handleEdit = (appointment) => {
     setSelectedAppointment(appointment);
-    setModalType('edit');
+    setModalType("edit");
     setIsModalOpen(true);
   };
 
   const handleCancel = async (id) => {
-    if (window.confirm('Are you sure you want to cancel this appointment?')) {
+    if (window.confirm("Are you sure you want to cancel this appointment?")) {
       try {
         await appointmentService.cancelAppointment(id);
-        toast.success('Appointment cancelled');
+        toast.success("Appointment cancelled");
         loadAppointments();
       } catch (error) {
-        toast.error('Failed to cancel appointment');
+        toast.error("Failed to cancel appointment");
       }
     }
   };
@@ -120,18 +123,34 @@ const AdminAppointments = () => {
     try {
       // Implement WhatsApp reminder logic
       const message = `Reminder: Your appointment at MEDIHOPE is tomorrow at ${appointment.timeSlot}. Please arrive 10 minutes early.`;
-      toast.success('Reminder sent successfully');
+      toast.success("Reminder sent successfully");
     } catch (error) {
-      toast.error('Failed to send reminder');
+      toast.error("Failed to send reminder");
     }
   };
 
   const statusOptions = [
-    { value: '', label: 'All Status' },
-    { value: 'pending', label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'confirmed', label: 'Confirmed', color: 'bg-green-100 text-green-800' },
-    { value: 'completed', label: 'Completed', color: 'bg-cyan-100 text-cyan-800' },
-    { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-800' }
+    { value: "", label: "All Status" },
+    {
+      value: "pending",
+      label: "Pending",
+      color: "bg-yellow-100 text-yellow-800",
+    },
+    {
+      value: "confirmed",
+      label: "Confirmed",
+      color: "bg-green-100 text-green-800",
+    },
+    {
+      value: "completed",
+      label: "Completed",
+      color: "bg-cyan-100 text-cyan-800",
+    },
+    {
+      value: "cancelled",
+      label: "Cancelled",
+      color: "bg-red-100 text-red-800",
+    },
   ];
 
   return (
@@ -140,16 +159,20 @@ const AdminAppointments = () => {
         <title>Appointments Management | MEDIHOPE Admin</title>
       </Helmet>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Appointments Management</h1>
-            <p className="text-gray-600">Manage and track all patient appointments</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Appointments Management
+            </h1>
+            <p className="text-gray-600">
+              Manage and track all patient appointments
+            </p>
           </div>
           <Button
             onClick={() => {
-              setModalType('create');
+              setModalType("create");
               setSelectedAppointment(null);
               setIsModalOpen(true);
             }}
@@ -173,8 +196,10 @@ const AdminAppointments = () => {
                   type="text"
                   placeholder="Search by name or phone..."
                   value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  onChange={(e) =>
+                    setFilters({ ...filters, search: e.target.value, page: 1 })
+                  }
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                 />
               </div>
             </div>
@@ -185,10 +210,12 @@ const AdminAppointments = () => {
               </label>
               <select
                 value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
+                onChange={(e) =>
+                  setFilters({ ...filters, status: e.target.value, page: 1 })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
-                {statusOptions.map(option => (
+                {statusOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -202,26 +229,30 @@ const AdminAppointments = () => {
               </label>
               <DatePicker
                 selected={filters.date ? new Date(filters.date) : null}
-                onChange={(date) => setFilters({ 
-                  ...filters, 
-                  date: date ? format(date, 'yyyy-MM-dd') : '',
-                  page: 1 
-                })}
+                onChange={(date) =>
+                  setFilters({
+                    ...filters,
+                    date: date ? format(date, "yyyy-MM-dd") : "",
+                    page: 1,
+                  })
+                }
                 placeholderText="Filter by date"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               />
             </div>
 
             <div className="flex items-end">
               <Button
                 variant="secondary"
-                onClick={() => setFilters({
-                  status: '',
-                  date: '',
-                  search: '',
-                  page: 1,
-                  limit: 10
-                })}
+                onClick={() =>
+                  setFilters({
+                    status: "",
+                    date: "",
+                    search: "",
+                    page: 1,
+                    limit: 10,
+                  })
+                }
                 fullWidth
               >
                 <FaFilter className="mr-2" />
@@ -244,9 +275,9 @@ const AdminAppointments = () => {
                 No appointments found
               </h3>
               <p className="text-gray-600">
-                {filters.status || filters.date || filters.search 
-                  ? 'Try changing your filter criteria' 
-                  : 'No appointments scheduled yet'}
+                {filters.status || filters.date || filters.search
+                  ? "Try changing your filter criteria"
+                  : "No appointments scheduled yet"}
               </p>
             </div>
           ) : (
@@ -303,7 +334,10 @@ const AdminAppointments = () => {
                           </div>
                           <div className="text-sm text-gray-500 flex items-center">
                             <FaCalendarAlt className="mr-2" size={12} />
-                            {format(new Date(appointment.appointmentDate), 'dd MMM yyyy')}
+                            {format(
+                              new Date(appointment.appointmentDate),
+                              "dd MMM yyyy",
+                            )}
                           </div>
                           <div className="text-sm text-gray-500 flex items-center">
                             <FaClock className="mr-2" size={12} />
@@ -312,10 +346,15 @@ const AdminAppointments = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          statusOptions.find(s => s.value === appointment.status)?.color || 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            statusOptions.find(
+                              (s) => s.value === appointment.status,
+                            )?.color || "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {appointment.status.charAt(0).toUpperCase() +
+                            appointment.status.slice(1)}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -327,10 +366,15 @@ const AdminAppointments = () => {
                           >
                             <FaEye />
                           </button>
-                          {appointment.status === 'pending' && (
+                          {appointment.status === "pending" && (
                             <>
                               <button
-                                onClick={() => handleStatusUpdate(appointment._id, 'confirmed')}
+                                onClick={() =>
+                                  handleStatusUpdate(
+                                    appointment._id,
+                                    "confirmed",
+                                  )
+                                }
                                 className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
                                 title="Confirm"
                               >
@@ -345,7 +389,7 @@ const AdminAppointments = () => {
                               </button>
                             </>
                           )}
-                          {appointment.status === 'confirmed' && (
+                          {appointment.status === "confirmed" && (
                             <button
                               onClick={() => handleSendReminder(appointment)}
                               className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
@@ -381,14 +425,18 @@ const AdminAppointments = () => {
                   <Button
                     variant="outline"
                     disabled={filters.page === 1}
-                    onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
+                    onClick={() =>
+                      setFilters({ ...filters, page: filters.page - 1 })
+                    }
                   >
                     Previous
                   </Button>
                   <Button
                     variant="outline"
                     disabled={filters.page === totalPages}
-                    onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
+                    onClick={() =>
+                      setFilters({ ...filters, page: filters.page + 1 })
+                    }
                   >
                     Next
                   </Button>
@@ -403,44 +451,69 @@ const AdminAppointments = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={modalType === 'view' ? 'Appointment Details' : modalType === 'edit' ? 'Edit Appointment' : 'New Appointment'}
+        title={
+          modalType === "view"
+            ? "Appointment Details"
+            : modalType === "edit"
+              ? "Edit Appointment"
+              : "New Appointment"
+        }
         size="lg"
       >
-        {modalType === 'view' && selectedAppointment && (
+        {modalType === "view" && selectedAppointment && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-500">Patient Name</h4>
-                <p className="mt-1 font-medium">{selectedAppointment.patientName}</p>
+                <h4 className="text-sm font-medium text-gray-500">
+                  Patient Name
+                </h4>
+                <p className="mt-1 font-medium">
+                  {selectedAppointment.patientName}
+                </p>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-gray-500">Phone Number</h4>
-                <p className="mt-1 font-medium">{selectedAppointment.patientPhone}</p>
+                <h4 className="text-sm font-medium text-gray-500">
+                  Phone Number
+                </h4>
+                <p className="mt-1 font-medium">
+                  {selectedAppointment.patientPhone}
+                </p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Email</h4>
-                <p className="mt-1 font-medium">{selectedAppointment.patientEmail}</p>
+                <p className="mt-1 font-medium">
+                  {selectedAppointment.patientEmail}
+                </p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Service</h4>
-                <p className="mt-1 font-medium">{selectedAppointment.serviceName}</p>
+                <p className="mt-1 font-medium">
+                  {selectedAppointment.serviceName}
+                </p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Date</h4>
                 <p className="mt-1 font-medium">
-                  {format(new Date(selectedAppointment.appointmentDate), 'dd MMMM yyyy')}
+                  {format(
+                    new Date(selectedAppointment.appointmentDate),
+                    "dd MMMM yyyy",
+                  )}
                 </p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Time Slot</h4>
-                <p className="mt-1 font-medium">{selectedAppointment.timeSlot}</p>
+                <p className="mt-1 font-medium">
+                  {selectedAppointment.timeSlot}
+                </p>
               </div>
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-gray-500">Health Concern</h4>
+              <h4 className="text-sm font-medium text-gray-500">
+                Health Concern
+              </h4>
               <p className="mt-1 text-gray-900 bg-gray-50 p-4 rounded-lg">
-                {selectedAppointment.healthConcern || 'No concerns mentioned'}
+                {selectedAppointment.healthConcern || "No concerns mentioned"}
               </p>
             </div>
 
@@ -448,15 +521,20 @@ const AdminAppointments = () => {
               <h4 className="text-sm font-medium text-gray-500">Status</h4>
               <div className="mt-2 flex space-x-3">
                 {statusOptions
-                  .filter(opt => opt.value !== '')
+                  .filter((opt) => opt.value !== "")
                   .map((status) => (
                     <button
                       key={status.value}
-                      onClick={() => handleStatusUpdate(selectedAppointment._id, status.value)}
+                      onClick={() =>
+                        handleStatusUpdate(
+                          selectedAppointment._id,
+                          status.value,
+                        )
+                      }
                       className={`px-4 py-2 rounded-lg border transition-colors ${
                         selectedAppointment.status === status.value
-                          ? `${status.color.replace('bg-', 'bg-').replace('text-', 'text-')} border-transparent`
-                          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                          ? `${status.color.replace("bg-", "bg-").replace("text-", "text-")} border-transparent`
+                          : "border-gray-300 text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {status.label}
@@ -466,15 +544,10 @@ const AdminAppointments = () => {
             </div>
 
             <div className="flex justify-end space-x-3 pt-6 border-t">
-              <Button
-                variant="outline"
-                onClick={() => setIsModalOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                 Close
               </Button>
-              <Button
-                onClick={() => handleSendReminder(selectedAppointment)}
-              >
+              <Button onClick={() => handleSendReminder(selectedAppointment)}>
                 Send Reminder
               </Button>
             </div>
@@ -482,67 +555,96 @@ const AdminAppointments = () => {
         )}
 
         {/* Edit/Create Appointment Form */}
-        {(modalType === 'edit' || modalType === 'create') && (
-          <div className="space-y-4">
+        {(modalType === "edit" || modalType === "create") && (
+          <div className="px-6 sm:px-8 py-4 max-w-3xl mx-auto space-y-5">
             <Input
               label="Patient Name"
               type="text"
-              defaultValue={selectedAppointment?.patientName || ''}
+              defaultValue={selectedAppointment?.patientName || ""}
               required
             />
+
             <Input
               label="Phone Number"
               type="tel"
-              defaultValue={selectedAppointment?.patientPhone || ''}
+              defaultValue={selectedAppointment?.patientPhone || ""}
               required
             />
+
             <Input
               label="Email Address"
               type="email"
-              defaultValue={selectedAppointment?.patientEmail || ''}
+              defaultValue={selectedAppointment?.patientEmail || ""}
             />
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Appointment Date
                 </label>
                 <DatePicker
-                  selected={selectedAppointment?.appointmentDate ? new Date(selectedAppointment.appointmentDate) : new Date()}
+                  selected={
+                    selectedAppointment?.appointmentDate
+                      ? new Date(selectedAppointment.appointmentDate)
+                      : new Date()
+                  }
                   onChange={() => {}}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="
+            w-full px-4 py-2.5
+            border border-gray-300
+            rounded-lg
+            focus:ring-2 focus:ring-cyan-500
+            outline-none
+          "
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Time Slot
                 </label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                <select
+                  className="
+            w-full px-4 py-2.5
+            border border-gray-300
+            rounded-lg
+            focus:ring-2 focus:ring-cyan-500
+            outline-none
+          "
+                >
                   <option>09:00-09:30</option>
                   <option>09:30-10:00</option>
-                  {/* Add more time slots */}
                 </select>
               </div>
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Notes
               </label>
               <textarea
                 rows={4}
-                defaultValue={selectedAppointment?.healthConcern || ''}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                defaultValue={selectedAppointment?.healthConcern || ""}
+                className="
+          w-full px-4 py-2.5
+          border border-gray-300
+          rounded-lg
+          focus:ring-2 focus:ring-cyan-500
+          outline-none
+          resize-none
+        "
                 placeholder="Add any notes or health concerns..."
               />
             </div>
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setIsModalOpen(false)}
-              >
+
+            <div className="flex justify-end space-x-3 pt-6 border-t">
+              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                 Cancel
               </Button>
               <Button>
-                {modalType === 'edit' ? 'Update Appointment' : 'Create Appointment'}
+                {modalType === "edit"
+                  ? "Update Appointment"
+                  : "Create Appointment"}
               </Button>
             </div>
           </div>

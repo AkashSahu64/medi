@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -21,156 +21,269 @@ import {
   FaStar,
   FaCalendarCheck,
   FaAward,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 import { CLINIC_INFO } from "../../utils/constants";
 import { useApi } from "../../hooks/useApi";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import astha from '../../assets/image/astha.png';
 
+// Image Gallery Slider Component
+const ImageGallerySlider = () => {
+  const sliderRef = useRef(null);
+  const intervalRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const images = [
+    "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1706353399656-210cca727a33?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=1200&q=80",
+  ];
+
+  // 👇 Loop illusion (last me first duplicate)
+  const loopImages = [...images, images[0]];
+
+  // Auto slide
+  useEffect(() => {
+    const container = sliderRef.current;
+    if (!container) return;
+
+    const slide = () => {
+      const itemWidth = container.children[0].offsetWidth;
+      const gap = 24;
+      const scrollAmount = itemWidth + gap;
+
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      setActiveIndex((prev) => prev + 1);
+    };
+
+    intervalRef.current = setInterval(slide, 3000);
+    return () => clearInterval(intervalRef.current);
+  }, []);
+
+  // Seamless reset logic
+  useEffect(() => {
+    const container = sliderRef.current;
+    if (!container) return;
+
+    const realLength = images.length;
+    const itemWidth = container.children[0].offsetWidth;
+    const gap = 24;
+    const scrollAmount = itemWidth + gap;
+
+    // Jab duplicate slide par aaye
+    if (activeIndex === realLength) {
+      setTimeout(() => {
+        container.scrollLeft = 0; // invisible jump
+        setActiveIndex(0);
+      }, 400);
+    }
+  }, [activeIndex, images.length]);
+
+  // Dots click
+  const goToSlide = (index) => {
+    const container = sliderRef.current;
+    if (!container) return;
+
+    const itemWidth = container.children[0].offsetWidth;
+    const gap = 24;
+
+    container.scrollTo({
+      left: (itemWidth + gap) * index,
+      behavior: "smooth",
+    });
+    setActiveIndex(index);
+  };
+
+  return (
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        {/* Slider */}
+        <div
+          ref={sliderRef}
+          className="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-hide"
+        >
+          {loopImages.map((img, i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 w-[320px] md:w-[360px] lg:w-[1450px] snap-start"
+            >
+              <div className="overflow-hidden rounded-2xl shadow-md">
+                <img
+                  src={img}
+                  alt={`Gallery ${i + 1}`}
+                  className="w-full h-[260px] md:h-[320px] lg:h-[450px] object-cover"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Dots */}
+        <div className="flex justify-center items-center gap-3 mt-6 leading-none">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goToSlide(i)}
+              className={`flex items-center justify-center rounded-full transition-all ${
+                activeIndex === i
+                  ? "w-3 h-3 bg-cyan-600"
+                  : "w-2 h-2 bg-gray-300"
+              }`}
+            />
+          ))}
+        </div>
+
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { display: none; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
+      </div>
+    </section>
+  );
+};
 const Home = () => {
   const [services, setServices] = useState([]);
   const { execute: fetchServices, loading: servicesLoading } = useApi(
-    serviceService.getAllServices
+    serviceService.getAllServices,
   );
   const [hoveredService, setHoveredService] = useState(null);
-  // Home.js के services state और useEffect के बाद ये dummy services add करें:
 
-  // const [services, setServices] = useState([]);
-  // const { execute: fetchServices, loading: servicesLoading } = useApi(
-  // serviceService.getAllServices
-  // );
-
-  // Dummy services for when API doesn't return data
-  const dummyServices = [
-    {
-      _id: "1",
-      title: "Musculoskeletal Physiotherapy",
-      description:
-        "Comprehensive treatment for back pain, neck pain, and joint disorders using evidence-based techniques.",
-      duration: 60,
-      price: "800",
-      category: "musculoskeletal",
-      image:
-        "https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      benefits: [
-        "Pain relief",
-        "Improved mobility",
-        "Strength restoration",
-        "Posture correction",
-      ],
-      featured: true,
-    },
-    {
-      _id: "2",
-      title: "Neurological Rehabilitation",
-      description:
-        "Specialized care for stroke, Parkinson's, and other neurological conditions to improve function.",
-      duration: 45,
-      price: "1200",
-      category: "neurological",
-      image:
-        "https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      benefits: [
-        "Neuroplasticity training",
-        "Balance improvement",
-        "Functional independence",
-      ],
-      featured: true,
-    },
-    {
-      _id: "3",
-      title: "Sports Injury Management",
-      description:
-        "Advanced techniques for athletes including injury prevention, treatment, and performance enhancement.",
-      duration: 60,
-      price: "1500",
-      category: "sports",
-      image:
-        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      benefits: [
-        "Rapid recovery",
-        "Performance optimization",
-        "Injury prevention",
-        "Sport-specific training",
-      ],
-      featured: true,
-    },
-    {
-      _id: "4",
-      title: "Geriatric Physiotherapy",
-      description:
-        "Age-appropriate exercises and treatments to maintain mobility and independence in older adults.",
-      duration: 45,
-      price: "700",
-      category: "geriatric",
-      image:
-        "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      benefits: [
-        "Fall prevention",
-        "Balance training",
-        "Pain management",
-        "Mobility enhancement",
-      ],
-    },
-    {
-      _id: "5",
-      title: "Post-Surgical Rehabilitation",
-      description:
-        "Structured recovery programs for patients after orthopedic and other surgeries.",
-      duration: 60,
-      price: "1000",
-      category: "postoperative",
-      image:
-        "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      benefits: [
-        "Faster recovery",
-        "Reduced complications",
-        "Scar management",
-        "Strength rebuilding",
-      ],
-    },
-    {
-      _id: "6",
-      title: "Pediatric Physiotherapy",
-      description:
-        "Specialized care for children with developmental delays, cerebral palsy, and other conditions.",
-      duration: 45,
-      price: "900",
-      category: "pediatric",
-      image:
-        "https://images.unsplash.com/photo-1524860697450-60a5f14d13b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      benefits: [
-        "Developmental support",
-        "Play-based therapy",
-        "Parent education",
-        "Milestone achievement",
-      ],
-    },
-  ];
-
-  useEffect(() => {
-    const loadServices = async () => {
-      const response = await fetchServices({ featured: "true" });
-      if (response?.data && response.data.length > 0) {
-        setServices(response.data);
-      } else {
-        // Use dummy services if API returns empty
-        setServices(dummyServices);
-      }
-    };
-    loadServices();
-  }, []);
+  // const dummyServices = [
+  //   {
+  //     _id: "1",
+  //     title: "Musculoskeletal Physiotherapy",
+  //     description:
+  //       "Comprehensive treatment for back pain, neck pain, and joint disorders using evidence-based techniques.",
+  //     duration: 60,
+  //     price: "800",
+  //     category: "musculoskeletal",
+  //     image:
+  //       "https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  //     benefits: [
+  //       "Pain relief",
+  //       "Improved mobility",
+  //       "Strength restoration",
+  //       "Posture correction",
+  //     ],
+  //     featured: true,
+  //   },
+  //   {
+  //     _id: "2",
+  //     title: "Neurological Rehabilitation",
+  //     description:
+  //       "Specialized care for stroke, Parkinson's, and other neurological conditions to improve function.",
+  //     duration: 45,
+  //     price: "1200",
+  //     category: "neurological",
+  //     image:
+  //       "https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  //     benefits: [
+  //       "Neuroplasticity training",
+  //       "Balance improvement",
+  //       "Functional independence",
+  //     ],
+  //     featured: true,
+  //   },
+  //   {
+  //     _id: "3",
+  //     title: "Sports Injury Management",
+  //     description:
+  //       "Advanced techniques for athletes including injury prevention, treatment, and performance enhancement.",
+  //     duration: 60,
+  //     price: "1500",
+  //     category: "sports",
+  //     image:
+  //       "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  //     benefits: [
+  //       "Rapid recovery",
+  //       "Performance optimization",
+  //       "Injury prevention",
+  //       "Sport-specific training",
+  //     ],
+  //     featured: true,
+  //   },
+  //   {
+  //     _id: "4",
+  //     title: "Geriatric Physiotherapy",
+  //     description:
+  //       "Age-appropriate exercises and treatments to maintain mobility and independence in older adults.",
+  //     duration: 45,
+  //     price: "700",
+  //     category: "geriatric",
+  //     image:
+  //       "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  //     benefits: [
+  //       "Fall prevention",
+  //       "Balance training",
+  //       "Pain management",
+  //       "Mobility enhancement",
+  //     ],
+  //   },
+  //   {
+  //     _id: "5",
+  //     title: "Post-Surgical Rehabilitation",
+  //     description:
+  //       "Structured recovery programs for patients after orthopedic and other surgeries.",
+  //     duration: 60,
+  //     price: "1000",
+  //     category: "postoperative",
+  //     image:
+  //       "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  //     benefits: [
+  //       "Faster recovery",
+  //       "Reduced complications",
+  //       "Scar management",
+  //       "Strength rebuilding",
+  //     ],
+  //   },
+  //   {
+  //     _id: "6",
+  //     title: "Pediatric Physiotherapy",
+  //     description:
+  //       "Specialized care for children with developmental delays, cerebral palsy, and other conditions.",
+  //     duration: 45,
+  //     price: "900",
+  //     category: "pediatric",
+  //     image:
+  //       "https://images.unsplash.com/photo-1524860697450-60a5f14d13b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  //     benefits: [
+  //       "Developmental support",
+  //       "Play-based therapy",
+  //       "Parent education",
+  //       "Milestone achievement",
+  //     ],
+  //   },
+  // ];
 
   // useEffect(() => {
   //   const loadServices = async () => {
   //     const response = await fetchServices({ featured: "true" });
-  //     if (response?.data) {
+  //     if (response?.data && response.data.length > 0) {
   //       setServices(response.data);
+  //     } else {
+  //       setServices(dummyServices);
   //     }
   //   };
   //   loadServices();
   // }, []);
+
+  useEffect(() => {
+    const loadServices = async () => {
+      const response = await fetchServices({ featured: "true" });
+      if (response?.data) {
+        setServices(response.data);
+      }
+    };
+    loadServices();
+  }, []);
 
   const testimonials = [
     {
@@ -228,7 +341,7 @@ const Home = () => {
   const stats = [
     {
       icon: <FaUserMd className="text-4xl" />,
-      value: "5000+",
+      value: "1000+",
       label: "Patients Treated",
       description: "Successful recoveries",
     },
@@ -240,7 +353,7 @@ const Home = () => {
     },
     {
       icon: <FaCheckCircle className="text-4xl" />,
-      value: "98%",
+      value: "100%",
       label: "Success Rate",
       description: "Patient satisfaction",
     },
@@ -252,9 +365,9 @@ const Home = () => {
     },
     {
       icon: <FaStethoscope className="text-4xl" />,
-      value: "20+",
-      label: "Certified Specialists",
-      description: "Expert medical team",
+      value: "10+",
+      label: "Latest Technologies",
+      description: "Modern medical equipment",
     },
   ];
 
@@ -263,6 +376,7 @@ const Home = () => {
       icon: <FaHeartbeat />,
       name: "Back & Neck Pain",
       color: "bg-red-100 text-red-600",
+      hoverColor: "bg-red-100 text-red-600",
     },
     {
       icon: <FaWalking />,
@@ -342,8 +456,9 @@ const Home = () => {
           content="physiotherapy, pain relief, rehabilitation, sports injury, back pain, neck pain, joint pain"
         />
       </Helmet>
-      {/* Hero Section with Medical Background */}
-      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-cyan-50 via-white to-cyan-50 pt-6 md:pt-10">
+
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-cyan-50 via-white to-cyan-50 pt-6 md:pt-4">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -354,7 +469,7 @@ const Home = () => {
             >
               <div className="inline-flex items-center space-x-2 bg-cyan-100 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold mb-3">
                 <FaStethoscope />
-                <span>Advanced Medical Care</span>
+                <span>Advanced Physiotherapy Center</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-800/90 mb-6 leading-tight">
@@ -370,7 +485,8 @@ const Home = () => {
                 to restoring your mobility and improving your quality of life.
               </p>
 
-              <div className="flex flex-col items-center justify-center sm:flex-row gap-4 mb-10">
+              <div className="flex flex-col items-center justify-start sm:flex-row gap-6 lg:gap-24 mb-10 w-full">
+                {/* Book Consultation */}
                 <Link to="/appointment" className="w-full sm:w-auto">
                   <Button
                     size="lg"
@@ -383,63 +499,40 @@ const Home = () => {
                   </Button>
                 </Link>
 
-                <div className="flex gap-4 justify-center sm:justify-start">
-                  <a href={`tel:${CLINIC_INFO.PHONE_FULL}`} className="group">
-                    <div
-                      className="flex items-center space-x-2 bg-white/70 backdrop-blur-md
-                      border border-red-100/60
-                      shadow-lg py-1.5 px-3 rounded-lg text-red-600 hover:text-red-700 transition-all duration-300"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors">
-                        <FaPhoneAlt />
-                      </div>
-
-                      <div className="text-left">
-                        <div className="text-xs font-semibold ml-1">
-                          Emergency Call
-                        </div>
-
-                        {/* Desktop / Laptop */}
-                        <div className="hidden md:block font-bold">
-                          {CLINIC_INFO.PHONE_FULL}
-                        </div>
-
-                        {/* Mobile */}
-                        <div className="block md:hidden font-bold">
-                          {CLINIC_INFO.PHONE_MOBILE}
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-
-                  <a
-                    href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group"
+                {/* WhatsApp */}
+                <a
+                  href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group w-full sm:w-auto"
+                >
+                  <div
+                    className="
+                        flex items-center 
+                        w-full sm:w-auto
+                        space-x-2 
+                        text-white bg-green-500 backdrop-blur-md
+                        border border-green-100/60
+                        shadow-lg py-1.5 px-4 rounded-lg 
+                        hover:text-green-700 
+                        transition-all duration-300
+                        justify-center sm:justify-start
+                      "
                   >
-                    <div
-                      className="flex items-center space-x-2 text-green-600 bg-white/70 backdrop-blur-md
-                      border border-green-100/60
-                      shadow-lg py-1.5 px-3 rounded-lg hover:text-green-700 transition-all duration-300"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-green-100  flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                        <FaWhatsapp />
-                      </div>
-                      <div className="text-left">
-                        <div className="text-xs font-semibold">
-                          24/7 Support
-                        </div>
-                        <div className="font-bold">WhatsApp</div>
-                      </div>
+                    <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                      <FaWhatsapp size={25} />
                     </div>
-                  </a>
-                </div>
+                    <div className="text-left">
+                      <div className="text-xs font-semibold">24/7 Support</div>
+                      <div className="font-bold">WhatsApp</div>
+                    </div>
+                  </div>
+                </a>
               </div>
 
               {/* Conditions We Treat */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">
                   Conditions We Treat:
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -449,7 +542,7 @@ const Home = () => {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: index * 0.1 }}
-                      className={`${condition.color} px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2`}
+                      className={`${condition.color} px-4 py-2 rounded-full text-md font-medium flex items-center space-x-2 hover:${condition.hoverColor}`}
                     >
                       {condition.icon}
                       <span>{condition.name}</span>
@@ -507,15 +600,15 @@ const Home = () => {
                 <div className="flex items-center space-x-4">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white/30">
                     <img
-                      src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                      src={astha}
                       alt="Dr. Arjun Mehta"
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold">Dr. Arjun Mehta</h4>
+                    <h4 className="text-xl font-bold">Dr. Akansha Bhuradia</h4>
                     <p className="text-cyan-100">
-                      Head Physiotherapist & Director
+                      Specialist in Manual Therapy
                     </p>
                     <div className="flex items-center space-x-2 mt-2">
                       {[1, 2, 3, 4, 5].map((star) => (
@@ -528,9 +621,7 @@ const Home = () => {
                   </div>
                 </div>
                 <p className="mt-4 text-cyan-50">
-                  "With over 15 years of experience in sports medicine and
-                  rehabilitation, we're committed to providing evidence-based
-                  care for optimal recovery."
+                  "BPT, MPT (Sports). Osteopathy & Chiropractic Care. Certified FNMT, CDNT & Pelvic Floor Therapist. Expert in Yoga & Pilates Rehabilitation."
                 </p>
               </motion.div>
             </motion.div>
@@ -538,11 +629,14 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Image Gallery Slider Section */}
+      <ImageGallerySlider />
+
       {/* Stats Section */}
       <section className="py-16 md:py-20 bg-white border-b">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-800/90 mb-8">
+            <h2 className="text-4xl md:text-6xl font-bold text-gray-900/90 mb-8">
               Trusted By Thousands of Patients
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -745,6 +839,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+
       {/* Emergency CTA Section */}
       <section className="py-16 md:py-20 bg-gradient-to-r from-cyan-600 to-cyan-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -769,7 +864,7 @@ const Home = () => {
                   </div>
 
                   <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                    Immediate Medical Attention When You Need It
+                    Immediate Medical Attention When You Need
                   </h2>
 
                   <p className="text-cyan-100 mb-8 text-lg">
@@ -915,9 +1010,7 @@ const Home = () => {
                     </div>
 
                     <div className="text-center text-sm text-gray-500">
-                      <p>
-                        Our emergency team will contact you within 10 minutes
-                      </p>
+                      <p>Our emergency team will contact you within minutes</p>
                     </div>
                   </div>
                 </div>
@@ -1226,9 +1319,7 @@ const Home = () => {
                             <FaPhoneAlt className="text-lg" />
                           </div>
                           <div>
-                            <h4 className="text-xs">
-                              Phone Consultation
-                            </h4>
+                            <h4 className="text-xs">Phone Consultation</h4>
                             <a
                               href={`tel:${CLINIC_INFO.phone}`}
                               className="text-sm md:text-md semi-bold hover:text-cyan-100"
@@ -1245,9 +1336,7 @@ const Home = () => {
                             <FaWhatsapp className="text-lg" />
                           </div>
                           <div>
-                            <h4 className="text-xs">
-                              WhatsApp Support
-                            </h4>
+                            <h4 className="text-xs">WhatsApp Support</h4>
                             <a
                               href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
                               target="_blank"

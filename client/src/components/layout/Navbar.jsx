@@ -48,7 +48,7 @@ const Navbar = () => {
     {
       id: "phone",
       icon: <FaPhoneAlt />,
-      text: CLINIC_INFO.phone,
+      text: CLINIC_INFO.PHONE_FULL,
       href: `tel:${CLINIC_INFO.phone}`,
       color: "text-[#0077B6]", // Medical Teal cyan
       hoverColor: "text-[#005B8D]",
@@ -96,10 +96,10 @@ const Navbar = () => {
 
               <div>
                 <div className="hidden items-center space-x-1 sm:flex">
-                  <h1 className="text-xl md:text-3xl font-bold text-[#0077B6]">
-                    MEDIHOPE
+                  <h1 className="text-xl md:text-3xl font-bold text-primary-500/90">
+                    Medihope
                   </h1>
-                  <FaStethoscope className="text-[#0077B6] text-lg" />
+                  {/* <FaStethoscope className="text-[#0077B6] text-lg" /> */}
                 </div>
               </div>
             </div>
@@ -195,7 +195,7 @@ const Navbar = () => {
                     </span>
                   </div>
                   <Button
-                    size="sm"
+                    size="md"
                     className="bg-[#0077B6] hover:bg-[#005B8D] text-white"
                     onClick={() =>
                       navigate(user?.role === "admin" ? "/admin" : "/profile")
@@ -205,7 +205,7 @@ const Navbar = () => {
                   </Button>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="md"
                     className="border-[#0077B6] text-[#0077B6] hover:bg-[#0077B6]/10"
                     onClick={logout}
                   >
@@ -216,14 +216,14 @@ const Navbar = () => {
                 <>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="md"
                     className="border-[#0077B6] text-[#0077B6] hover:bg-[#0077B6]/10"
                     onClick={() => navigate("/login")}
                   >
                     Login
                   </Button>
                   <Button
-                    size="sm"
+                    size="md"
                     className="bg-[#0077B6] hover:bg-[#005B8D] text-white"
                     onClick={() => navigate("/register")}
                   >
