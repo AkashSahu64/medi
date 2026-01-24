@@ -320,7 +320,7 @@ const AdminDashboard = () => {
               {location.pathname === '/admin' ? (
                 <>
                   {/* Stats Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-4">
                     {statsCards.map((stat, index) => (
                       <motion.div
                         key={index}
@@ -331,7 +331,7 @@ const AdminDashboard = () => {
                       >
                         <Link to={stat.link}>
                           <div className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center justify-between mb-3">
                               <div className={`p-3 rounded-lg ${stat.color} text-white`}>
                                 {stat.icon}
                               </div>
@@ -339,7 +339,7 @@ const AdminDashboard = () => {
                                 {stat.change}
                               </span>
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                            <h3 className="text-2xl font-bold text-gray-900">
                               {stat.value}
                             </h3>
                             <p className="text-sm text-gray-600">{stat.title}</p>
@@ -356,8 +356,8 @@ const AdminDashboard = () => {
                       animate={{ opacity: 1, x: 0 }}
                       className="lg:col-span-2"
                     >
-                      <div className="bg-white rounded-xl shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-6">
+                      <div className="bg-white rounded-xl shadow-sm p-3">
+                        <div className="flex items-center justify-between mb-4">
                           <h2 className="text-lg font-semibold text-gray-900">
                             Recent Appointments
                           </h2>

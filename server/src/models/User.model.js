@@ -21,30 +21,47 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    match: [/^[0-9]{10}$/, 'Please provide a valid phone number'],
+    trim: true,
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'therapist'],
     default: 'user',
+  },
+  status: {
+    type: String,
+    enum: ['active', 'inactive', 'suspended'],
+    default: 'active',
   },
   googleId: {
     type: String,
   },
   avatar: {
     type: String,
+    default: 'https://ui-avatars.com/api/?name=Unknown&background=random',
+  },
+  appointments: {
+    type: Number,
+    default: 0,
   },
   isVerified: {
     type: Boolean,
     default: false,
   },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
-  createdAt: {
+  lastActive: {
     type: Date,
     default: Date.now,
   },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
+}, {
+  timestamps: true,
 });
+
+// Add indexes for filtering
+userSchema.index({ role: 1, status: 1 });
+userSchema.index({ email: 1 });
+userSchema.index({ status: 1 });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {
@@ -59,6 +76,24 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
+
+// Virtual for joinedAt (createdAt formatted)
+userSchema.virtual('joinedAtFormatted').get(function() {
+  return this.createdAt.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+});
+
+// Virtual for lastActive formatted
+userSchema.virtual('lastActiveFormatted').get(function() {
+  return this.lastActive.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+});
 
 const User = mongoose.model('User', userSchema);
 export default User;

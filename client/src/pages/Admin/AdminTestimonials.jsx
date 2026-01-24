@@ -260,7 +260,7 @@ const AdminTestimonials = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl shadow-sm p-3">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -275,7 +275,7 @@ const AdminTestimonials = () => {
                   placeholder="Search testimonials..."
                   value={filters.search}
                   onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                 />
               </div>
             </div>
@@ -287,7 +287,7 @@ const AdminTestimonials = () => {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               >
                 <option value="all">All Status</option>
                 <option value="approved">Approved</option>
@@ -302,7 +302,7 @@ const AdminTestimonials = () => {
               <select
                 value={filters.featured}
                 onChange={(e) => setFilters({ ...filters, featured: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               >
                 <option value="all">All</option>
                 <option value="featured">Featured</option>
@@ -310,7 +310,7 @@ const AdminTestimonials = () => {
               </select>
             </div>
 
-            <div className="flex items-end">
+            <div className="flex items-end my-1.5">
               <Button
                 variant="secondary"
                 onClick={() => setFilters({ search: '', status: 'all', featured: 'all' })}
@@ -516,8 +516,8 @@ const AdminTestimonials = () => {
         title={modalType === 'create' ? 'Add New Testimonial' : 'Edit Testimonial'}
         size="lg"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 px-4 md:px-6 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <Input
               label="Patient Name"
               type="text"
@@ -574,7 +574,7 @@ const AdminTestimonials = () => {
                   key={star}
                   type="button"
                   onClick={() => reset({ ...watch(), rating: star })}
-                  className="text-2xl focus:outline-none"
+                  className="text-2xl outline-none focus:outline-none hover:scale-110 transition-transform"
                 >
                   <FaStar
                     className={`${star <= watch('rating') ? 'text-yellow-500' : 'text-gray-300'}`}
@@ -598,7 +598,9 @@ const AdminTestimonials = () => {
             <textarea
               rows={4}
               placeholder="Enter the testimonial content..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg
+focus:ring-2 focus:ring-primary-500 focus:border-transparent
+outline-none focus:outline-none resize-none"
               {...register('content', {
                 required: 'Content is required',
                 minLength: {
@@ -620,7 +622,7 @@ const AdminTestimonials = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="isApproved"

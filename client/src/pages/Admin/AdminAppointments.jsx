@@ -182,7 +182,7 @@ const AdminAppointments = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl shadow-sm p-3">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -241,7 +241,7 @@ const AdminAppointments = () => {
               />
             </div>
 
-            <div className="flex items-end">
+            <div className="flex items-end my-1.5">
               <Button
                 variant="secondary"
                 onClick={() =>
@@ -556,7 +556,7 @@ const AdminAppointments = () => {
 
         {/* Edit/Create Appointment Form */}
         {(modalType === "edit" || modalType === "create") && (
-          <div className="px-6 sm:px-8 py-4 max-w-3xl mx-auto space-y-5">
+          <div className="px-6 sm:px-8 max-w-3xl mx-auto space-y-2 pb-4">
             <Input
               label="Patient Name"
               type="text"

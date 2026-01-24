@@ -185,7 +185,7 @@ const AdminServices = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl shadow-sm p-3">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -200,7 +200,7 @@ const AdminServices = () => {
                   placeholder="Search by title or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                 />
               </div>
             </div>
@@ -212,7 +212,7 @@ const AdminServices = () => {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               >
                 {categories.map(category => (
                   <option key={category.value} value={category.value}>
@@ -222,7 +222,7 @@ const AdminServices = () => {
               </select>
             </div>
 
-            <div className="flex items-end">
+            <div className="flex items-end py-1">
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -368,7 +368,7 @@ const AdminServices = () => {
         title={modalType === 'create' ? 'Add New Service' : 'Edit Service'}
         size="lg"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2 px-4 md:px-6 pb-4">
           <Input
             label="Service Title"
             type="text"
@@ -405,13 +405,13 @@ const AdminServices = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Category
               </label>
               <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none focus:outline-none"
                 {...register('category', { required: 'Category is required' })}
               >
                 {Object.entries(SERVICE_CATEGORIES).map(([key, value]) => (
@@ -483,7 +483,7 @@ const AdminServices = () => {
             </p>
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <input
               type="checkbox"
               id="featured"

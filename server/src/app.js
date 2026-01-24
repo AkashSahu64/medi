@@ -12,6 +12,7 @@ import appointmentRoutes from './routes/appointment.routes.js';
 import serviceRoutes from './routes/service.routes.js';
 import contactRoutes from './routes/contact.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import userRoutes from './routes/user.routes.js';
 
 const app = express();
 
@@ -72,6 +73,7 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/users', userRoutes);
 
 /* ================= HEALTH CHECK ================= */
 app.get('/api/health', (req, res) => {
