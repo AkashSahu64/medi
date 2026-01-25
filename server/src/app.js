@@ -14,6 +14,7 @@ import contactRoutes from './routes/contact.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import userRoutes from './routes/user.routes.js';
 import galleryRoutes from './routes/gallery.routes.js';
+import testimonialRoutes from './routes/testimonials.routes.js';
 
 const app = express();
 
@@ -76,6 +77,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/gallery', galleryRoutes);
+app.use('/api/testimonials', testimonialRoutes);
 
 /* ================= HEALTH CHECK ================= */
 app.get('/api/health', (req, res) => {

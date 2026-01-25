@@ -19,61 +19,11 @@ import {
   FaCalendar,
   FaImage,
   FaEye,
-  FaEyeSlash
+  FaEyeSlash,
+  FaSpinner
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-
-// Mock testimonials data (in real app, you'd fetch from API)
-const MOCK_TESTIMONIALS = [
-  {
-    _id: '1',
-    patientName: 'Rajesh Kumar',
-    patientAge: 45,
-    condition: 'Chronic Back Pain',
-    content: 'After 6 months of suffering, MEDIHOPE gave me my life back. Their personalized treatment plan worked wonders!',
-    rating: 5,
-    image: 'https://randomuser.me/api/portraits/men/32.jpg',
-    isApproved: true,
-    createdAt: '2024-01-15',
-    featured: true
-  },
-  {
-    _id: '2',
-    patientName: 'Priya Sharma',
-    patientAge: 38,
-    condition: 'Sports Injury',
-    content: 'Professional care and state-of-the-art equipment helped me recover faster than expected. Highly recommended!',
-    rating: 5,
-    image: 'https://randomuser.me/api/portraits/women/44.jpg',
-    isApproved: true,
-    createdAt: '2024-01-20',
-    featured: true
-  },
-  {
-    _id: '3',
-    patientName: 'Suresh Patel',
-    patientAge: 62,
-    condition: 'Arthritis Management',
-    content: 'The therapists are knowledgeable and caring. My mobility has improved significantly in just 8 weeks.',
-    rating: 4,
-    image: 'https://randomuser.me/api/portraits/men/65.jpg',
-    isApproved: false,
-    createdAt: '2024-01-25',
-    featured: false
-  },
-  {
-    _id: '4',
-    patientName: 'Anjali Verma',
-    patientAge: 28,
-    condition: 'Post-Accident Rehabilitation',
-    content: 'Excellent care and support throughout my recovery journey. The team was always available for questions.',
-    rating: 5,
-    image: 'https://randomuser.me/api/portraits/women/22.jpg',
-    isApproved: true,
-    createdAt: '2024-01-28',
-    featured: false
-  }
-];
+import { testimonialService } from '../../services/testimonial.service';
 
 const AdminTestimonials = () => {
   const [testimonials, setTestimonials] = useState([]);
@@ -82,6 +32,14 @@ const AdminTestimonials = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTestimonial, setSelectedTestimonial] = useState(null);
   const [modalType, setModalType] = useState('create');
+  const [submitting, setSubmitting] = useState(false);
+  const [stats, setStats] = useState({
+    totalTestimonials: 0,
+    approvedTestimonials: 0,
+    pendingTestimonials: 0,
+    featuredTestimonials: 0
+  });
+
   const [filters, setFilters] = useState({
     search: '',
     status: 'all', // all, approved, pending
@@ -93,25 +51,54 @@ const AdminTestimonials = () => {
     handleSubmit, 
     formState: { errors },
     reset,
-    watch
+    watch,
+    setValue
   } = useForm();
 
   useEffect(() => {
     loadTestimonials();
+    loadStats();
   }, []);
 
   useEffect(() => {
     filterTestimonials();
   }, [filters, testimonials]);
 
-  const loadTestimonials = () => {
+  const loadTestimonials = async () => {
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setTestimonials(MOCK_TESTIMONIALS);
-      setFilteredTestimonials(MOCK_TESTIMONIALS);
+    try {
+      console.log("🔄 Loading testimonials...");
+      
+      const response = await testimonialService.getTestimonials({
+        search: filters.search || undefined,
+        status: filters.status !== 'all' ? filters.status : undefined,
+        featured: filters.featured !== 'all' ? filters.featured : undefined,
+      });
+      
+      console.log("✅ Testimonials loaded:", response.data?.length || 0, "items");
+      
+      if (response.data) {
+        setTestimonials(response.data);
+        setFilteredTestimonials(response.data);
+      } else {
+        console.error("❌ No data in response:", response);
+        toast.error("No testimonial data received");
+      }
+    } catch (error) {
+      console.error("❌ Failed to load testimonials:", error);
+      toast.error("Failed to load testimonials");
+    } finally {
       setLoading(false);
-    }, 500);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const response = await testimonialService.getTestimonialStats();
+      setStats(response.data);
+    } catch (error) {
+      console.error("Failed to load stats:", error);
+    }
   };
 
   const filterTestimonials = () => {
@@ -174,57 +161,92 @@ const AdminTestimonials = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this testimonial?')) {
-      const updated = testimonials.filter(t => t._id !== id);
-      setTestimonials(updated);
-      toast.success('Testimonial deleted successfully');
+      try {
+        await testimonialService.deleteTestimonial(id);
+        
+        // Update local state
+        const updated = testimonials.filter(t => t._id !== id);
+        setTestimonials(updated);
+        
+        toast.success('Testimonial deleted successfully');
+        loadStats();
+      } catch (error) {
+        console.error("Failed to delete testimonial:", error);
+        toast.error("Failed to delete testimonial");
+      }
     }
   };
 
-  const handleApprove = (id, approve = true) => {
-    const updated = testimonials.map(t =>
-      t._id === id ? { ...t, isApproved: approve } : t
-    );
-    setTestimonials(updated);
-    toast.success(`Testimonial ${approve ? 'approved' : 'rejected'} successfully`);
-  };
-
-  const handleToggleFeatured = (id) => {
-    const updated = testimonials.map(t =>
-      t._id === id ? { ...t, featured: !t.featured } : t
-    );
-    setTestimonials(updated);
-    toast.success('Featured status updated');
-  };
-
-  const onSubmit = (data) => {
-    if (modalType === 'create') {
-      const newTestimonial = {
-        _id: Date.now().toString(),
-        ...data,
-        patientAge: parseInt(data.patientAge),
-        rating: parseInt(data.rating),
-        image: 'https://randomuser.me/api/portraits/lego/1.jpg',
-        createdAt: new Date().toISOString().split('T')[0]
-      };
-      setTestimonials([newTestimonial, ...testimonials]);
-      toast.success('Testimonial added successfully');
-    } else {
+  const handleApprove = async (id, approve = true) => {
+    try {
+      await testimonialService.approveTestimonial(id, approve);
+      
+      // Update local state
       const updated = testimonials.map(t =>
-        t._id === selectedTestimonial._id 
-          ? { 
-              ...t, 
-              ...data,
-              patientAge: parseInt(data.patientAge),
-              rating: parseInt(data.rating)
-            }
-          : t
+        t._id === id ? { ...t, isApproved: approve } : t
       );
       setTestimonials(updated);
-      toast.success('Testimonial updated successfully');
+      
+      toast.success(`Testimonial ${approve ? 'approved' : 'rejected'} successfully`);
+      loadStats();
+    } catch (error) {
+      console.error("Failed to approve/reject testimonial:", error);
+      toast.error("Failed to update testimonial status");
     }
-    setIsModalOpen(false);
+  };
+
+  const handleToggleFeatured = async (id, currentFeatured) => {
+    try {
+      await testimonialService.toggleFeatured(id, !currentFeatured);
+      
+      // Update local state
+      const updated = testimonials.map(t =>
+        t._id === id ? { ...t, featured: !currentFeatured } : t
+      );
+      setTestimonials(updated);
+      
+      toast.success('Featured status updated');
+      loadStats();
+    } catch (error) {
+      console.error("Failed to update featured status:", error);
+      toast.error("Failed to update featured status");
+    }
+  };
+
+  const onSubmit = async (data) => {
+    setSubmitting(true);
+    
+    try {
+      if (modalType === 'create') {
+        const response = await testimonialService.createTestimonial(data);
+        
+        // Add new testimonial to the list
+        setTestimonials([response.data, ...testimonials]);
+        
+        toast.success(response.message || 'Testimonial added successfully');
+        loadStats();
+      } else {
+        const response = await testimonialService.updateTestimonial(selectedTestimonial._id, data);
+        
+        // Update local state
+        const updated = testimonials.map(t =>
+          t._id === selectedTestimonial._id ? response.data : t
+        );
+        setTestimonials(updated);
+        
+        toast.success(response.message || 'Testimonial updated successfully');
+      }
+      
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("❌ Failed to save testimonial:", error);
+      const errorMessage = error.response?.data?.message || "Failed to save testimonial";
+      toast.error(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const renderStars = (rating) => {
@@ -246,7 +268,7 @@ const AdminTestimonials = () => {
         <title>Testimonials Management | MEDIHOPE Admin</title>
       </Helmet>
 
-      <div className="space-y-6">
+      <div className="space-y-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -259,8 +281,51 @@ const AdminTestimonials = () => {
           </Button>
         </div>
 
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Testimonials</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalTestimonials}</p>
+              </div>
+              <div className="p-3 bg-cyan-100 text-cyan-600 rounded-lg">
+                <FaUser className="text-xl" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Pending Approval</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.pendingTestimonials}
+                </p>
+              </div>
+              <div className="p-3 bg-yellow-100 text-yellow-600 rounded-lg">
+                <FaTimes className="text-xl" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Featured</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.featuredTestimonials}
+                </p>
+              </div>
+              <div className="p-3 bg-purple-100 text-purple-600 rounded-lg">
+                <FaStar className="text-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-3">
+        <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -274,7 +339,10 @@ const AdminTestimonials = () => {
                   type="text"
                   placeholder="Search testimonials..."
                   value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  onChange={(e) => {
+                    setFilters({ ...filters, search: e.target.value });
+                    loadTestimonials(); // Fetch from backend with search
+                  }}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                 />
               </div>
@@ -286,7 +354,10 @@ const AdminTestimonials = () => {
               </label>
               <select
                 value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                onChange={(e) => {
+                  setFilters({ ...filters, status: e.target.value });
+                  loadTestimonials(); // Fetch from backend with status filter
+                }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               >
                 <option value="all">All Status</option>
@@ -301,7 +372,10 @@ const AdminTestimonials = () => {
               </label>
               <select
                 value={filters.featured}
-                onChange={(e) => setFilters({ ...filters, featured: e.target.value })}
+                onChange={(e) => {
+                  setFilters({ ...filters, featured: e.target.value });
+                  loadTestimonials(); // Fetch from backend with featured filter
+                }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               >
                 <option value="all">All</option>
@@ -313,7 +387,10 @@ const AdminTestimonials = () => {
             <div className="flex items-end my-1.5">
               <Button
                 variant="secondary"
-                onClick={() => setFilters({ search: '', status: 'all', featured: 'all' })}
+                onClick={() => {
+                  setFilters({ search: '', status: 'all', featured: 'all' });
+                  loadTestimonials();
+                }}
                 fullWidth
               >
                 <FaFilter className="mr-2" />
@@ -357,11 +434,15 @@ const AdminTestimonials = () => {
                 <div className="p-6 border-b border-gray-200">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center">
-                      <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
+                      <div className="w-12 h-12 rounded-full overflow-hidden mr-4 bg-gray-200">
                         <img
                           src={testimonial.image}
                           alt={testimonial.patientName}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.patientName)}&background=random`;
+                          }}
                         />
                       </div>
                       <div>
@@ -409,7 +490,7 @@ const AdminTestimonials = () => {
                   {/* Date */}
                   <div className="mt-4 flex items-center text-sm text-gray-500">
                     <FaCalendar className="mr-2" />
-                    {testimonial.createdAt}
+                    {new Date(testimonial.createdAt).toLocaleDateString()}
                   </div>
                 </div>
 
@@ -451,7 +532,7 @@ const AdminTestimonials = () => {
                         <FaTimes />
                       </button>
                       <button
-                        onClick={() => handleToggleFeatured(testimonial._id)}
+                        onClick={() => handleToggleFeatured(testimonial._id, testimonial.featured)}
                         className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg"
                         title={testimonial.featured ? 'Remove from featured' : 'Mark as featured'}
                       >
@@ -464,49 +545,6 @@ const AdminTestimonials = () => {
             ))}
           </div>
         )}
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Testimonials</p>
-                <p className="text-2xl font-bold text-gray-900">{testimonials.length}</p>
-              </div>
-              <div className="p-3 bg-cyan-100 text-cyan-600 rounded-lg">
-                <FaUser className="text-xl" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Pending Approval</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {testimonials.filter(t => !t.isApproved).length}
-                </p>
-              </div>
-              <div className="p-3 bg-yellow-100 text-yellow-600 rounded-lg">
-                <FaTimes className="text-xl" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Featured</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {testimonials.filter(t => t.featured).length}
-                </p>
-              </div>
-              <div className="p-3 bg-purple-100 text-purple-600 rounded-lg">
-                <FaStar className="text-xl" />
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Testimonial Modal */}
@@ -573,7 +611,7 @@ const AdminTestimonials = () => {
                 <button
                   key={star}
                   type="button"
-                  onClick={() => reset({ ...watch(), rating: star })}
+                  onClick={() => setValue('rating', star)}
                   className="text-2xl outline-none focus:outline-none hover:scale-110 transition-transform"
                 >
                   <FaStar
@@ -608,8 +646,8 @@ outline-none focus:outline-none resize-none"
                   message: 'Content must be at least 20 characters'
                 },
                 maxLength: {
-                  value: 500,
-                  message: 'Content cannot exceed 500 characters'
+                  value: 1000,
+                  message: 'Content cannot exceed 1000 characters'
                 }
               })}
             />
@@ -617,7 +655,7 @@ outline-none focus:outline-none resize-none"
               <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
             )}
             <p className="mt-1 text-sm text-gray-500">
-              {watch('content')?.length || 0}/500 characters
+              {watch('content')?.length || 0}/1000 characters
             </p>
           </div>
 
@@ -652,10 +690,11 @@ outline-none focus:outline-none resize-none"
               variant="outline"
               type="button"
               onClick={() => setIsModalOpen(false)}
+              disabled={submitting}
             >
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" loading={submitting}>
               {modalType === 'create' ? 'Add Testimonial' : 'Update Testimonial'}
             </Button>
           </div>

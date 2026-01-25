@@ -3,7 +3,6 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { serviceService } from '../../services/service.service';
-import { useApi } from '../../hooks/useApi';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Modal from '../../components/common/Modal';
@@ -19,75 +18,75 @@ import {
   FaRupeeSign,
   FaStar,
   FaCheck,
-  FaTimes
+  FaTimes,
+  FaSync,
+  FaSpinner
 } from 'react-icons/fa';
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } from '../../utils/constants';
 import toast from 'react-hot-toast';
 
 const AdminServices = () => {
   const [services, setServices] = useState([]);
-  const [filteredServices, setFilteredServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
   const [modalType, setModalType] = useState('create');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [submitting, setSubmitting] = useState(false);
 
-  const { execute: fetchServices } = useApi(serviceService.getAllServices);
-  const { execute: createService } = useApi(serviceService.createService);
-  const { execute: updateService } = useApi(serviceService.updateService);
-  const { execute: deleteService } = useApi(serviceService.deleteService);
+  const [filters, setFilters] = useState({
+    search: '',
+    category: 'all',
+    isActive: 'all',
+    featured: 'all'
+  });
 
   const { 
     register, 
     handleSubmit, 
     formState: { errors },
     reset,
-    watch
+    watch,
+    setValue
   } = useForm();
 
   useEffect(() => {
     loadServices();
   }, []);
 
-  useEffect(() => {
-    filterServices();
-  }, [searchTerm, selectedCategory, services]);
-
   const loadServices = async () => {
     setLoading(true);
     try {
-      const response = await fetchServices();
-      if (response?.data) {
+      console.log('🔄 Loading services with filters:', filters);
+      
+      const response = await serviceService.getAllServicesForAdmin({
+        search: filters.search || undefined,
+        category: filters.category !== 'all' ? filters.category : undefined,
+        isActive: filters.isActive !== 'all' ? filters.isActive : undefined,
+        featured: filters.featured !== 'all' ? filters.featured : undefined
+      });
+      
+      console.log('✅ Services loaded:', response);
+      
+      if (response.success && response.data) {
         setServices(response.data);
-        setFilteredServices(response.data);
+      } else {
+        console.error('❌ Failed to load services:', response.message);
+        toast.error(response.message || 'Failed to load services');
       }
     } catch (error) {
-      console.error('Error loading services:', error);
+      console.error('❌ Error loading services:', error);
+      toast.error('Failed to load services');
     } finally {
       setLoading(false);
     }
   };
 
-  const filterServices = () => {
-    let filtered = [...services];
-
-    // Filter by search term
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(service =>
-        service.title.toLowerCase().includes(term) ||
-        service.description.toLowerCase().includes(term)
-      );
-    }
-
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(service => service.category === selectedCategory);
-    }
-
-    setFilteredServices(filtered);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadServices();
+    setRefreshing(false);
+    toast.success('Services refreshed');
   };
 
   const handleCreate = () => {
@@ -99,7 +98,7 @@ const AdminServices = () => {
       category: SERVICE_CATEGORIES.MUSCULOSKELETAL,
       duration: 30,
       price: '',
-      benefits: [''],
+      benefits: '',
       featured: false,
       isActive: true
     });
@@ -115,7 +114,7 @@ const AdminServices = () => {
       category: service.category,
       duration: service.duration,
       price: service.price,
-      benefits: service.benefits,
+      benefits: service.benefits?.join('\n') || '',
       featured: service.featured,
       isActive: service.isActive
     });
@@ -123,12 +122,19 @@ const AdminServices = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this service?')) {
+    if (window.confirm('Are you sure you want to delete this service permanently?')) {
       try {
-        await deleteService(id);
-        toast.success('Service deleted successfully');
-        loadServices();
+        const response = await serviceService.deleteService(id);
+        
+        if (response.success) {
+          // Remove from local state
+          setServices(services.filter(s => s._id !== id));
+          toast.success(response.message || 'Service deleted successfully');
+        } else {
+          toast.error(response.message || 'Failed to delete service');
+        }
       } catch (error) {
+        console.error('Error deleting service:', error);
         toast.error('Failed to delete service');
       }
     }
@@ -136,27 +142,85 @@ const AdminServices = () => {
 
   const handleStatusToggle = async (service) => {
     try {
-      await updateService(service._id, { isActive: !service.isActive });
-      toast.success(`Service ${!service.isActive ? 'activated' : 'deactivated'}`);
-      loadServices();
+      const response = await serviceService.updateService(service._id, {
+        isActive: !service.isActive
+      });
+      
+      if (response.success) {
+        // Update local state
+        const updated = services.map(s =>
+          s._id === service._id ? { ...s, isActive: !service.isActive } : s
+        );
+        setServices(updated);
+        
+        toast.success(`Service ${!service.isActive ? 'activated' : 'deactivated'}`);
+      } else {
+        toast.error(response.message || 'Failed to update service status');
+      }
     } catch (error) {
+      console.error('Error updating service status:', error);
       toast.error('Failed to update service status');
     }
   };
 
+  const handleFeaturedToggle = async (service) => {
+    try {
+      const response = await serviceService.updateService(service._id, {
+        featured: !service.featured
+      });
+      
+      if (response.success) {
+        // Update local state
+        const updated = services.map(s =>
+          s._id === service._id ? { ...s, featured: !service.featured } : s
+        );
+        setServices(updated);
+        
+        toast.success(`Service ${!service.featured ? 'marked as featured' : 'removed from featured'}`);
+      } else {
+        toast.error(response.message || 'Failed to update featured status');
+      }
+    } catch (error) {
+      console.error('Error updating featured status:', error);
+      toast.error('Failed to update featured status');
+    }
+  };
+
   const onSubmit = async (data) => {
+    setSubmitting(true);
+    
     try {
       if (modalType === 'create') {
-        await createService(data);
-        toast.success('Service created successfully');
+        const response = await serviceService.createService(data);
+        
+        if (response.success) {
+          // Add new service to the list
+          setServices([response.data, ...services]);
+          toast.success(response.message || 'Service created successfully');
+          setIsModalOpen(false);
+        } else {
+          toast.error(response.message || 'Failed to create service');
+        }
       } else {
-        await updateService(selectedService._id, data);
-        toast.success('Service updated successfully');
+        const response = await serviceService.updateService(selectedService._id, data);
+        
+        if (response.success) {
+          // Update local state
+          const updated = services.map(s =>
+            s._id === selectedService._id ? response.data : s
+          );
+          setServices(updated);
+          toast.success(response.message || 'Service updated successfully');
+          setIsModalOpen(false);
+        } else {
+          toast.error(response.message || 'Failed to update service');
+        }
       }
-      setIsModalOpen(false);
-      loadServices();
     } catch (error) {
-      toast.error(`Failed to ${modalType} service`);
+      console.error('Error saving service:', error);
+      toast.error(error.message || 'Failed to save service');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -171,25 +235,39 @@ const AdminServices = () => {
         <title>Services Management | MEDIHOPE Admin</title>
       </Helmet>
 
-      <div className="space-y-6">
+      <div className="space-y-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Services Management</h1>
             <p className="text-gray-600">Manage all physiotherapy services and treatments</p>
           </div>
-          <Button onClick={handleCreate}>
-            <FaPlus className="mr-2" />
-            Add New Service
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              {refreshing ? (
+                <FaSpinner className="mr-2 animate-spin" />
+              ) : (
+                <FaSync className="mr-2" />
+              )}
+              Refresh
+            </Button>
+            <Button onClick={handleCreate}>
+              <FaPlus className="mr-2" />
+              Add New Service
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Search Services
+                Search
               </label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -197,9 +275,9 @@ const AdminServices = () => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search by title or description..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search services..."
+                  value={filters.search}
+                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                 />
               </div>
@@ -210,8 +288,8 @@ const AdminServices = () => {
                 Category
               </label>
               <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                value={filters.category}
+                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               >
                 {categories.map(category => (
@@ -222,17 +300,43 @@ const AdminServices = () => {
               </select>
             </div>
 
-            <div className="flex items-end py-1">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                value={filters.isActive}
+                onChange={(e) => setFilters({ ...filters, isActive: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+              >
+                <option value="all">All Status</option>
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </select>
+            </div>
+
+            <div className="flex items-end space-x-2 my-1.5">
               <Button
                 variant="secondary"
                 onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('all');
+                  setFilters({
+                    search: '',
+                    category: 'all',
+                    isActive: 'all',
+                    featured: 'all'
+                  });
                 }}
-                fullWidth
+                className="flex-1 text-[14px] px-1 py-2"
               >
                 <FaFilter className="mr-2" />
                 Clear Filters
+              </Button>
+              <Button
+                onClick={loadServices}
+                disabled={loading}
+                className="flex-1"
+              >
+                {loading ? <FaSpinner className="mr-2 animate-spin" /> : 'Apply'}
               </Button>
             </div>
           </div>
@@ -242,16 +346,17 @@ const AdminServices = () => {
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader size="lg" />
+            <span className="ml-3 text-gray-600">Loading services...</span>
           </div>
-        ) : filteredServices.length === 0 ? (
+        ) : services.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-xl shadow-sm">
             <div className="text-6xl mb-6">🩺</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               No services found
             </h3>
             <p className="text-gray-600 mb-6">
-              {searchTerm || selectedCategory !== 'all' 
-                ? 'Try changing your search or filter criteria' 
+              {filters.search || filters.category !== 'all' || filters.isActive !== 'all' || filters.featured !== 'all'
+                ? 'Try changing your filter criteria'
                 : 'No services added yet'}
             </p>
             <Button onClick={handleCreate}>
@@ -260,104 +365,136 @@ const AdminServices = () => {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredServices.map((service) => (
-              <motion.div
-                key={service._id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+          <>
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-gray-600">
+                Showing <span className="font-semibold">{services.length}</span> services
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={refreshing}
               >
-                {/* Service Header */}
-                <div className="p-6 border-b border-gray-200">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full mb-2">
-                        {SERVICE_CATEGORY_LABELS[service.category] || service.category}
-                      </span>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {service.title}
-                      </h3>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {service.featured && (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
-                          Featured
+                <FaSync className={`mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                Refresh List
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {services.map((service) => (
+                <motion.div
+                  key={service._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+                >
+                  {/* Service Header */}
+                  <div className="p-6 border-b border-gray-200">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full mb-2">
+                          {SERVICE_CATEGORY_LABELS[service.category] || service.category}
                         </span>
-                      )}
-                      <button
-                        onClick={() => handleStatusToggle(service)}
-                        className={`w-12 h-6 rounded-full relative transition-colors ${
-                          service.isActive ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                          service.isActive ? 'left-7' : 'left-1'
-                        }`}></span>
-                      </button>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          {service.title}
+                        </h3>
+                      </div>
+                      <div className="flex flex-col items-end space-y-2">
+                        <div className="flex space-x-2">
+                          {service.featured && (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
+                              Featured
+                            </span>
+                          )}
+                          <span className={`px-2 py-1 text-xs font-medium rounded ${
+                            service.isActive 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {service.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleFeaturedToggle(service)}
+                            className="p-1 text-yellow-600 hover:bg-yellow-50 rounded"
+                            title={service.featured ? 'Remove from featured' : 'Mark as featured'}
+                          >
+                            {service.featured ? <FaTimes /> : <FaStar />}
+                          </button>
+                          <button
+                            onClick={() => handleStatusToggle(service)}
+                            className={`w-10 h-5 rounded-full relative transition-colors ${
+                              service.isActive ? 'bg-green-500' : 'bg-gray-300'
+                            }`}
+                            title={service.isActive ? 'Deactivate' : 'Activate'}
+                          >
+                            <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                              service.isActive ? 'left-5' : 'left-0.5'
+                            }`}></span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-gray-600 text-sm line-clamp-2 mb-4">
+                      {service.description}
+                    </p>
+
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center">
+                        <FaClock className="mr-2" />
+                        {service.duration} mins
+                      </div>
+                      <div className="flex items-center font-semibold text-gray-900">
+                        <FaRupeeSign className="mr-1" />
+                        {service.price}
+                      </div>
                     </div>
                   </div>
 
-                  <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-                    {service.description}
-                  </p>
+                  {/* Benefits */}
+                  <div className="p-6 border-b border-gray-200">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Key Benefits</h4>
+                    <ul className="space-y-2">
+                      {service.benefits?.slice(0, 3).map((benefit, index) => (
+                        <li key={index} className="flex items-center text-sm text-gray-600">
+                          <FaCheck className="text-green-500 mr-2 text-xs" />
+                          {benefit}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
 
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <FaClock className="mr-2" />
-                      {service.duration} mins
-                    </div>
-                    <div className="flex items-center font-semibold text-gray-900">
-                      <FaRupeeSign className="mr-1" />
-                      {service.price}
+                  {/* Actions */}
+                  <div className="p-4 bg-gray-50">
+                    <div className="flex justify-between">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleEdit(service)}
+                          className="px-3 py-2 text-cyan-600 hover:bg-cyan-50 rounded-lg text-sm font-medium"
+                        >
+                          <FaEdit className="inline mr-2" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(service._id)}
+                          className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium"
+                        >
+                          <FaTrash className="inline mr-2" />
+                          Delete
+                        </button>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        Created: {new Date(service.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
-                </div>
-
-                {/* Benefits */}
-                <div className="p-6 border-b border-gray-200">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Key Benefits</h4>
-                  <ul className="space-y-2">
-                    {service.benefits?.slice(0, 3).map((benefit, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-600">
-                        <FaStar className="text-yellow-500 mr-2 text-xs" />
-                        {benefit}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Actions */}
-                <div className="p-6">
-                  <div className="flex justify-between">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleEdit(service)}
-                        className="px-4 py-2 text-cyan-600 hover:bg-cyan-50 rounded-lg text-sm font-medium"
-                      >
-                        <FaEdit className="inline mr-2" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(service._id)}
-                        className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium"
-                      >
-                        <FaTrash className="inline mr-2" />
-                        Delete
-                      </button>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      service.isActive 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {service.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
@@ -368,7 +505,7 @@ const AdminServices = () => {
         title={modalType === 'create' ? 'Add New Service' : 'Edit Service'}
         size="lg"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2 px-4 md:px-6 pb-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 px-4 md:px-6 mb-4">
           <Input
             label="Service Title"
             type="text"
@@ -405,13 +542,13 @@ const AdminServices = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Category
               </label>
               <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none focus:outline-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                 {...register('category', { required: 'Category is required' })}
               >
                 {Object.entries(SERVICE_CATEGORIES).map(([key, value]) => (
@@ -420,6 +557,9 @@ const AdminServices = () => {
                   </option>
                 ))}
               </select>
+              {errors.category && (
+                <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
+              )}
             </div>
 
             <div>
@@ -430,6 +570,7 @@ const AdminServices = () => {
                 type="number"
                 min="15"
                 max="120"
+                step="5"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 {...register('duration', {
                   required: 'Duration is required',
@@ -437,6 +578,9 @@ const AdminServices = () => {
                   max: { value: 120, message: 'Maximum 120 minutes' }
                 })}
               />
+              {errors.duration && (
+                <p className="mt-1 text-sm text-red-600">{errors.duration.message}</p>
+              )}
             </div>
 
             <div>
@@ -446,12 +590,16 @@ const AdminServices = () => {
               <input
                 type="number"
                 min="0"
+                step="1"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 {...register('price', {
                   required: 'Price is required',
                   min: { value: 0, message: 'Price must be positive' }
                 })}
               />
+              {errors.price && (
+                <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
+              )}
             </div>
 
             <div>
@@ -474,10 +622,19 @@ const AdminServices = () => {
             </label>
             <textarea
               rows={4}
-              placeholder="Enter benefits, one per line..."
+              placeholder="Enter benefits, one per line...
+Example:
+Relief from back pain
+Improved mobility
+Personalized treatment plan"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none resize-none"
-              {...register('benefits')}
+              {...register('benefits', {
+                required: 'At least one benefit is required'
+              })}
             />
+            {errors.benefits && (
+              <p className="mt-1 text-sm text-red-600">{errors.benefits.message}</p>
+            )}
             <p className="mt-1 text-sm text-gray-500">
               Each line will be treated as a separate benefit
             </p>
@@ -500,10 +657,11 @@ const AdminServices = () => {
               variant="outline"
               type="button"
               onClick={() => setIsModalOpen(false)}
+              disabled={submitting}
             >
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" loading={submitting}>
               {modalType === 'create' ? 'Create Service' : 'Update Service'}
             </Button>
           </div>
