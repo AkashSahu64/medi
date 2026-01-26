@@ -1,9 +1,12 @@
+// routes/admin.routes.js
 import express from 'express';
 import {
   getDashboardStats,
   getRecentActivity,
   getRevenueStats,
   getAllContacts,
+  getContactById,
+  markContactAsRead,
   updateContactStatus,
   deleteContact
 } from '../controllers/admin.controller.js';
@@ -26,6 +29,8 @@ router.use('/', settingsRoutes);
 
 // Contact management routes
 router.get('/contacts', getAllContacts);
+router.get('/contacts/:id', getContactById);
+router.put('/contacts/:id/read', markContactAsRead);
 router.put('/contacts/:id/status', updateContactStatus);
 router.delete('/contacts/:id', deleteContact);
 

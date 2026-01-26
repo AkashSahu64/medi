@@ -5,6 +5,7 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Loader from './components/common/Loader';
+import AdminContacts from './pages/AdminContacts';
 
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home/Home'));
@@ -66,6 +67,7 @@ function App() {
                   <AdminDashboard />
                 </ProtectedRoute>
               }>
+                <Route path="contacts" element={<AdminContacts />} />
                 <Route index element={<Navigate to="/admin" replace />} />
                 <Route path="appointments" element={<AdminAppointments />} />
                 <Route path="services" element={<AdminServices />} />

@@ -9,6 +9,7 @@ import {
   differenceInWeeks,
   differenceInMonths
 } from 'date-fns';
+import { FaCalendarAlt, FaComments, FaEnvelope, FaExclamationTriangle, FaInfoCircle, FaUser } from 'react-icons/fa';
 
 // Date formatting
 export const formatDate = (date, formatStr = 'dd MMM yyyy') => {
@@ -22,6 +23,41 @@ export const formatDate = (date, formatStr = 'dd MMM yyyy') => {
   } catch (error) {
     return '';
   }
+};
+
+// Add to your existing helpers.js or create new notification helpers
+export const getNotificationTypeIcon = (type) => {
+  const icons = {
+    appointment: <FaCalendarAlt />,
+    testimonial: <FaComments />,
+    user: <FaUser />,
+    contact: <FaEnvelope />,
+    system: <FaInfoCircle />,
+    urgent: <FaExclamationTriangle />
+  };
+  return icons[type] || icons.system;
+};
+
+export const getNotificationTypeColor = (type) => {
+  const colors = {
+    appointment: 'text-blue-500 bg-blue-100',
+    testimonial: 'text-green-500 bg-green-100',
+    user: 'text-purple-500 bg-purple-100',
+    contact: 'text-yellow-500 bg-yellow-100',
+    system: 'text-gray-500 bg-gray-100',
+    urgent: 'text-red-500 bg-red-100'
+  };
+  return colors[type] || colors.system;
+};
+
+export const getPriorityColor = (priority) => {
+  const colors = {
+    urgent: 'bg-red-100 text-red-800 border-red-200',
+    high: 'bg-orange-100 text-orange-800 border-orange-200',
+    medium: 'bg-blue-100 text-blue-800 border-blue-200',
+    low: 'bg-gray-100 text-gray-800 border-gray-200'
+  };
+  return colors[priority] || colors.medium;
 };
 
 // Time formatting

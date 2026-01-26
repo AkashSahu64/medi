@@ -162,6 +162,18 @@ export const createTestimonial = async (req, res, next) => {
       featured: featured === 'true' || featured === true,
       createdBy: userId
     });
+
+    //Create notification for new testimonial
+    if (!testimonial.isApproved) {
+      await Notification.create({
+        title: 'New Testimonial Submitted',
+        message: `${testimonial.patientName} submitted a new testimonial`,
+        type: 'testimonial',
+        link: `/admin/testimonials/${testimonial._id}`,
+        data: { testimonialId: testimonial._id },
+        priority: 'medium'
+      });
+    }
     
     const populatedTestimonial = await Testimonial.findById(testimonial._id)
       .populate('createdBy', 'name email');
@@ -260,6 +272,18 @@ export const approveTestimonial = async (req, res, next) => {
     
     testimonial.isApproved = isApproved;
     await testimonial.save();
+
+    //Create notification for approval
+    if (isApproved) {
+      await Notification.create({
+        title: 'Testimonial Approved',
+        message: `Testimonial by ${testimonial.patientName} has been approved`,
+        type: 'testimonial',
+        link: `/admin/testimonials/${testimonial._id}`,
+        data: { testimonialId: testimonial._id },
+        priority: 'low'
+      });
+    }
     
     res.status(200).json({
       success: true,

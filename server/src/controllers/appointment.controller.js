@@ -176,6 +176,17 @@ export const createAppointment = async (req, res, next) => {
     const populatedAppointment = await Appointment.findById(appointment._id)
       .populate('service', 'title duration');
 
+    //Create notification for new appointment
+    if (appointment.status === 'pending') {
+      await Notification.create({
+        title: 'New Appointment Request',
+        message: `${appointment.patientName} requested an appointment for ${appointment.serviceName}`,
+        type: 'appointment',
+        link: `/admin/appointments/${appointment._id}`,
+        data: { appointmentId: appointment._id },
+        priority: 'high'
+      });
+    }
     // Send notifications if status is confirmed
     if (status === 'confirmed' && patientEmail) {
       try {
@@ -288,6 +299,17 @@ export const createAppointmentAdmin = async (req, res, next) => {
     const populatedAppointment = await Appointment.findById(appointment._id)
       .populate('service', 'title duration');
 
+    // Create notification for new appointment
+    if (appointment.status === 'pending') {
+      await Notification.create({
+        title: 'New Appointment Request (Admin Created)',
+        message: `${appointment.patientName} - ${appointment.serviceName}`,
+        type: 'appointment',
+        link: `/admin/appointments/${appointment._id}`,
+        data: { appointmentId: appointment._id },
+        priority: 'high'
+      });
+    }
     // Send notifications if status is confirmed
     if (status === 'confirmed' && patientEmail) {
       try {
@@ -534,6 +556,18 @@ export const updateAppointmentStatus = async (req, res, next) => {
     const populatedAppointment = await Appointment.findById(id)
       .populate('patient', 'name email')
       .populate('service', 'title duration');
+
+    //Create notification for status change
+    if (status === 'confirmed') {
+      await Notification.create({
+        title: 'Appointment Confirmed',
+        message: `Appointment for ${appointment.patientName} has been confirmed`,
+        type: 'appointment',
+        link: `/admin/appointments/${appointment._id}`,
+        data: { appointmentId: appointment._id },
+        priority: 'medium'
+      });
+    }
     
     // Send notifications for status changes
     if (status === 'confirmed' && appointment.patientEmail) {

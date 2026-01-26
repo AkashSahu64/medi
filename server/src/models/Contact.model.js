@@ -1,3 +1,4 @@
+// models/Contact.model.js
 import mongoose from 'mongoose';
 
 const contactSchema = new mongoose.Schema({
@@ -37,30 +38,51 @@ const contactSchema = new mongoose.Schema({
     enum: ['new', 'read', 'replied', 'archived'],
     default: 'new'
   },
+  isRead: {
+    type: Boolean,
+    default: false
+  },
   ipAddress: {
     type: String
   },
   userAgent: {
     type: String
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
+  repliedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+  repliedAt: {
+    type: Date
+  },
+  archivedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  archivedAt: {
+    type: Date
   }
+}, {
+  timestamps: true // This will automatically add createdAt and updatedAt
 });
 
 // Update the updatedAt timestamp on save
 contactSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
+  
+  // Auto-set isRead based on status
+  if (this.status !== 'new' && !this.isRead) {
+    this.isRead = true;
+  }
+  
   next();
 });
 
 // Create text index for search
 contactSchema.index({ name: 'text', email: 'text', subject: 'text', message: 'text' });
+
+// Index for faster queries
+contactSchema.index({ status: 1, isRead: 1, createdAt: -1 });
 
 const Contact = mongoose.model('Contact', contactSchema);
 export default Contact;

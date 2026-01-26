@@ -1,8 +1,10 @@
+// controllers/admin.controller.js
 import Appointment from '../models/Appointment.model.js';
 import Service from '../models/Service.model.js';
 import User from '../models/User.model.js';
 import Contact from '../models/Contact.model.js';
 import Testimonial from '../models/Testimonial.model.js';
+import Notification from '../models/Notification.model.js';
 import mongoose from 'mongoose';
 
 // @desc    Get dashboard statistics
@@ -211,6 +213,25 @@ export const getRecentActivity = async (req, res, next) => {
     const { limit = 20 } = req.query;
     
     const activities = [];
+
+    // Get recent notifications
+    const recentNotifications = await Notification.find({
+      userId: null // System notifications
+    })
+    .sort({ createdAt: -1 })
+    .limit(5);
+    
+    recentNotifications.forEach(notification => {
+      activities.push({
+        type: 'notification',
+        icon: getNotificationIcon(notification.type),
+        user: 'System',
+        action: notification.title,
+        details: notification.message,
+        time: notification.createdAt,
+        color: getNotificationColor(notification.priority)
+      });
+    });
     
     // Get recent appointments
     const recentAppointments = await Appointment.find()
@@ -301,6 +322,27 @@ export const getRecentActivity = async (req, res, next) => {
   }
 };
 
+// Helper functions for icons and colors
+const getNotificationIcon = (type) => {
+  switch(type) {
+    case 'appointment': return 'FaCalendarAlt';
+    case 'testimonial': return 'FaComments';
+    case 'contact': return 'FaEnvelope';
+    case 'user': return 'FaUser';
+    default: return 'FaInfoCircle';
+  }
+};
+
+const getNotificationColor = (priority) => {
+  switch(priority) {
+    case 'urgent': return 'text-red-500';
+    case 'high': return 'text-orange-500';
+    case 'medium': return 'text-blue-500';
+    case 'low': return 'text-gray-500';
+    default: return 'text-gray-500';
+  }
+};
+
 // @desc    Get revenue statistics
 // @route   GET /api/admin/dashboard/revenue
 // @access  Private/Admin
@@ -372,11 +414,25 @@ export const getRevenueStats = async (req, res, next) => {
 // @access  Private/Admin
 export const getAllContacts = async (req, res, next) => {
   try {
-    const { status, page = 1, limit = 20 } = req.query;
+    const { 
+      status, 
+      page = 1, 
+      limit = 20,
+      search
+    } = req.query;
     
     const query = {};
     if (status && status !== 'all') {
       query.status = status;
+    }
+    
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { subject: { $regex: search, $options: 'i' } },
+        { message: { $regex: search, $options: 'i' } }
+      ];
     }
     
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -387,13 +443,82 @@ export const getAllContacts = async (req, res, next) => {
       .limit(parseInt(limit));
     
     const total = await Contact.countDocuments(query);
+    const unreadCount = await Contact.countDocuments({ isRead: false });
     
     res.status(200).json({
       success: true,
-      count: contacts.length,
-      total,
-      pages: Math.ceil(total / limit),
-      data: contacts
+      data: contacts,
+      stats: {
+        total,
+        unread: unreadCount
+      },
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get single contact by ID
+// @route   GET /api/admin/contacts/:id
+// @access  Private/Admin
+export const getContactById = async (req, res, next) => {
+  try {
+    const contact = await Contact.findById(req.params.id);
+    
+    if (!contact) {
+      return res.status(404).json({
+        success: false,
+        message: 'Contact message not found'
+      });
+    }
+    
+    // Mark as read when viewing
+    if (!contact.isRead) {
+      contact.isRead = true;
+      contact.status = 'read';
+      await contact.save();
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: contact
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Mark contact as read
+// @route   PUT /api/admin/contacts/:id/read
+// @access  Private/Admin
+export const markContactAsRead = async (req, res, next) => {
+  try {
+    const contact = await Contact.findByIdAndUpdate(
+      req.params.id,
+      { 
+        isRead: true,
+        status: 'read' 
+      },
+      { new: true }
+    );
+    
+    if (!contact) {
+      return res.status(404).json({
+        success: false,
+        message: 'Contact message not found'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: contact,
+      message: 'Contact marked as read'
     });
   } catch (error) {
     next(error);
@@ -408,7 +533,21 @@ export const updateContactStatus = async (req, res, next) => {
     const { id } = req.params;
     const { status } = req.body;
     
-    const contact = await Contact.findById(id);
+    if (!['new', 'read', 'replied', 'archived'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status'
+      });
+    }
+    
+    const contact = await Contact.findByIdAndUpdate(
+      id,
+      { 
+        status,
+        isRead: status !== 'new'
+      },
+      { new: true }
+    );
     
     if (!contact) {
       return res.status(404).json({
@@ -416,9 +555,6 @@ export const updateContactStatus = async (req, res, next) => {
         message: 'Contact not found'
       });
     }
-    
-    contact.status = status;
-    await contact.save();
     
     res.status(200).json({
       success: true,
@@ -437,7 +573,7 @@ export const deleteContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     
-    const contact = await Contact.findById(id);
+    const contact = await Contact.findByIdAndDelete(id);
     
     if (!contact) {
       return res.status(404).json({
@@ -445,8 +581,6 @@ export const deleteContact = async (req, res, next) => {
         message: 'Contact not found'
       });
     }
-    
-    await Contact.findByIdAndDelete(id);
     
     res.status(200).json({
       success: true,
