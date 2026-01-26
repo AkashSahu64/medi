@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '../../components/common/Button';
-import { FaCheckCircle, FaCalendarAlt, FaClock, FaWhatsapp, FaPrint, FaEnvelope } from 'react-icons/fa';
+import { FaCheckCircle, FaCalendarAlt, FaClock, FaWhatsapp, FaPrint, FaEnvelope, FaPhone } from 'react-icons/fa';
 import { formatDate, formatTime } from '../../utils/helpers';
 
 const AppointmentSuccess = () => {
@@ -119,7 +119,7 @@ const AppointmentSuccess = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-secondary-600">Status:</span>
                     <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                      Confirmed
+                      {appointment.status}
                     </span>
                   </div>
                 </div>
@@ -206,14 +206,14 @@ const AppointmentSuccess = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
-                    href="tel:+91-9876543210"
+                    href="tel:+91-6386065599"
                     className="inline-flex items-center justify-center px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
                   >
                     <FaPhone className="mr-2" />
-                    Call: +91-9876543210
+                    Call: +91-6386065599
                   </a>
                   <a
-                    href={`https://wa.me/919876543210`}
+                    href={`https://wa.me/916386065599`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"

@@ -3,6 +3,7 @@ import Service from '../models/Service.model.js';
 import User from '../models/User.model.js';
 import { sendEmail, emailTemplates } from '../utils/emailService.js';
 import { sendWhatsAppMessage, whatsappTemplates } from '../utils/whatsappService.js';
+import Notification from '../models/Notification.model.js';
 import moment from 'moment';
 
 // @desc    Get available time slots

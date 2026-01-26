@@ -190,11 +190,11 @@ const Contact = () => {
                     For urgent medical assistance or severe pain:
                   </p>
                   <a
-                    href="tel:+91-9876543210"
+                    href="tel:+91-6386065599"
                     className="inline-flex items-center justify-center w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
                   >
                     <FaPhoneAlt className="mr-2" />
-                    Emergency: +91-9876543210
+                    Emergency: +91-6386065599
                   </a>
                 </motion.div>
               </div>

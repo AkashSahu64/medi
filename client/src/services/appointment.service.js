@@ -44,7 +44,7 @@ export const appointmentService = {
       console.log('📝 Creating appointment via admin route:', appointmentData);
       
       // Use admin route for admin panel
-      const response = await axiosInstance.post('/appointments/admin', appointmentData);
+      const response = await axiosInstance.post('/appointments', appointmentData);
       
       if (response.data.success) {
         return {

@@ -26,7 +26,7 @@ const createDefaultAdmin = async () => {
       name: 'System Administrator',
       email: 'admin@medihope.com',
       password: hashedPassword,
-      phone: '9876543210',
+      phone: '6386065599',
       role: 'admin',
       isVerified: true,
       createdAt: new Date()
