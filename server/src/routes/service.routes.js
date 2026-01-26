@@ -1,22 +1,15 @@
 import express from 'express';
 import {
-  // Public routes
   getServices,
   getService,
-  
-  // Admin routes (original)
-  createService,
-  updateService,
-  deleteService,
-  
-  // Admin routes (new)
   getAllServicesForAdmin,
   getServiceForAdmin,
+  createService,
   createServiceAdmin,
+  updateService,
   updateServiceAdmin,
+  deleteService,
   deleteServiceAdmin,
-  
-  // Test and utility routes
   testServices,
   toggleServiceStatus
 } from '../controllers/service.controller.js';
@@ -29,7 +22,7 @@ router.get('/', getServices);
 router.get('/:id', getService);
 
 // ========== ADMIN ROUTES ==========
-// New admin routes (recommended)
+// New admin routes
 router.get('/admin/all', protect, admin, getAllServicesForAdmin);
 router.get('/admin/:id', protect, admin, getServiceForAdmin);
 router.post('/admin', protect, admin, createServiceAdmin);

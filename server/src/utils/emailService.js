@@ -129,4 +129,30 @@ export const emailTemplates = {
       </p>
     </div>
   `,
+  appointmentCancelled: (appointment) => `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <h2 style="color: #e74c3c;">Appointment Cancelled</h2>
+    <p>Dear ${appointment.patientName},</p>
+    <p>Your appointment with MEDIHOPE Physiotherapy Centre has been cancelled.</p>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+      <h3 style="color: #3498db;">Cancelled Appointment Details:</h3>
+      <p><strong>Service:</strong> ${appointment.serviceName}</p>
+      <p><strong>Date:</strong> ${new Date(appointment.appointmentDate).toLocaleDateString()}</p>
+      <p><strong>Time Slot:</strong> ${appointment.timeSlot}</p>
+      <p><strong>Reference ID:</strong> ${appointment._id}</p>
+    </div>
+    
+    <p>Please contact us if you wish to reschedule.</p>
+    <p>For any queries, call us at +91-XXXXXXXXXX</p>
+    
+    <hr style="margin: 30px 0;">
+    <p style="color: #7f8c8d; font-size: 14px;">
+      MEDIHOPE Physiotherapy Centre<br>
+      Address Line 1, Address Line 2<br>
+      City, State - PIN Code<br>
+      Phone: +91-XXXXXXXXXX
+    </p>
+  </div>
+`,
 };

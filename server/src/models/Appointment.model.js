@@ -4,7 +4,7 @@ const appointmentSchema = new mongoose.Schema({
   patient: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false, // ✅ Change to false (not all appointments have registered users)
   },
   patientName: {
     type: String,
@@ -47,7 +47,7 @@ const appointmentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'completed', 'cancelled', 'rescheduled'],
+    enum: ['pending', 'confirmed', 'completed', 'cancelled'],
     default: 'pending',
   },
   notes: {
@@ -56,8 +56,8 @@ const appointmentSchema = new mongoose.Schema({
   },
   createdBy: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
+    enum: ['user', 'admin', 'guest'], // ✅ Add 'guest' to enum
+    default: 'guest',
   },
   createdAt: {
     type: Date,
@@ -65,8 +65,8 @@ const appointmentSchema = new mongoose.Schema({
   },
 });
 
-// Compound index to prevent double booking
-appointmentSchema.index({ appointmentDate: 1, timeSlot: 1 }, { unique: true });
+// Remove unique index for now as it's causing issues with double booking check
+// appointmentSchema.index({ appointmentDate: 1, timeSlot: 1 }, { unique: true });
 
 // Virtual for checking if appointment is in the past
 appointmentSchema.virtual('isPast').get(function () {

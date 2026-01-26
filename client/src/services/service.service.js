@@ -21,18 +21,21 @@ export const serviceService = {
       if (response.data.success) {
         return {
           data: response.data.data,
-          success: true
+          success: true,
+          count: response.data.count
         };
       }
       return {
         data: [],
-        success: false
+        success: false,
+        count: 0
       };
     } catch (error) {
-      console.error('Error fetching public services:', error);
+      console.error('❌ Error fetching public services:', error);
       return {
         data: [],
-        success: false
+        success: false,
+        count: 0
       };
     }
   },
@@ -54,27 +57,55 @@ export const serviceService = {
       
       const response = await axiosInstance.get(url);
       
+      console.log('✅ Admin services response:', {
+        success: response.data.success,
+        count: response.data.count,
+        dataLength: response.data.data?.length
+      });
+      
       if (response.data.success) {
         return {
-          data: response.data.data,
+          data: response.data.data || [],
           success: true,
-          count: response.data.count
+          count: response.data.count || 0
         };
       }
       return {
         data: [],
-        success: false
+        success: false,
+        count: 0
       };
     } catch (error) {
-      console.error('Error fetching admin services:', error);
+      console.error('❌ Error fetching admin services:', {
+        message: error.message,
+        status: error.response?.status
+      });
       return {
         data: [],
+        success: false,
+        count: 0
+      };
+    }
+  },
+
+  // Get single service by ID
+  getServiceById: async (id) => {
+    try {
+      const response = await axiosInstance.get(`/services/${id}`);
+      return {
+        data: response.data.data,
+        success: response.data.success
+      };
+    } catch (error) {
+      console.error('Error fetching service:', error);
+      return {
+        data: null,
         success: false
       };
     }
   },
 
-  // Get single service for admin
+  // Get single service for admin by ID
   getServiceByIdForAdmin: async (id) => {
     try {
       const response = await axiosInstance.get(`/services/admin/${id}`);
@@ -91,7 +122,7 @@ export const serviceService = {
     }
   },
 
-  // Create service for admin
+  /// Create service (admin route)
   createService: async (serviceData) => {
     try {
       console.log('Creating service:', serviceData);
@@ -111,7 +142,7 @@ export const serviceService = {
         message: response.data.message
       };
     } catch (error) {
-      console.error('Error creating service:', error);
+      console.error('❌ Error creating service:', error);
       return {
         data: null,
         success: false,
@@ -120,7 +151,7 @@ export const serviceService = {
     }
   },
 
-  // Update service for admin
+  // Update service (admin route)
   updateService: async (id, serviceData) => {
     try {
       const response = await axiosInstance.put(`/services/admin/${id}`, serviceData);
@@ -138,7 +169,7 @@ export const serviceService = {
         message: response.data.message
       };
     } catch (error) {
-      console.error('Error updating service:', error);
+      console.error('❌ Error updating service:', error);
       return {
         data: null,
         success: false,
@@ -147,7 +178,7 @@ export const serviceService = {
     }
   },
 
-  // Delete service for admin (hard delete)
+  // Delete service (admin route - hard delete)
   deleteService: async (id) => {
     try {
       const response = await axiosInstance.delete(`/services/admin/${id}`);
@@ -163,7 +194,7 @@ export const serviceService = {
         message: response.data.message
       };
     } catch (error) {
-      console.error('Error deleting service:', error);
+      console.error('❌ Error deleting service:', error);
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to delete service'
@@ -188,7 +219,7 @@ export const serviceService = {
         message: response.data.message
       };
     } catch (error) {
-      console.error('Error toggling service status:', error);
+      console.error('❌ Error toggling service status:', error);
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to update service status'

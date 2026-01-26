@@ -7,6 +7,8 @@ import './config/passport.js';
 import bcrypt from 'bcryptjs';
 import { verifyEmailConfig } from './utils/emailService.js';
 import User from './models/User.model.js';
+import Settings from './models/Settings.model.js';
+import { setupBackupCron } from './cron/backup.cron.js';
 
 import twilio from 'twilio';
 
@@ -22,6 +24,15 @@ testClient.api.accounts(process.env.TWILIO_ACCOUNT_SID)
 
 
 const PORT = process.env.PORT || 5000;
+
+const initializeSettings = async () => {
+  try {
+    await Settings.getSettings();
+    console.log('✅ Settings initialized');
+  } catch (error) {
+    console.error('❌ Error initializing settings:', error);
+  }
+};
 
 const createDefaultAdmin = async () => {
   try {
@@ -62,6 +73,12 @@ console.log('🔍 DEBUG: Before connectDB');
 connectDB();
 
 console.log('🔍 DEBUG: After connectDB');
+
+connectDB().then(() => {
+  createDefaultAdmin();
+  initializeSettings();
+  setupBackupCron();
+});
 
 // Import whatsappService to see when it fails
 import('./utils/whatsappService.js')

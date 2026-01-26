@@ -7,6 +7,7 @@ import {
   updateContactStatus,
   deleteContact
 } from '../controllers/admin.controller.js';
+import settingsRoutes from './settings.routes.js';
 import { protect, admin } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -19,6 +20,9 @@ router.use(admin);
 router.get('/dashboard/stats', getDashboardStats);
 router.get('/dashboard/activity', getRecentActivity);
 router.get('/dashboard/revenue', getRevenueStats);
+
+// Mount settings routes
+router.use('/', settingsRoutes);
 
 // Contact management routes
 router.get('/contacts', getAllContacts);
