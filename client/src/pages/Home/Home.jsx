@@ -30,125 +30,126 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import astha from '../../assets/image/astha.png';
+import ImageGallerySlider from "./ImageGallerySlider";
 
 // Image Gallery Slider Component
-const ImageGallerySlider = () => {
-  const sliderRef = useRef(null);
-  const intervalRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+// const ImageGallerySlider = () => {
+//   const sliderRef = useRef(null);
+//   const intervalRef = useRef(null);
+//   const [activeIndex, setActiveIndex] = useState(0);
 
-  const images = [
-    "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1706353399656-210cca727a33?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=1200&q=80",
-  ];
+//   const images = [
+//     "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80",
+//     "https://images.unsplash.com/photo-1706353399656-210cca727a33?auto=format&fit=crop&w=1200&q=80",
+//     "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=80",
+//     "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80",
+//     "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
+//     "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=1200&q=80",
+//     "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=1200&q=80",
+//   ];
 
-  // 👇 Loop illusion (last me first duplicate)
-  const loopImages = [...images, images[0]];
+//   // 👇 Loop illusion (last me first duplicate)
+//   const loopImages = [...images, images[0]];
 
-  // Auto slide
-  useEffect(() => {
-    const container = sliderRef.current;
-    if (!container) return;
+//   // Auto slide
+//   useEffect(() => {
+//     const container = sliderRef.current;
+//     if (!container) return;
 
-    const slide = () => {
-      const itemWidth = container.children[0].offsetWidth;
-      const gap = 24;
-      const scrollAmount = itemWidth + gap;
+//     const slide = () => {
+//       const itemWidth = container.children[0].offsetWidth;
+//       const gap = 24;
+//       const scrollAmount = itemWidth + gap;
 
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-      setActiveIndex((prev) => prev + 1);
-    };
+//       container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+//       setActiveIndex((prev) => prev + 1);
+//     };
 
-    intervalRef.current = setInterval(slide, 3000);
-    return () => clearInterval(intervalRef.current);
-  }, []);
+//     intervalRef.current = setInterval(slide, 3000);
+//     return () => clearInterval(intervalRef.current);
+//   }, []);
 
-  // Seamless reset logic
-  useEffect(() => {
-    const container = sliderRef.current;
-    if (!container) return;
+//   // Seamless reset logic
+//   useEffect(() => {
+//     const container = sliderRef.current;
+//     if (!container) return;
 
-    const realLength = images.length;
-    const itemWidth = container.children[0].offsetWidth;
-    const gap = 24;
-    const scrollAmount = itemWidth + gap;
+//     const realLength = images.length;
+//     const itemWidth = container.children[0].offsetWidth;
+//     const gap = 24;
+//     const scrollAmount = itemWidth + gap;
 
-    // Jab duplicate slide par aaye
-    if (activeIndex === realLength) {
-      setTimeout(() => {
-        container.scrollLeft = 0; // invisible jump
-        setActiveIndex(0);
-      }, 400);
-    }
-  }, [activeIndex, images.length]);
+//     // Jab duplicate slide par aaye
+//     if (activeIndex === realLength) {
+//       setTimeout(() => {
+//         container.scrollLeft = 0; // invisible jump
+//         setActiveIndex(0);
+//       }, 400);
+//     }
+//   }, [activeIndex, images.length]);
 
-  // Dots click
-  const goToSlide = (index) => {
-    const container = sliderRef.current;
-    if (!container) return;
+//   // Dots click
+//   const goToSlide = (index) => {
+//     const container = sliderRef.current;
+//     if (!container) return;
 
-    const itemWidth = container.children[0].offsetWidth;
-    const gap = 24;
+//     const itemWidth = container.children[0].offsetWidth;
+//     const gap = 24;
 
-    container.scrollTo({
-      left: (itemWidth + gap) * index,
-      behavior: "smooth",
-    });
-    setActiveIndex(index);
-  };
+//     container.scrollTo({
+//       left: (itemWidth + gap) * index,
+//       behavior: "smooth",
+//     });
+//     setActiveIndex(index);
+//   };
 
-  return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        {/* Slider */}
-        <div
-          ref={sliderRef}
-          className="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-hide"
-        >
-          {loopImages.map((img, i) => (
-            <div
-              key={i}
-              className="flex-shrink-0 w-[320px] md:w-[360px] lg:w-[1450px] snap-start"
-            >
-              <div className="overflow-hidden rounded-2xl shadow-md">
-                <img
-                  src={img}
-                  alt={`Gallery ${i + 1}`}
-                  className="w-full h-[260px] md:h-[320px] lg:h-[450px] object-cover"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+//   return (
+//     <section className="py-20 bg-white">
+//       <div className="container mx-auto px-4">
+//         {/* Slider */}
+//         <div
+//           ref={sliderRef}
+//           className="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-hide"
+//         >
+//           {loopImages.map((img, i) => (
+//             <div
+//               key={i}
+//               className="flex-shrink-0 w-[320px] md:w-[360px] lg:w-[1450px] snap-start"
+//             >
+//               <div className="overflow-hidden rounded-2xl shadow-md">
+//                 <img
+//                   src={img}
+//                   alt={`Gallery ${i + 1}`}
+//                   className="w-full h-[260px] md:h-[320px] lg:h-[450px] object-cover"
+//                 />
+//               </div>
+//             </div>
+//           ))}
+//         </div>
 
-        {/* Dots */}
-        <div className="flex justify-center items-center gap-3 mt-6 leading-none">
-          {images.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goToSlide(i)}
-              className={`flex items-center justify-center rounded-full transition-all ${
-                activeIndex === i
-                  ? "w-3 h-3 bg-cyan-600"
-                  : "w-2 h-2 bg-gray-300"
-              }`}
-            />
-          ))}
-        </div>
+//         {/* Dots */}
+//         <div className="flex justify-center items-center gap-3 mt-6 leading-none">
+//           {images.map((_, i) => (
+//             <button
+//               key={i}
+//               onClick={() => goToSlide(i)}
+//               className={`flex items-center justify-center rounded-full transition-all ${
+//                 activeIndex === i
+//                   ? "w-3 h-3 bg-cyan-600"
+//                   : "w-2 h-2 bg-gray-300"
+//               }`}
+//             />
+//           ))}
+//         </div>
 
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { display: none; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
-      </div>
-    </section>
-  );
-};
+//         <style>{`
+//           .scrollbar-hide::-webkit-scrollbar { display: none; }
+//           .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+//         `}</style>
+//       </div>
+//     </section>
+//   );
+// };
 const Home = () => {
   const [services, setServices] = useState([]);
   const { execute: fetchServices, loading: servicesLoading } = useApi(
@@ -630,7 +631,7 @@ const Home = () => {
       </section>
 
       {/* Image Gallery Slider Section */}
-      <ImageGallerySlider />
+      <ImageGallerySlider/>
 
       {/* Stats Section */}
       <section className="py-16 md:py-20 bg-white border-b">

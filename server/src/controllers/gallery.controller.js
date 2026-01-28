@@ -6,10 +6,10 @@ import path from 'path';
 // @desc    Get all gallery items with filtering
 // @route   GET /api/gallery
 // @access  Private/Admin
-// gallery.controller.js में getGallery function update करें
 export const getGallery = async (req, res, next) => {
   try {
-    const { search, category, type, featured, page = 1, limit = 20 } = req.query;
+    const { search, category, type, featured, showOnSlider, page = 1, limit = 20 } = req.query;
+    
     // Build query
     const query = {};
     
@@ -37,15 +37,36 @@ export const getGallery = async (req, res, next) => {
       query.featured = featured === 'true';
     }
     
-    console.log("🔍 MongoDB query:", query);
+    // Show on slider filter
+    if (showOnSlider && showOnSlider !== 'all') {
+      query.showOnSlider = showOnSlider === 'true';
+    }
     
-    // Get gallery items
+    // Sorting logic: featured first, then by createdAt
+    const sortOrder = { featured: -1, createdAt: -1 };
+    
+    // Pagination
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    // Get total count for pagination
+    const total = await Gallery.countDocuments(query);
+    
+    // Get gallery items with pagination and sorting
     const gallery = await Gallery.find(query)
-      .sort({ createdAt: -1 })
-      .lean(); // Use lean() for better performance
+      .sort(sortOrder)
+      .skip(skip)
+      .limit(limitNum)
+      .populate('createdBy', 'name email')
+      .lean();
+    
     res.status(200).json({
       success: true,
       count: gallery.length,
+      total,
+      totalPages: Math.ceil(total / limitNum),
+      currentPage: pageNum,
       data: gallery
     });
   } catch (error) {
@@ -57,18 +78,21 @@ export const getGallery = async (req, res, next) => {
 // @desc    Get gallery statistics
 // @route   GET /api/gallery/stats
 // @access  Private/Admin
-// gallery.controller.js में getGalleryStats update करें
 export const getGalleryStats = async (req, res, next) => {
   try {
     const [
       totalItems,
       featuredItems,
+      sliderItems,
+      showDetailButtonItems,
       imagesCount,
       videosCount,
       itemsByCategory
     ] = await Promise.all([
       Gallery.countDocuments(),
       Gallery.countDocuments({ featured: true }),
+      Gallery.countDocuments({ showOnSlider: true }),
+      Gallery.countDocuments({ showDetailButton: true }),
       Gallery.countDocuments({ type: 'image' }),
       Gallery.countDocuments({ type: 'video' }),
       Gallery.aggregate([
@@ -76,14 +100,6 @@ export const getGalleryStats = async (req, res, next) => {
         { $sort: { count: -1 } }
       ])
     ]);
-    
-    console.log("📊 Stats calculated:", {
-      totalItems,
-      featuredItems,
-      imagesCount,
-      videosCount,
-      itemsByCategory
-    });
     
     // Convert itemsByCategory array to object
     const categoryStats = {};
@@ -96,13 +112,39 @@ export const getGalleryStats = async (req, res, next) => {
       data: {
         totalItems,
         featuredItems,
+        sliderItems,
+        showDetailButtonItems,
         imagesCount,
         videosCount,
-        ...categoryStats // Spread category stats
+        ...categoryStats
       }
     });
   } catch (error) {
     console.error("❌ Error in getGalleryStats:", error);
+    next(error);
+  }
+};
+
+// @desc    Get gallery items for slider
+// @route   GET /api/gallery/slider
+// @access  Public
+export const getSliderItems = async (req, res, next) => {
+  try {
+    const sliderItems = await Gallery.find({ 
+      showOnSlider: true,
+      url: { $exists: true, $ne: null }
+    })
+    .sort({ featured: -1, createdAt: -1 })
+    .select('title description category type url thumbnail featured showDetailButton tags dimensions')
+    .lean();
+    
+    res.status(200).json({
+      success: true,
+      count: sliderItems.length,
+      data: sliderItems
+    });
+  } catch (error) {
+    console.error("❌ Error in getSliderItems:", error);
     next(error);
   }
 };
@@ -136,7 +178,7 @@ export const getGalleryById = async (req, res, next) => {
 // @access  Private/Admin
 export const uploadMedia = async (req, res, next) => {
   try {
-    const { title, description, category, tags, featured } = req.body;
+    const { title, description, category, tags, featured, showDetailButton, showOnSlider } = req.body;
     const files = req.files;
     const userId = req.user.id;
     
@@ -168,8 +210,10 @@ export const uploadMedia = async (req, res, next) => {
         category: category || 'clinic',
         type,
         url: cloudinaryResult.url,
-        thumbnail: cloudinaryResult.url, // You can generate thumbnail separately
+        thumbnail: cloudinaryResult.url,
         featured: featured === 'true',
+        showDetailButton: showDetailButton === 'true',
+        showOnSlider: showOnSlider !== 'false', // Default to true
         tags: tagsArray,
         size: cloudinaryResult.bytes,
         format: cloudinaryResult.format,
@@ -199,7 +243,7 @@ export const uploadMedia = async (req, res, next) => {
 // @access  Private/Admin
 export const updateGalleryItem = async (req, res, next) => {
   try {
-    const { title, description, category, tags, featured } = req.body;
+    const { title, description, category, tags, featured, showDetailButton, showOnSlider } = req.body;
     const galleryId = req.params.id;
     
     // Check if gallery item exists
@@ -223,7 +267,9 @@ export const updateGalleryItem = async (req, res, next) => {
         description: description || galleryItem.description,
         category: category || galleryItem.category,
         tags: tagsArray,
-        featured: featured !== undefined ? (featured === 'true') : galleryItem.featured
+        featured: featured !== undefined ? (featured === 'true') : galleryItem.featured,
+        showDetailButton: showDetailButton !== undefined ? (showDetailButton === 'true') : galleryItem.showDetailButton,
+        showOnSlider: showOnSlider !== undefined ? (showOnSlider === 'true') : galleryItem.showOnSlider
       },
       { new: true, runValidators: true }
     ).populate('createdBy', 'name email');
@@ -243,7 +289,6 @@ export const updateGalleryItem = async (req, res, next) => {
 // @access  Private/Admin
 export const toggleFeatured = async (req, res, next) => {
   try {
-    const { featured } = req.body;
     const galleryId = req.params.id;
     
     const galleryItem = await Gallery.findById(galleryId);
@@ -255,13 +300,74 @@ export const toggleFeatured = async (req, res, next) => {
       });
     }
     
-    galleryItem.featured = featured;
+    // Toggle the featured status
+    galleryItem.featured = !galleryItem.featured;
     await galleryItem.save();
     
     res.status(200).json({
       success: true,
       data: galleryItem,
-      message: `Gallery item ${featured ? 'marked as featured' : 'removed from featured'}`
+      message: `Gallery item ${galleryItem.featured ? 'marked as featured' : 'removed from featured'}`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Toggle detail button status
+// @route   PATCH /api/gallery/:id/detail-button
+// @access  Private/Admin
+export const toggleDetailButton = async (req, res, next) => {
+  try {
+    const galleryId = req.params.id;
+    
+    const galleryItem = await Gallery.findById(galleryId);
+    
+    if (!galleryItem) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gallery item not found'
+      });
+    }
+    
+    // Toggle the showDetailButton status
+    galleryItem.showDetailButton = !galleryItem.showDetailButton;
+    await galleryItem.save();
+    
+    res.status(200).json({
+      success: true,
+      data: galleryItem,
+      message: `Detail button ${galleryItem.showDetailButton ? 'enabled' : 'disabled'}`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Toggle slider visibility
+// @route   PATCH /api/gallery/:id/slider
+// @access  Private/Admin
+export const toggleSlider = async (req, res, next) => {
+  try {
+    const galleryId = req.params.id;
+    
+    const galleryItem = await Gallery.findById(galleryId);
+    
+    if (!galleryItem) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gallery item not found'
+      });
+    }
+    
+    // Toggle the showOnSlider status
+    galleryItem.showOnSlider = !galleryItem.showOnSlider;
+    await galleryItem.save();
+    
+    res.status(200).json({
+      success: true,
+      data: galleryItem,
+      message: `Slider visibility ${galleryItem.showOnSlider ? 'enabled' : 'disabled'}`
     });
   } catch (error) {
     next(error);

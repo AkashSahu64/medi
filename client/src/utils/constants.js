@@ -46,11 +46,11 @@ export const SERVICE_CATEGORY_LABELS = {
 export const CLINIC_INFO = {
   name: 'MEDIHOPE Physiotherapy Centre',
   address: '123 Health Street, Medical City, MC 12345',
-  phone: '+91-6386065599',
-  PHONE_FULL: '+91-6386065599',
-  PHONE_MOBILE: '6386065599',
+  phone: '+91-9259642281',
+  PHONE_FULL: '+91-9259642281',
+  PHONE_MOBILE: '9259642281',
   email: 'info@medihope.com',
-  whatsapp: '+916386065599',
+  whatsapp: '+919259642281',
   workingHours: {
     weekdays: '9:00 AM - 7:00 PM',
     saturday: '9:00 AM - 2:00 PM',

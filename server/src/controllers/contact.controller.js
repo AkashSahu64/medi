@@ -102,7 +102,7 @@ export const sendContactMessage = async (req, res, next) => {
             </div>
             
             <p><strong>Our Contact Information:</strong></p>
-            <p>📞 Phone: +91-6386065599<br>
+            <p>📞 Phone: +91-9259642281<br>
                📧 Email: info@medihope.com<br>
                🏥 Address: 123 Health Street, Medical City</p>
             
@@ -388,7 +388,7 @@ export const updateContactStatus = async (req, res, next) => {
               <hr style="margin: 30px 0;">
               <p style="color: #7f8c8d; font-size: 14px;">
                 MEDIHOPE Physiotherapy Centre<br>
-                📞 Phone: +91-6386065599<br>
+                📞 Phone: +91-9259642281<br>
                 📧 Email: info@medihope.com<br>
                 🏥 Address: 123 Health Street, Medical City
               </p>

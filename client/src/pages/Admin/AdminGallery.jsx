@@ -1,1141 +1,667 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Helmet } from "react-helmet-async";
-import { motion } from "framer-motion";
-import Button from "../../components/common/Button";
-import Modal from "../../components/common/Modal";
-import {
-  FaPlus,
-  FaTrash,
-  FaEdit,
-  FaEye,
-  FaDownload,
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FaEdit, 
+  FaTrash, 
+  FaStar, 
+  FaRegStar, 
+  FaEye, 
+  FaEyeSlash,
+  FaImage,
+  FaVideo,
+  FaUpload,
   FaSearch,
   FaFilter,
-  FaImages,
-  FaVideo,
-  FaCalendar,
-  FaTag,
-  FaShareAlt,
-  FaExternalLinkAlt,
-  FaSpinner,
-} from "react-icons/fa";
-import toast from "react-hot-toast";
-import { galleryService } from "../../services/gallery.service";
+  FaSync,
+  FaCheck,
+  FaTimes,
+  FaCalendar
+} from 'react-icons/fa';
+import { galleryService } from '../../services/gallery.service';
+import Button from '../../components/common/Button';
+import UploadModal from './UploadModal';
+import EditModal from './EditModal';
+import { useToast } from '../../hooks/useToast';
 
 const AdminGallery = () => {
-  const [gallery, setGallery] = useState([]);
-  const [filteredGallery, setFilteredGallery] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "clinic",
-    tags: "",
-    featured: false,
-  });
-  const [editFormData, setEditFormData] = useState({});
-  const fileRef = useRef(null);
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    search: "",
-    category: "all",
-    type: "all",
-    featured: "all",
+    search: '',
+    category: 'all',
+    type: 'all',
+    featured: 'all',
+    showOnSlider: 'all'
   });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 12,
+    total: 0,
+    totalPages: 1
+  });
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const { showToast } = useToast();
 
   const categories = [
-    { value: "all", label: "All Categories" },
-    { value: "equipment", label: "Equipment", icon: "🩺" },
-    { value: "session", label: "Sessions", icon: "💆" },
-    { value: "clinic", label: "Clinic", icon: "🏥" },
-    { value: "exercises", label: "Exercises", icon: "🏃" },
-    { value: "team", label: "Team", icon: "👥" },
-    { value: "success", label: "Success Stories", icon: "🌟" },
+    'all', 'equipment', 'session', 'clinic', 'exercises', 'team', 'success'
   ];
 
+  // Memoized stats derived from galleryItems
+  const stats = useMemo(() => {
+    const totalItems = galleryItems.length;
+    const featuredItems = galleryItems.filter(item => item.featured).length;
+    const sliderItems = galleryItems.filter(item => item.showOnSlider).length;
+    const showDetailButtonItems = galleryItems.filter(item => item.showDetailButton).length;
+    const imagesCount = galleryItems.filter(item => item.type === 'image').length;
+    const videosCount = galleryItems.filter(item => item.type === 'video').length;
+
+    return {
+      totalItems,
+      featuredItems,
+      sliderItems,
+      showDetailButtonItems,
+      imagesCount,
+      videosCount
+    };
+  }, [galleryItems]);
+
+  // Filter gallery items based on current filters
+  const filteredItems = useMemo(() => {
+    let items = [...galleryItems];
+
+    // Apply search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      items = items.filter(item => 
+        item.title.toLowerCase().includes(searchLower) ||
+        item.description.toLowerCase().includes(searchLower) ||
+        item.tags?.some(tag => tag.toLowerCase().includes(searchLower)) ||
+        item.category.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Apply category filter
+    if (filters.category !== 'all') {
+      items = items.filter(item => item.category === filters.category);
+    }
+
+    // Apply type filter
+    if (filters.type !== 'all') {
+      items = items.filter(item => item.type === filters.type);
+    }
+
+    // Apply featured filter
+    if (filters.featured !== 'all') {
+      items = items.filter(item => item.featured === (filters.featured === 'true'));
+    }
+
+    // Apply slider filter
+    if (filters.showOnSlider !== 'all') {
+      items = items.filter(item => item.showOnSlider === (filters.showOnSlider === 'true'));
+    }
+
+    // Sort: featured first, then by createdAt
+    items.sort((a, b) => {
+      if (a.featured && !b.featured) return -1;
+      if (!a.featured && b.featured) return 1;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    return items;
+  }, [galleryItems, filters]);
+
+  // Paginated items
+  const paginatedItems = useMemo(() => {
+    const start = (pagination.page - 1) * pagination.limit;
+    const end = start + pagination.limit;
+    return filteredItems.slice(start, end);
+  }, [filteredItems, pagination.page, pagination.limit]);
+
+  // Initial fetch
   useEffect(() => {
-    loadGallery();
-    loadStats();
+    fetchInitialGallery();
   }, []);
 
+  // Update pagination total when filtered items change
   useEffect(() => {
-    filterGallery();
-  }, [filters, gallery]);
+    setPagination(prev => ({
+      ...prev,
+      total: filteredItems.length,
+      totalPages: Math.ceil(filteredItems.length / prev.limit)
+    }));
+  }, [filteredItems]);
 
-  // AdminGallery.jsx में loadGallery function को update करें
-const loadGallery = async () => {
-  setLoading(true);
-  try {
-    console.log("🔄 Loading gallery...");
-    
-    const response = await galleryService.getGallery({
-      search: filters.search || undefined,
-      category: filters.category !== "all" ? filters.category : undefined,
-      type: filters.type !== "all" ? filters.type : undefined,
-      featured: filters.featured !== "all" 
-        ? (filters.featured === "featured" ? true : false) 
-        : undefined,
-    });
-    
-    console.log("✅ Gallery API Response:", response);
-    console.log("✅ Gallery data received:", response.data?.length || 0, "items");
-    
-    if (response.data && Array.isArray(response.data)) {
-      setGallery(response.data);
-      console.log("✅ Gallery state set with", response.data.length, "items");
-      
-      // Log first item to see structure
-      if (response.data.length > 0) {
-        console.log("✅ First gallery item:", response.data[0]);
-      }
-    } else {
-      console.error("❌ No data or invalid data format in response:", response);
-      toast.error("No gallery data received");
-    }
-  } catch (error) {
-    console.error("❌ Failed to load gallery:", error);
-    console.error("❌ Error details:", error.response?.data);
-    
-    if (error.response?.status === 401) {
-      toast.error("Unauthorized. Please login again.");
-    } else if (error.response?.status === 403) {
-      toast.error("You don't have permission to view gallery.");
-    } else {
-      toast.error("Failed to load gallery");
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const loadStats = async () => {
+  const fetchInitialGallery = async () => {
     try {
-      const response = await galleryService.getGalleryStats();
-      setStats(response.data);
+      setLoading(true);
+      const response = await galleryService.getGallery({
+        page: 1,
+        limit: 1000 // Fetch enough items for admin panel
+      });
+      setGalleryItems(response.data || []);
     } catch (error) {
-      console.error("Failed to load stats:", error);
+      showToast('Failed to load gallery items', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filterGallery = () => {
-    let filtered = [...gallery];
+  // Optimistic toggle functions
+  const handleToggleFeatured = async (id, currentStatus) => {
+    const previousItems = [...galleryItems];
+    const itemIndex = galleryItems.findIndex(item => item._id === id);
+    
+    if (itemIndex === -1) return;
 
-    if (filters.search) {
-      const term = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (item) =>
-          item.title.toLowerCase().includes(term) ||
-          item.description.toLowerCase().includes(term) ||
-          (item.tags && item.tags.some((tag) => tag.toLowerCase().includes(term))),
-      );
+    // Optimistic update
+    const updatedItems = [...galleryItems];
+    updatedItems[itemIndex] = {
+      ...updatedItems[itemIndex],
+      featured: !currentStatus
+    };
+    setGalleryItems(updatedItems);
+
+    try {
+      await galleryService.toggleFeatured(id);
+      showToast(`Item ${!currentStatus ? 'marked as featured' : 'removed from featured'}`, 'success');
+    } catch (error) {
+      // Revert on error
+      setGalleryItems(previousItems);
+      showToast('Failed to update featured status', 'error');
     }
-
-    if (filters.category !== "all") {
-      filtered = filtered.filter((item) => item.category === filters.category);
-    }
-
-    if (filters.type !== "all") {
-      filtered = filtered.filter((item) => item.type === filters.type);
-    }
-
-    if (filters.featured !== "all") {
-      filtered = filtered.filter((item) =>
-        filters.featured === "featured" ? item.featured : !item.featured,
-      );
-    }
-
-    setFilteredGallery(filtered);
   };
 
-  const handleUpload = async (e) => {
-  e.preventDefault();
-  
-  if (selectedFiles.length === 0) {
-    toast.error("Please select at least one file");
-    return;
-  }
-  
-  setUploading(true);
-  
-  try {
-    console.log("🔄 Uploading files...");
-    console.log("📋 Form data:", formData);
+  const handleToggleDetailButton = async (id, currentStatus) => {
+    const previousItems = [...galleryItems];
+    const itemIndex = galleryItems.findIndex(item => item._id === id);
     
-    // Create FormData object
-    const uploadFormData = new FormData();
-    
-    // Add files
-    selectedFiles.forEach((file) => {
-      uploadFormData.append("files", file);
-    });
-    
-    // Add metadata - सही नामों का use करें
-    uploadFormData.append("title", formData.title || "Untitled");
-    uploadFormData.append("description", formData.description || "");
-    uploadFormData.append("category", formData.category || "clinic");
-    uploadFormData.append("tags", formData.tags || "");
-    uploadFormData.append("featured", formData.featured.toString());
-    
-    console.log("📤 Uploading FormData:");
-    for (let [key, value] of uploadFormData.entries()) {
-      console.log(`${key}:`, value);
+    if (itemIndex === -1) return;
+
+    // Optimistic update
+    const updatedItems = [...galleryItems];
+    updatedItems[itemIndex] = {
+      ...updatedItems[itemIndex],
+      showDetailButton: !currentStatus
+    };
+    setGalleryItems(updatedItems);
+
+    try {
+      await galleryService.toggleDetailButton(id);
+      showToast(`Detail button ${!currentStatus ? 'enabled' : 'disabled'}`, 'success');
+    } catch (error) {
+      // Revert on error
+      setGalleryItems(previousItems);
+      showToast('Failed to update detail button', 'error');
     }
+  };
+
+  const handleToggleSlider = async (id, currentStatus) => {
+    const previousItems = [...galleryItems];
+    const itemIndex = galleryItems.findIndex(item => item._id === id);
     
-    const response = await galleryService.uploadMedia(uploadFormData);
-    
-    // Refresh gallery
-    await loadGallery();
-    await loadStats();
-    
-    toast.success(response.message || "Uploaded successfully");
-    
-    // Reset form
-    setSelectedFiles([]);
-    setFormData({
-      title: "",
-      description: "",
-      category: "clinic",
-      tags: "",
-      featured: false,
-    });
-    setIsUploadModalOpen(false);
-    
-  } catch (error) {
-    console.error("❌ Upload failed:", error);
-    console.error("❌ Error details:", error.response?.data);
-    
-    const errorMessage = error.response?.data?.message || 
-                        error.response?.data?.error || 
-                        error.message || 
-                        "Upload failed";
-    toast.error(errorMessage);
-  } finally {
-    setUploading(false);
-  }
-};
+    if (itemIndex === -1) return;
+
+    // Optimistic update
+    const updatedItems = [...galleryItems];
+    updatedItems[itemIndex] = {
+      ...updatedItems[itemIndex],
+      showOnSlider: !currentStatus
+    };
+    setGalleryItems(updatedItems);
+
+    try {
+      await galleryService.toggleSlider(id);
+      showToast(`Slider visibility ${!currentStatus ? 'enabled' : 'disabled'}`, 'success');
+    } catch (error) {
+      // Revert on error
+      setGalleryItems(previousItems);
+      showToast('Failed to update slider visibility', 'error');
+    }
+  };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      try {
-        await galleryService.deleteGalleryItem(id);
-        
-        // Update local state
-        const updated = gallery.filter((item) => item._id !== id);
-        setGallery(updated);
-        
-        toast.success("Item deleted successfully");
-        loadStats();
-      } catch (error) {
-        console.error("Failed to delete item:", error);
-        toast.error("Failed to delete item");
-      }
-    }
-  };
-
-  const handleFileSelect = (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedFiles(files);
+    if (!window.confirm('Are you sure you want to delete this item?')) return;
     
-    // Set default title from first file name
-    if (files.length > 0 && !formData.title) {
-      const fileName = files[0].name.replace(/\.[^/.]+$/, "");
-      setFormData(prev => ({ ...prev, title: fileName }));
-    }
-  };
+    const previousItems = [...galleryItems];
+    
+    // Optimistic update
+    const updatedItems = galleryItems.filter(item => item._id !== id);
+    setGalleryItems(updatedItems);
 
-  const handleToggleFeatured = async (id, currentFeatured) => {
     try {
-      await galleryService.toggleFeatured(id, !currentFeatured);
-      
-      // Update local state
-      const updated = gallery.map((item) =>
-        item._id === id ? { ...item, featured: !currentFeatured } : item,
-      );
-      setGallery(updated);
-      
-      toast.success(`Featured status updated`);
+      await galleryService.deleteGalleryItem(id);
+      showToast('Item deleted successfully', 'success');
     } catch (error) {
-      console.error("Failed to update featured status:", error);
-      toast.error("Failed to update featured status");
+      // Revert on error
+      setGalleryItems(previousItems);
+      showToast('Failed to delete item', 'error');
     }
-  };
-
-  const handleView = (item) => {
-    setSelectedItem(item);
-    setIsViewModalOpen(true);
   };
 
   const handleEdit = (item) => {
     setSelectedItem(item);
-    setEditFormData({
-      title: item.title,
-      description: item.description,
-      category: item.category,
-      tags: item.tags?.join(", ") || "",
-      featured: item.featured,
-    });
-    setIsEditModalOpen(true);
+    setShowEditModal(true);
   };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
+  const handleUploadSuccess = (newItems) => {
+    setShowUploadModal(false);
+    setGalleryItems(prev => [...newItems, ...prev]);
+    showToast('Media uploaded successfully!', 'success');
+  };
+
+  const handleEditSuccess = (updatedItem) => {
+    setShowEditModal(false);
+    setSelectedItem(null);
     
-    try {
-      await galleryService.updateGalleryItem(selectedItem._id, editFormData);
-      
-      // Refresh gallery
-      await loadGallery();
-      
-      toast.success("Item updated successfully");
-      setIsEditModalOpen(false);
-    } catch (error) {
-      console.error("Failed to update item:", error);
-      toast.error("Failed to update item");
-    }
+    // Update the item in local state
+    setGalleryItems(prev => 
+      prev.map(item => item._id === updatedItem._id ? updatedItem : item)
+    );
+    
+    showToast('Item updated successfully', 'success');
   };
 
-  const handleDownload = (item) => {
-    const link = document.createElement("a");
-    link.href = item.url;
-    link.download = item.title.replace(/\s+/g, "-").toLowerCase() + (item.type === "image" ? ".jpg" : ".mp4");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Download started");
+  // Format date for display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
-  const handleShare = (item) => {
-    if (navigator.share) {
-      navigator.share({
-        title: item.title,
-        text: item.description,
-        url: item.url,
-      });
-    } else {
-      navigator.clipboard.writeText(item.url);
-      toast.success("Link copied to clipboard");
-    }
-  };
-
-  const [stats, setStats] = useState({
-    totalItems: 0,
-    featuredItems: 0,
-    imagesCount: 0,
-    videosCount: 0,
-  });
+  const StatsCard = ({ title, value, icon, color }) => (
+    <motion.div
+      key={`${title}-${value}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-gray-600 mb-1">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+        </div>
+        <div className={`p-3 rounded-full ${color}`}>
+          {icon}
+        </div>
+      </div>
+    </motion.div>
+  );
 
   return (
-    <>
-      <Helmet>
-        <title>Gallery Management | MEDIHOPE Admin</title>
-      </Helmet>
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Media Gallery</h1>
+        <p className="text-gray-600 mt-2">Manage your gallery content and slider visibility</p>
+      </div>
 
-      <div className="space-y-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      {/* Stats Grid - Derived from local state */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatsCard
+          title="Total Items"
+          value={stats.totalItems}
+          icon={<FaImage className="text-xl text-blue-600" />}
+          color="bg-blue-50"
+        />
+        <StatsCard
+          title="Featured"
+          value={stats.featuredItems}
+          icon={<FaStar className="text-xl text-yellow-600" />}
+          color="bg-yellow-50"
+        />
+        <StatsCard
+          title="On Slider"
+          value={stats.sliderItems}
+          icon={<FaEye className="text-xl text-green-600" />}
+          color="bg-green-50"
+        />
+        <StatsCard
+          title="With Detail Button"
+          value={stats.showDetailButtonItems}
+          icon={<FaCheck className="text-xl text-purple-600" />}
+          color="bg-purple-50"
+        />
+      </div>
+
+      {/* Filters Bar */}
+      <div className="bg-white rounded-xl p-6 mb-6 shadow-sm border border-gray-100">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Gallery Management
-            </h1>
-            <p className="text-gray-600">
-              Manage clinic photos, videos, and media content
-            </p>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Search
+            </label>
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={filters.search}
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                className="pl-10 w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Search items..."
+              />
+            </div>
           </div>
-          <Button onClick={() => setIsUploadModalOpen(true)}>
-            <FaPlus className="mr-2" />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Category
+            </label>
+            <select
+              value={filters.category}
+              onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {categories.map(category => (
+                <option key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Type
+            </label>
+            <select
+              value={filters.type}
+              onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All Types</option>
+              <option value="image">Images</option>
+              <option value="video">Videos</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Featured
+            </label>
+            <select
+              value={filters.featured}
+              onChange={(e) => setFilters(prev => ({ ...prev, featured: e.target.value }))}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All</option>
+              <option value="true">Featured Only</option>
+              <option value="false">Not Featured</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              On Slider
+            </label>
+            <select
+              value={filters.showOnSlider}
+              onChange={(e) => setFilters(prev => ({ ...prev, showOnSlider: e.target.value }))}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All</option>
+              <option value="true">On Slider</option>
+              <option value="false">Not on Slider</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center mt-6">
+          <div className="text-sm text-gray-600">
+            Showing {paginatedItems.length} of {filteredItems.length} items
+            {filters.search && ` (filtered from ${stats.totalItems} total)`}
+          </div>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={fetchInitialGallery}
+              className="flex items-center gap-2"
+            >
+              <FaSync />
+              Refresh All
+            </Button>
+            <Button
+              onClick={() => setShowUploadModal(true)}
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700"
+            >
+              <FaUpload />
+              Upload Media
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Gallery Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl p-4 animate-pulse">
+              <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          ))}
+        </div>
+      ) : paginatedItems.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-xl">
+          <FaImage className="text-5xl text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">No items found</h3>
+          <p className="text-gray-500 mb-6">Upload your first media item to get started</p>
+          <Button onClick={() => setShowUploadModal(true)}>
             Upload Media
           </Button>
         </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Items</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.totalItems}
-                </p>
-              </div>
-              <div className="p-3 bg-cyan-100 text-cyan-600 rounded-lg">
-                <FaImages className="text-xl" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Featured</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.featuredItems}
-                </p>
-              </div>
-              <div className="p-3 bg-yellow-100 text-yellow-600 rounded-lg">
-                <FaEye className="text-xl" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Images</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.imagesCount}
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 text-green-600 rounded-lg">
-                <FaImages className="text-xl" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Videos</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.videosCount}
-                </p>
-              </div>
-              <div className="p-3 bg-purple-100 text-purple-600 rounded-lg">
-                <FaVideo className="text-xl" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Search
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <FaSearch />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search gallery..."
-                  value={filters.search}
-                  onChange={(e) => {
-                    setFilters({ ...filters, search: e.target.value });
-                    loadGallery(); // Fetch from backend with search
-                  }}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                value={filters.category}
-                onChange={(e) => {
-                  setFilters({ ...filters, category: e.target.value });
-                  loadGallery(); // Fetch from backend with category filter
-                }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                {categories.map((category) => (
-                  <option key={category.value} value={category.value}>
-                    {category.icon} {category.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Media Type
-              </label>
-              <select
-                value={filters.type}
-                onChange={(e) => {
-                  setFilters({ ...filters, type: e.target.value });
-                  loadGallery(); // Fetch from backend with type filter
-                }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="all">All Types</option>
-                <option value="image">Images</option>
-                <option value="video">Videos</option>
-              </select>
-            </div>
-
-            <div className="flex items-end my-1.5">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setFilters({
-                    search: "",
-                    category: "all",
-                    type: "all",
-                    featured: "all",
-                  });
-                  loadGallery();
-                }}
-                fullWidth
-              >
-                <FaFilter className="mr-2" />
-                Clear Filters
-              </Button>
-            </div>
-          </div>
-
-          {/* Featured Filter */}
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Featured Status
-            </label>
-            <div className="flex space-x-4">
-              <button
-                onClick={() => {
-                  setFilters({ ...filters, featured: "all" });
-                  loadGallery();
-                }}
-                className={`px-4 py-1.5 rounded-lg ${
-                  filters.featured === "all"
-                    ? "bg-primary-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => {
-                  setFilters({ ...filters, featured: "featured" });
-                  loadGallery();
-                }}
-                className={`px-4 py-1.5 rounded-lg ${
-                  filters.featured === "featured"
-                    ? "bg-yellow-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                Featured Only
-              </button>
-              <button
-                onClick={() => {
-                  setFilters({ ...filters, featured: "regular" });
-                  loadGallery();
-                }}
-                className={`px-4 py-1.5 rounded-lg ${
-                  filters.featured === "regular"
-                    ? "bg-gray-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                Regular Only
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Gallery Grid */}
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-          </div>
-        ) : filteredGallery.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl shadow-sm">
-            <div className="text-6xl mb-6">🖼️</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No gallery items found
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {filters.search ||
-              filters.category !== "all" ||
-              filters.type !== "all" ||
-              filters.featured !== "all"
-                ? "Try changing your filter criteria"
-                : "No gallery items added yet"}
-            </p>
-            <Button onClick={() => setIsUploadModalOpen(true)}>
-              <FaPlus className="mr-2" />
-              Upload Your First Item
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGallery.map((item) => (
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <AnimatePresence mode="popLayout">
+            {paginatedItems.map((item) => (
               <motion.div
                 key={item._id}
-                initial={{ opacity: 0, scale: 0.95 }}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300"
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
               >
-                {/* Thumbnail */}
-                <div className="relative h-48 overflow-hidden group">
-                  {item.type === "image" ? (
+                {/* Media Preview */}
+                <div className="relative h-48 overflow-hidden">
+                  {item.type === 'image' ? (
                     <img
-                      src={item.thumbnail || item.url}
+                      src={item.thumbnail}
                       alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "https://via.placeholder.com/400x250?text=No+Image";
-                      }}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                      <video className="w-full h-full object-cover">
-                        <source src={item.url} type="video/mp4" />
-                      </video>
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <FaVideo className="text-white text-4xl" />
+                    <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+                      <FaVideo className="text-4xl text-white" />
+                      <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
                       </div>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex justify-between items-center">
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded ${
-                            item.type === "image"
-                              ? "bg-cyan-500 text-white"
-                              : "bg-purple-500 text-white"
-                          }`}
-                        >
-                          {item.type.toUpperCase()}
-                        </span>
-                        {item.featured && (
-                          <span className="px-2 py-1 bg-yellow-500 text-white text-xs font-medium rounded">
-                            Featured
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                  
+                  {/* Badges */}
+                  <div className="absolute top-2 left-2 flex flex-col gap-1">
+                    {item.featured && (
+                      <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        <FaStar className="text-xs" /> Featured
+                      </span>
+                    )}
+                    {item.type === 'image' ? (
+                      <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                        Image
+                      </span>
+                    ) : (
+                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                        Video
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-semibold text-gray-900 line-clamp-1">
-                      {item.title}
-                    </h3>
-                    <span className="text-xs text-gray-500">
-                      {categories.find((c) => c.value === item.category)?.icon}
+                <div className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold text-gray-900 truncate">{item.title}</h3>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      {item.category}
                     </span>
                   </div>
-
-                  <p className="text-sm text-gray-600 line-clamp-2 mb-4">
-                    {item.description}
-                  </p>
-
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">{item.description}</p>
+                  
+                  {/* Upload Date */}
+                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
+                    <FaCalendar className="text-gray-400" />
+                    <span>Uploaded: {formatDate(item.createdAt)}</span>
+                  </div>
+                  
                   {/* Tags */}
-                  {item.tags && item.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {item.tags.slice(0, 3).map((tag, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-                        >
-                          <FaTag className="mr-1" size={8} />
-                          {tag}
-                        </span>
-                      ))}
-                      {item.tags.length > 3 && (
-                        <span className="text-xs text-gray-500">
-                          +{item.tags.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Metadata */}
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <div className="flex items-center">
-                      <FaCalendar className="mr-2" />
-                      {new Date(item.createdAt).toLocaleDateString()}
-                    </div>
-                    <div className="text-xs px-2 py-1 bg-gray-100 rounded">
-                      {item.category}
-                    </div>
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {item.tags?.slice(0, 3).map((tag, index) => (
+                      <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                        {tag}
+                      </span>
+                    ))}
+                    {item.tags?.length > 3 && (
+                      <span className="text-xs text-gray-500">+{item.tags.length - 3}</span>
+                    )}
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex justify-between items-center">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleView(item)}
-                        className="p-2 text-cyan-600 hover:bg-cyan-50 rounded-lg"
-                        title="View"
-                      >
-                        <FaEye />
-                      </button>
-                      <button
-                        onClick={() => handleDownload(item)}
-                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
-                        title="Download"
-                      >
-                        <FaDownload />
-                      </button>
-                      <button
-                        onClick={() => handleShare(item)}
-                        className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg"
-                        title="Share"
-                      >
-                        <FaShareAlt />
-                      </button>
-                    </div>
+                  {/* Toggle Buttons */}
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <button
+                      onClick={() => handleToggleFeatured(item._id, item.featured)}
+                      className={`flex items-center justify-center gap-1 text-xs py-2 rounded-lg transition-colors ${
+                        item.featured
+                          ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                          : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      {item.featured ? <FaStar /> : <FaRegStar />}
+                      Featured
+                    </button>
+                    
+                    <button
+                      onClick={() => handleToggleDetailButton(item._id, item.showDetailButton)}
+                      className={`flex items-center justify-center gap-1 text-xs py-2 rounded-lg transition-colors ${
+                        item.showDetailButton
+                          ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                          : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      {item.showDetailButton ? <FaCheck /> : <FaTimes />}
+                      Detail Btn
+                    </button>
+                    
+                    <button
+                      onClick={() => handleToggleSlider(item._id, item.showOnSlider)}
+                      className={`flex items-center justify-center gap-1 text-xs py-2 rounded-lg transition-colors ${
+                        item.showOnSlider
+                          ? 'bg-green-50 text-green-700 border border-green-200'
+                          : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      {item.showOnSlider ? <FaEye /> : <FaEyeSlash />}
+                      Slider
+                    </button>
+                  </div>
 
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleToggleFeatured(item._id, item.featured)}
-                        className={`p-2 rounded-lg ${
-                          item.featured
-                            ? "text-yellow-600 hover:bg-yellow-50"
-                            : "text-gray-600 hover:bg-gray-100"
-                        }`}
-                        title={
-                          item.featured ? "Remove featured" : "Mark as featured"
-                        }
-                      >
-                        <FaEye />
-                      </button>
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                        title="Edit"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item._id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        title="Delete"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="flex-1 flex items-center justify-center gap-2 text-sm py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                      <FaEdit /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      className="flex-1 flex items-center justify-center gap-2 text-sm py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
+                    >
+                      <FaTrash /> Delete
+                    </button>
                   </div>
                 </div>
               </motion.div>
             ))}
-          </div>
-        )}
-      </div>
+          </AnimatePresence>
+        </div>
+      )}
 
-      {/* Upload Modal */}
-      <Modal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        title="Upload Media"
-        size="lg"
-      >
-        <form onSubmit={handleUpload} className="space-y-6 px-4 md:px-6 mb-4">
-          {/* Drag & Drop Area */}
-          <div
-            className="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center 
-hover:border-primary-500 hover:bg-primary-50/40 transition-all"
-          >
-            <div className="text-4xl mb-4 text-primary-600">📁</div>
-
-            <p className="text-lg font-medium text-gray-700 mb-2">
-              Drag & drop files here
-            </p>
-
-            <p className="text-sm text-gray-500 mb-6">
-              or click to browse (Supports JPG, PNG, GIF, MP4 up to 50MB)
-            </p>
-
-            <input
-              type="file"
-              ref={fileRef}
-              className="hidden"
-              multiple
-              accept="image/*,video/*"
-              onChange={handleFileSelect}
-            />
-
-            <Button type="button" onClick={() => fileRef.current.click()}>
-              Browse Files
-            </Button>
-          </div>
-
-          {/* File Info */}
-          {selectedFiles.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-3">
-                Selected Files ({selectedFiles.length})
-              </h4>
-              <div className="space-y-3">
-                {selectedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between gap-4">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center mr-3">
-                        {file.type.startsWith("image") ? <FaImages /> : <FaVideo />}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{file.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {(file.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Additional Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                placeholder="Enter title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              >
-                {categories.slice(1).map((category) => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
-            <textarea
-              rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-              placeholder="Enter description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tags (comma separated)
-            </label>
-            <input
-              type="text"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-              placeholder="equipment, technology, modern"
-              value={formData.tags}
-              onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-            />
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="featuredUpload"
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              checked={formData.featured}
-              onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-            />
-            <label
-              htmlFor="featuredUpload"
-              className="ml-2 block text-sm text-gray-700"
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-center mt-8">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+              disabled={pagination.page === 1}
+              className="px-4 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Mark as featured
-            </label>
-          </div>
+              Previous
+            </button>
+            
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum;
+              if (pagination.totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (pagination.page <= 3) {
+                pageNum = i + 1;
+              } else if (pagination.page >= pagination.totalPages - 2) {
+                pageNum = pagination.totalPages - 4 + i;
+              } else {
+                pageNum = pagination.page - 2 + i;
+              }
 
-          <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => setIsUploadModalOpen(false)}
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setPagination(prev => ({ ...prev, page: pageNum }))}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    pagination.page === pageNum
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            
+            <button
+              onClick={() => setPagination(prev => ({ ...prev, page: Math.min(pagination.totalPages, prev.page + 1) }))}
+              disabled={pagination.page === pagination.totalPages}
+              className="px-4 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Cancel
-            </Button>
-            <Button type="submit" loading={uploading}>
-              {uploading ? "Uploading..." : "Upload Files"}
-            </Button>
+              Next
+            </button>
           </div>
-        </form>
-      </Modal>
+        </div>
+      )}
 
-      {/* View Modal */}
-      <Modal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        title={selectedItem?.title}
-        size="xl"
-      >
-        {selectedItem && (
-          <div className="space-y-6 px-4 md:px-6 mb-4">
-            {/* Media Display */}
-            <div className="relative rounded-xl overflow-hidden bg-gray-900">
-              {selectedItem.type === "image" ? (
-                <img
-                  src={selectedItem.url}
-                  alt={selectedItem.title}
-                  className="w-full max-h-[70vh] object-contain mx-auto"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "https://via.placeholder.com/800x600?text=Image+Not+Found";
-                  }}
-                />
-              ) : (
-                <video
-                  src={selectedItem.url}
-                  controls
-                  className="w-full max-h-[70vh] mx-auto"
-                >
-                  Your browser does not support the video tag.
-                </video>
-              )}
-              <div className="absolute top-4 right-4 flex space-x-2">
-                <button
-                  onClick={() => handleDownload(selectedItem)}
-                  className="p-2 bg-white/20 backdrop-blur-sm text-white rounded-lg 
-hover:bg-white/30 transition-all hover:scale-105"
-                >
-                  <FaDownload />
-                </button>
-                <button
-                  onClick={() => handleShare(selectedItem)}
-                  className="p-2 bg-white/20 backdrop-blur-sm text-white rounded-lg 
-hover:bg-white/30 transition-all hover:scale-105"
-                >
-                  <FaShareAlt />
-                </button>
-              </div>
-            </div>
-
-            {/* Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-2">
-                  Description
-                </h4>
-                <p className="text-gray-900 break-words leading-relaxed">
-                  {selectedItem.description}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-2">
-                  Details
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Category:</span>
-                    <span className="font-medium">
-                      {
-                        categories.find(
-                          (c) => c.value === selectedItem.category,
-                        )?.label
-                      }
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Type:</span>
-                    <span className="font-medium">{selectedItem.type}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Uploaded:</span>
-                    <span className="font-medium">
-                      {new Date(selectedItem.createdAt).toLocaleDateString(
-                        "en-IN",
-                        {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        },
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Status:</span>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded ${
-                        selectedItem.featured
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {selectedItem.featured ? "Featured" : "Regular"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Tags */}
-            {selectedItem.tags && selectedItem.tags.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-3">Tags</h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedItem.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-primary-100 text-primary-700 text-sm rounded-full whitespace-nowrap"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex justify-end space-x-3 pt-6 border-t">
-              <a
-                href={selectedItem.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center px-4 py-2 text-cyan-600 hover:bg-cyan-50 rounded-lg"
-              >
-                <FaExternalLinkAlt className="mr-2" />
-                Open in New Tab
-              </a>
-              <Button
-                variant="outline"
-                onClick={() => handleToggleFeatured(selectedItem._id, selectedItem.featured)}
-              >
-                {selectedItem.featured ? "Remove Featured" : "Mark as Featured"}
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* Edit Modal */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        title="Edit Gallery Item"
-        size="lg"
-      >
-        {selectedItem && (
-          <form onSubmit={handleUpdate} className="space-y-6 px-4 md:px-6 mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Title
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                  placeholder="Enter title"
-                  value={editFormData.title}
-                  onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
-                </label>
-                <select
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                  value={editFormData.category}
-                  onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
-                >
-                  {categories.slice(1).map((category) => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                placeholder="Enter description"
-                value={editFormData.description}
-                onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tags (comma separated)
-              </label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                placeholder="equipment, technology, modern"
-                value={editFormData.tags}
-                onChange={(e) => setEditFormData({ ...editFormData, tags: e.target.value })}
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="featuredEdit"
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                checked={editFormData.featured}
-                onChange={(e) => setEditFormData({ ...editFormData, featured: e.target.checked })}
-              />
-              <label
-                htmlFor="featuredEdit"
-                className="ml-2 block text-sm text-gray-700"
-              >
-                Mark as featured
-              </label>
-            </div>
-
-            <div className="flex justify-end space-x-3 pt-4 border-t">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        )}
-      </Modal>
-    </>
+      {/* Modals */}
+      <UploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onSuccess={handleUploadSuccess}
+      />
+      
+      {selectedItem && (
+        <EditModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedItem(null);
+          }}
+          item={selectedItem}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+    </div>
   );
 };
 

@@ -35,6 +35,14 @@ const gallerySchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  showDetailButton: {
+    type: Boolean,
+    default: false
+  },
+  showOnSlider: {
+    type: Boolean,
+    default: true
+  },
   tags: [{
     type: String,
     trim: true
@@ -47,7 +55,7 @@ const gallerySchema = new mongoose.Schema({
     type: String
   },
   duration: {
-    type: Number, // for videos in seconds
+    type: Number,
     default: 0
   },
   dimensions: {
@@ -64,6 +72,7 @@ const gallerySchema = new mongoose.Schema({
 
 // Index for filtering
 gallerySchema.index({ category: 1, type: 1, featured: 1 });
+gallerySchema.index({ showOnSlider: 1, featured: -1 });
 gallerySchema.index({ title: 'text', description: 'text', tags: 'text' });
 
 const Gallery = mongoose.model('Gallery', gallerySchema);
