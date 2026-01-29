@@ -17,6 +17,7 @@ import galleryRoutes from './routes/gallery.routes.js';
 import testimonialRoutes from './routes/testimonials.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import testRoutes from './routes/test.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
 
 const app = express();
 
@@ -82,6 +83,7 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/test', testRoutes);
+app.use('/api/upload', uploadRoutes);
 
 /* ================= HEALTH CHECK ================= */
 app.get('/api/health', (req, res) => {

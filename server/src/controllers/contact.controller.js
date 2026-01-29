@@ -3,6 +3,8 @@ import Contact from '../models/Contact.model.js';
 import { sendEmail } from '../utils/emailService.js';
 import { validateEmail, validatePhone } from '../utils/helpers.js';
 import { createNotification } from './notification.controller.js';
+import { sendWhatsAppMessage, whatsappTemplates } from '../utils/whatsappService.js';
+// import { CLINIC_INFO } from '../constants.js';
 
 // @desc    Send contact message (public) - Updated version
 // @route   POST /api/contact
@@ -50,8 +52,9 @@ export const sendContactMessage = async (req, res, next) => {
       userAgent
     });
 
+    // ✅ BUG FIX: Send notifications WITHOUT nesting or duplication
     try {
-      // Send email notification to admin
+      // 1. Send email to admin
       await sendEmail({
         email: process.env.ADMIN_EMAIL || 'admin@medihope.com',
         subject: `New Contact Message: ${subject}`,
@@ -83,8 +86,26 @@ export const sendContactMessage = async (req, res, next) => {
           </div>
         `,
       });
+      
+      console.log('✅ Admin email sent');
+    } catch (emailError) {
+      console.error('Admin email error:', emailError);
+    }
 
-      // Send auto-response to the sender
+    // 2. Send WhatsApp to admin (using env variables)
+    try {
+      const adminPhone = process.env.ADMIN_PHONE || process.env.WHATSAPP_NUMBER || '9259642281';
+      const whatsappMessage = `📧 New Contact Message\n\nFrom: ${name}\nEmail: ${email}\n${phone ? `Phone: ${phone}\n` : ''}Subject: ${subject}\nMessage: ${message.substring(0, 200)}${message.length > 200 ? '...' : ''}\n\n🔗 View in Admin: ${process.env.CLIENT_URL || 'http://localhost:5173'}/admin`;
+      
+      await sendWhatsAppMessage(adminPhone, whatsappMessage);
+      console.log('✅ WhatsApp notification sent to admin');
+    } catch (whatsappError) {
+      console.error('WhatsApp error:', whatsappError);
+      // Don't fail the request if WhatsApp fails
+    }
+
+    // 3. Send auto-reply to sender
+    try {
       await sendEmail({
         email: email,
         subject: 'Thank you for contacting MEDIHOPE',
@@ -119,10 +140,9 @@ export const sendContactMessage = async (req, res, next) => {
           </div>
         `,
       });
-
-    } catch (emailError) {
-      console.error('Email notification error:', emailError);
-      // Don't fail the contact creation if email fails
+      console.log('✅ Auto-reply email sent');
+    } catch (autoReplyError) {
+      console.error('Auto-reply email error:', autoReplyError);
     }
 
     // Create notification for admin about new contact

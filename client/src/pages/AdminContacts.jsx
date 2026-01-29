@@ -79,23 +79,52 @@ const AdminContacts = () => {
     }
   };
 
-  const handleViewContact = async (contact) => {
-    setSelectedContact(contact);
-    setIsModalOpen(true);
+ const handleViewContact = async (contact) => {
+  setSelectedContact(contact);
+  setIsModalOpen(true);
+  
+  // Immediate optimistic update for UI
+  const wasUnread = !contact.isRead;
+  
+  if (wasUnread) {
+    // Optimistic update first
+    const updatedContacts = contacts.map(c => 
+      c._id === contact._id ? { ...c, isRead: true, status: 'read' } : c
+    );
+    setContacts(updatedContacts);
     
-    // Mark as read if unread
-    if (!contact.isRead) {
-      try {
-        await contactService.markContactAsRead(contact._id);
-        setContacts(prev => prev.map(c => 
-          c._id === contact._id ? { ...c, isRead: true, status: 'read' } : c
-        ));
-        setStats(prev => ({ ...prev, unread: Math.max(0, prev.unread - 1) }));
-      } catch (error) {
-        console.error('Error marking as read:', error);
-      }
+    // Optimistic update stats
+    setStats(prev => ({ 
+      ...prev, 
+      unread: Math.max(0, prev.unread - 1),
+      new: Math.max(0, prev.new - 1)
+    }));
+    
+    // Trigger event to update dashboard and sidebar
+    window.dispatchEvent(new CustomEvent('contactUpdated', { 
+      detail: { action: 'read', contactId: contact._id } 
+    }));
+  }
+  
+  // Then call API
+  try {
+    await contactService.markContactAsRead(contact._id);
+    console.log('✅ Marked as read in backend');
+  } catch (error) {
+    console.error('Error marking as read:', error);
+    // Revert optimistic update if API fails
+    if (wasUnread) {
+      setContacts(prev => prev.map(c => 
+        c._id === contact._id ? { ...c, isRead: false, status: contact.status } : c
+      ));
+      setStats(prev => ({ 
+        ...prev, 
+        unread: prev.unread + 1,
+        new: prev.new + 1
+      }));
     }
-  };
+  }
+};
 
   const handleStatusChange = async (contactId, status) => {
     setActionLoading(true);
@@ -141,15 +170,19 @@ const AdminContacts = () => {
     }
   };
 
-  const handleReply = (contact) => {
-    const subject = `Re: ${contact.subject}`;
-    const body = `\n\n--- Original Message ---\nFrom: ${contact.name} <${contact.email}>\nSubject: ${contact.subject}\nMessage: ${contact.message}\n`;
-    
-    window.open(`mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
-    
-    // Mark as replied
+const handleReply = (contact) => {
+  const subject = `Re: ${contact.subject}`;
+  const body = `\n\n--- Original Message ---\nFrom: ${contact.name} <${contact.email}>\nSubject: ${contact.subject}\nMessage: ${contact.message}\n`;
+  
+  // Use window.location.href for mailto links
+  const mailtoLink = `mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailtoLink;
+  
+  // Mark as replied after a short delay
+  setTimeout(() => {
     handleStatusChange(contact._id, 'replied');
-  };
+  }, 1000);
+};
 
   const getInitials = (name) => {
     return name

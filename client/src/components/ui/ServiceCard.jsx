@@ -6,7 +6,8 @@ import {
   FaCheckCircle, 
   FaUserMd, 
   FaStethoscope,
-  FaArrowRight 
+  FaArrowRight,
+  FaPhoneAlt
 } from 'react-icons/fa';
 import { SERVICE_CATEGORY_LABELS } from '../../utils/constants';
 
@@ -21,6 +22,7 @@ const ServiceCard = ({ service }) => {
     image,
     benefits = [],
     featured = false,
+    showPrice = true,
   } = service;
 
   // Get appropriate icon based on category
@@ -41,7 +43,7 @@ const ServiceCard = ({ service }) => {
       {/* Header with Image */}
       <div className="relative h-56 overflow-hidden">
         <img
-          src={image || 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
+          src={image?.url || 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
@@ -115,12 +117,24 @@ const ServiceCard = ({ service }) => {
         {/* Footer with Price and CTA */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xs text-gray-500 mb-1">Starting from</div>
-            <div className="flex items-center text-2xl font-bold text-gray-900">
-              <FaRupeeSign className="text-gray-700 text-lg" />
-              <span>{price}</span>
-              <span className="text-sm font-normal text-gray-500 ml-1">/session</span>
-            </div>
+            {showPrice && price ? (
+              <>
+                <div className="text-xs text-gray-500 mb-1">Starting from</div>
+                <div className="flex items-center text-2xl font-bold text-gray-900">
+                  <FaRupeeSign className="text-gray-700 text-lg" />
+                  <span>{price}</span>
+                  <span className="text-sm font-normal text-gray-500 ml-1">/session</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-xs text-gray-500 mb-1">Contact for pricing</div>
+                <div className="flex items-center text-lg font-bold text-cyan-600">
+                  <FaPhoneAlt className="mr-2" />
+                  <span>Call for Quote</span>
+                </div>
+              </>
+            )}
           </div>
           
           <Link 
@@ -128,7 +142,7 @@ const ServiceCard = ({ service }) => {
             className="group"
           >
             <button className="flex items-center space-x-2 bg-gradient-to-r from-cyan-600 to-cyan-500 text-white px-5 py-3 rounded-lg font-semibold hover:from-cyan-700 hover:to-cyan-600 transition-all duration-300 shadow-md hover:shadow-lg">
-              <span>Book Now</span>
+              <span>{showPrice && price ? 'Book Now' : 'Inquire Now'}</span>
               <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
             </button>
           </Link>

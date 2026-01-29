@@ -1,4 +1,5 @@
 import Service from '../models/Service.model.js';
+import { deleteFromCloudinary } from '../utils/cloudinary.js';
 
 // @desc    Get all services for public
 // @route   GET /api/services
@@ -12,11 +13,20 @@ export const getServices = async (req, res, next) => {
     if (featured === 'true') query.featured = true;
 
     const services = await Service.find(query).sort('title');
+    
+    // For public routes, only show price if showPrice is true
+    const servicesToSend = services.map(service => {
+      const serviceObj = service.toObject();
+      if (!serviceObj.showPrice) {
+        delete serviceObj.price;
+      }
+      return serviceObj;
+    });
 
     res.status(200).json({
       success: true,
-      count: services.length,
-      data: services,
+      count: servicesToSend.length,
+      data: servicesToSend,
     });
   } catch (error) {
     next(error);
@@ -37,9 +47,15 @@ export const getService = async (req, res, next) => {
       });
     }
 
+    // For public routes, remove price if showPrice is false
+    const serviceObj = service.toObject();
+    if (!serviceObj.showPrice) {
+      delete serviceObj.price;
+    }
+
     res.status(200).json({
       success: true,
-      data: service,
+      data: serviceObj,
     });
   } catch (error) {
     next(error);
@@ -159,6 +175,16 @@ export const createServiceAdmin = async (req, res, next) => {
         .filter(b => b.length > 0);
     }
     
+    // Handle image data structure
+    if (req.body.imageUrl && !req.body.image) {
+      req.body.image = {
+        url: req.body.imageUrl,
+        public_id: req.body.imagePublicId || null
+      };
+      delete req.body.imageUrl;
+      delete req.body.imagePublicId;
+    }
+    
     const service = await Service.create(req.body);
     
     console.log('Service created via admin route:', service);
@@ -234,6 +260,34 @@ export const updateServiceAdmin = async (req, res, next) => {
         .filter(b => b.length > 0);
     }
 
+    // Handle image update - delete old Cloudinary image if new one is provided
+    if (req.body.image && req.body.image.url && req.body.image.url !== service.image.url) {
+      // If old image has a public_id, delete it from Cloudinary
+      if (service.image && service.image.public_id) {
+        try {
+          await deleteFromCloudinary(service.image.public_id);
+        } catch (cloudinaryError) {
+          console.error('Error deleting old Cloudinary image:', cloudinaryError);
+          // Continue with update even if Cloudinary delete fails
+        }
+      }
+    } else if (req.body.imageUrl && req.body.imageUrl !== service.image.url) {
+      // Backward compatibility for old image format
+      if (service.image && service.image.public_id) {
+        try {
+          await deleteFromCloudinary(service.image.public_id);
+        } catch (cloudinaryError) {
+          console.error('Error deleting old Cloudinary image:', cloudinaryError);
+        }
+      }
+      req.body.image = {
+        url: req.body.imageUrl,
+        public_id: req.body.imagePublicId || null
+      };
+      delete req.body.imageUrl;
+      delete req.body.imagePublicId;
+    }
+
     service = await Service.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -291,6 +345,16 @@ export const deleteServiceAdmin = async (req, res, next) => {
       });
     }
 
+    // Delete Cloudinary image if exists
+    if (service.image && service.image.public_id) {
+      try {
+        await deleteFromCloudinary(service.image.public_id);
+      } catch (cloudinaryError) {
+        console.error('Error deleting Cloudinary image:', cloudinaryError);
+        // Continue with deletion even if Cloudinary delete fails
+      }
+    }
+
     // Hard delete from database
     await Service.findByIdAndDelete(req.params.id);
 
@@ -326,7 +390,9 @@ export const testServices = async (req, res) => {
   }
 };
 
-// Status toggle endpoint
+// @desc    Toggle service status
+// @route   PATCH /api/services/:id/status
+// @access  Private/Admin
 export const toggleServiceStatus = async (req, res) => {
   try {
     const { isActive } = req.body;
@@ -353,5 +419,35 @@ export const toggleServiceStatus = async (req, res) => {
       success: false,
       message: 'Failed to update service status'
     });
+  }
+};
+
+// @desc    Toggle price visibility
+// @route   PATCH /api/services/admin/:id/price-visibility
+// @access  Private/Admin
+export const togglePriceVisibility = async (req, res) => {
+  try {
+    const { showPrice } = req.body;
+    
+    const service = await Service.findById(req.params.id);
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: 'Service not found',
+      });
+    }
+
+    service.showPrice = showPrice;
+    await service.save();
+
+    res.status(200).json({
+      success: true,
+      data: service,
+      message: `Price visibility ${showPrice ? 'enabled' : 'disabled'}`
+    });
+  } catch (error) {
+    console.error('Error toggling price visibility:', error);
+    next(error);
   }
 };

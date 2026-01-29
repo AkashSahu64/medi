@@ -466,29 +466,8 @@ const ImageGallerySlider = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-
-            
+            </div>           
           </div>
-
-          {/* Stats */}
-          {/* <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-            {[
-              { label: 'Premium Images', value: sliderItems.filter(i => i.type === 'image').length },
-              { label: 'HD Videos', value: sliderItems.filter(i => i.type === 'video').length },
-              { label: 'Featured Items', value: sliderItems.filter(i => i.featured).length },
-              { label: 'With Details', value: sliderItems.filter(i => i.showDetailButton).length },
-            ].map((stat, idx) => (
-              <div key={idx} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-gray-600 font-medium mt-1">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div> */}
         </div>
       </section>
 

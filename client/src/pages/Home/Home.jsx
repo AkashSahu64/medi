@@ -277,14 +277,16 @@ const Home = () => {
   // }, []);
 
   useEffect(() => {
-    const loadServices = async () => {
-      const response = await fetchServices({ featured: "true" });
-      if (response?.data) {
-        setServices(response.data);
-      }
-    };
-    loadServices();
-  }, []);
+  const loadServices = async () => {
+    const response = await fetchServices();
+    if (response?.data) {
+      // Filter only active services (backend already does this, but double-check)
+      const activeServices = response.data.filter(service => service.isActive !== false);
+      setServices(activeServices);
+    }
+  };
+  loadServices();
+}, []);
 
   const testimonials = [
     {

@@ -101,6 +101,36 @@ const AdminDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+  // Listen for contact read events from other components
+  const handleContactRead = () => {
+    // Refresh dashboard stats when contact is read
+    loadDashboardData(true); // silent refresh
+  };
+  
+  window.addEventListener('contactRead', handleContactRead);
+  
+  return () => {
+    window.removeEventListener('contactRead', handleContactRead);
+  };
+}, []);
+
+useEffect(() => {
+  const handleContactUpdated = (event) => {
+    if (event.detail.action === 'read') {
+      // Refresh dashboard stats silently
+      loadDashboardData(true);
+      console.log('✅ Dashboard updated for contact read');
+    }
+  };
+  
+  window.addEventListener('contactUpdated', handleContactUpdated);
+  
+  return () => {
+    window.removeEventListener('contactUpdated', handleContactUpdated);
+  };
+}, []);
+
   const loadDashboardData = async (silent = false) => {
     if (!silent) {
       setLoading(true);
@@ -448,12 +478,12 @@ const AdminDashboard = () => {
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar - Sticky positioned, starts below topbar */}
           <aside
-            className={`
-            fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
-            lg:sticky lg:top-0 lg:h-[calc(100vh-4rem)] lg:translate-x-0 lg:transform-none
-            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          `}
-          >
+  className={`
+    fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
+    lg:translate-x-0 lg:static lg:inset-auto lg:top-16 lg:h-screen lg:overflow-y-auto lg:border-r no-scrollbar
+    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+  `}
+>
             {/* Logo */}
             <div className="flex items-center justify-between h-16 px-6 border-b">
               <Link to="/admin" className="flex items-center space-x-2">
@@ -571,7 +601,7 @@ const AdminDashboard = () => {
 
           {/* Main Content Area */}
           <main className="flex-1 overflow-y-auto">
-            <div className="p-4 sm:p-6 lg:p-8">
+            <div className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-4rem)]">
               {location.pathname === "/admin" ? (
                 <>
                   {loading ? (

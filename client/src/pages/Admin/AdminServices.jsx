@@ -12,6 +12,7 @@ import {
   FaEdit,
   FaTrash,
   FaEye,
+  FaEyeSlash,
   FaSearch,
   FaFilter,
   FaClock,
@@ -21,12 +22,15 @@ import {
   FaTimes,
   FaSync,
   FaSpinner,
+  FaUpload,
+  FaImage,
 } from "react-icons/fa";
 import {
   SERVICE_CATEGORIES,
   SERVICE_CATEGORY_LABELS,
 } from "../../utils/constants";
 import toast from "react-hot-toast";
+import axiosInstance from "../../services/axiosInstance";
 
 const AdminServices = () => {
   const [services, setServices] = useState([]);
@@ -36,6 +40,9 @@ const AdminServices = () => {
   const [selectedService, setSelectedService] = useState(null);
   const [modalType, setModalType] = useState("create");
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
   const [filters, setFilters] = useState({
     search: "",
@@ -92,9 +99,57 @@ const AdminServices = () => {
     toast.success("Services refreshed");
   };
 
+  const handleImageUpload = async (file) => {
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await axiosInstance.post('/upload/image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.success) {
+        const { url, public_id } = response.data.data;
+        setValue('imageUrl', url);
+        setValue('imagePublicId', public_id);
+        setImagePreview(url);
+        toast.success('Image uploaded successfully');
+        return { url, public_id };
+      } else {
+        toast.error(response.data.message || 'Failed to upload image');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCreate = () => {
     setSelectedService(null);
     setModalType("create");
+    setImagePreview(null);
+    setImageFile(null);
     reset({
       title: "",
       description: "",
@@ -104,6 +159,9 @@ const AdminServices = () => {
       benefits: "",
       featured: false,
       isActive: true,
+      showPrice: true,
+      imageUrl: "",
+      imagePublicId: null,
     });
     setIsModalOpen(true);
   };
@@ -111,6 +169,8 @@ const AdminServices = () => {
   const handleEdit = (service) => {
     setSelectedService(service);
     setModalType("edit");
+    setImagePreview(service.image?.url || null);
+    setImageFile(null);
     reset({
       title: service.title,
       description: service.description,
@@ -120,6 +180,9 @@ const AdminServices = () => {
       benefits: service.benefits?.join("\n") || "",
       featured: service.featured,
       isActive: service.isActive,
+      showPrice: service.showPrice !== undefined ? service.showPrice : true,
+      imageUrl: service.image?.url || "",
+      imagePublicId: service.image?.public_id || null,
     });
     setIsModalOpen(true);
   };
@@ -172,6 +235,33 @@ const AdminServices = () => {
     }
   };
 
+  const handlePriceVisibilityToggle = async (service) => {
+    try {
+      const newShowPrice = !service.showPrice;
+      const response = await axiosInstance.patch(
+        `/services/admin/${service._id}/price-visibility`,
+        { showPrice: newShowPrice }
+      );
+
+      if (response.data.success) {
+        // Update local state
+        const updated = services.map((s) =>
+          s._id === service._id ? { ...s, showPrice: newShowPrice } : s,
+        );
+        setServices(updated);
+
+        toast.success(
+          `Price ${newShowPrice ? "shown" : "hidden"} for patients`,
+        );
+      } else {
+        toast.error(response.data.message || "Failed to update price visibility");
+      }
+    } catch (error) {
+      console.error("Error updating price visibility:", error);
+      toast.error("Failed to update price visibility");
+    }
+  };
+
   const handleFeaturedToggle = async (service) => {
     try {
       const response = await serviceService.updateService(service._id, {
@@ -201,21 +291,37 @@ const AdminServices = () => {
     setSubmitting(true);
 
     try {
+      // Upload image if new file is selected
+      let finalData = { ...data };
+      if (imageFile) {
+        const uploadResult = await handleImageUpload(imageFile);
+        if (uploadResult) {
+          finalData.imageUrl = uploadResult.url;
+          finalData.imagePublicId = uploadResult.public_id;
+        } else {
+          toast.error("Please upload an image first");
+          setSubmitting(false);
+          return;
+        }
+      }
+
       if (modalType === "create") {
-        const response = await serviceService.createService(data);
+        const response = await serviceService.createService(finalData);
 
         if (response.success) {
           // Add new service to the list
           setServices([response.data, ...services]);
           toast.success(response.message || "Service created successfully");
           setIsModalOpen(false);
+          setImagePreview(null);
+          setImageFile(null);
         } else {
           toast.error(response.message || "Failed to create service");
         }
       } else {
         const response = await serviceService.updateService(
           selectedService._id,
-          data,
+          finalData,
         );
 
         if (response.success) {
@@ -226,6 +332,8 @@ const AdminServices = () => {
           setServices(updated);
           toast.success(response.message || "Service updated successfully");
           setIsModalOpen(false);
+          setImagePreview(null);
+          setImageFile(null);
         } else {
           toast.error(response.message || "Failed to update service");
         }
@@ -429,29 +537,55 @@ const AdminServices = () => {
                 >
                   {/* Service Header */}
                   <div className="p-4 sm:p-6 border-b border-gray-200">
+                    {/* Service Image */}
+                    <div className="relative h-40 mb-4 rounded-lg overflow-hidden">
+                      <img
+                        src={service.image?.url || "https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"}
+                        alt={service.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <div className="absolute top-2 left-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">
+                            {SERVICE_CATEGORY_LABELS[service.category] ||
+                              service.category}
+                          </span>
+
+                          {service.featured && (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
+                              Featured
+                            </span>
+                          )}
+
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded ${
+                              service.isActive
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {service.isActive ? "Active" : "Inactive"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Top Row (Desktop) */}
                     <div className="hidden sm:flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
-                        <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">
-                          {SERVICE_CATEGORY_LABELS[service.category] ||
-                            service.category}
-                        </span>
-
-                        {service.featured && (
-                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
-                            Featured
-                          </span>
-                        )}
-
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded ${
-                            service.isActive
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
+                        <button
+                          onClick={() => handlePriceVisibilityToggle(service)}
+                          className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ${
+                            service.showPrice
+                              ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                           }`}
+                          title={service.showPrice ? "Price is visible to users" : "Price is hidden from users"}
                         >
-                          {service.isActive ? "Active" : "Inactive"}
-                        </span>
+                          {service.showPrice ? <FaEye /> : <FaEyeSlash />}
+                          <span>{service.showPrice ? "Price Visible" : "Price Hidden"}</span>
+                        </button>
                       </div>
 
                       <button
@@ -476,6 +610,18 @@ const AdminServices = () => {
                     {/* Bottom Row (Mobile) */}
                     <div className="flex sm:hidden items-center justify-between mt-2">
                       <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handlePriceVisibilityToggle(service)}
+                          className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ${
+                            service.showPrice
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                          title={service.showPrice ? "Price is visible to users" : "Price is hidden from users"}
+                        >
+                          {service.showPrice ? <FaEye /> : <FaEyeSlash />}
+                        </button>
+
                         {service.featured && (
                           <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
                             Featured
@@ -520,6 +666,9 @@ const AdminServices = () => {
                       <div className="flex items-center font-semibold text-gray-900 whitespace-nowrap">
                         <FaRupeeSign className="mr-1" />
                         {service.price}
+                        {!service.showPrice && (
+                          <span className="ml-2 text-xs text-gray-500">(Hidden)</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -572,6 +721,18 @@ const AdminServices = () => {
                           }
                         >
                           {service.featured ? <FaTimes /> : <FaStar />}
+                        </button>
+
+                        <button
+                          onClick={() => handlePriceVisibilityToggle(service)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg flex items-center justify-center"
+                          title={
+                            service.showPrice
+                              ? "Hide price from users"
+                              : "Show price to users"
+                          }
+                        >
+                          {service.showPrice ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
 
@@ -634,6 +795,56 @@ const AdminServices = () => {
               <p className="mt-1 text-sm text-red-600">
                 {errors.description.message}
               </p>
+            )}
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Service Image
+            </label>
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Recommended size: 800x600px, Max size: 5MB
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => document.querySelector('input[type="file"]')?.click()}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center"
+                >
+                  <FaUpload className="mr-2" />
+                  Browse
+                </button>
+              </div>
+            </div>
+            
+            {/* Image Preview */}
+            {(imagePreview || watch('imageUrl')) && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+                <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-300">
+                  <img
+                    src={imagePreview || watch('imageUrl')}
+                    alt="Service preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {uploadingImage && (
+                  <div className="mt-2 flex items-center text-blue-600">
+                    <FaSpinner className="animate-spin mr-2" />
+                    <span className="text-sm">Uploading image...</span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
@@ -743,19 +954,36 @@ Personalized treatment plan"
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="featured"
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              {...register("featured")}
-            />
-            <label
-              htmlFor="featured"
-              className="ml-2 block text-sm text-gray-700"
-            >
-              Mark as featured service
-            </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="featured"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                {...register("featured")}
+              />
+              <label
+                htmlFor="featured"
+                className="ml-2 block text-sm text-gray-700"
+              >
+                Mark as featured service
+              </label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="showPrice"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                {...register("showPrice")}
+              />
+              <label
+                htmlFor="showPrice"
+                className="ml-2 block text-sm text-gray-700"
+              >
+                Show price to users
+              </label>
+            </div>
           </div>
 
           <div className="flex justify-end space-x-3 pt-4 border-t">
@@ -767,7 +995,7 @@ Personalized treatment plan"
             >
               Cancel
             </Button>
-            <Button type="submit" loading={submitting}>
+            <Button type="submit" loading={submitting || uploadingImage}>
               {modalType === "create" ? "Create Service" : "Update Service"}
             </Button>
           </div>
