@@ -29,7 +29,8 @@ import { useApi } from "../../hooks/useApi";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import astha from '../../assets/image/astha.png';
+import astha from "../../assets/image/astha.png";
+import hero from "../../assets/image/hero.jpeg";
 import ImageGallerySlider from "./ImageGallerySlider";
 
 // Image Gallery Slider Component
@@ -277,16 +278,18 @@ const Home = () => {
   // }, []);
 
   useEffect(() => {
-  const loadServices = async () => {
-    const response = await fetchServices();
-    if (response?.data) {
-      // Filter only active services (backend already does this, but double-check)
-      const activeServices = response.data.filter(service => service.isActive !== false);
-      setServices(activeServices);
-    }
-  };
-  loadServices();
-}, []);
+    const loadServices = async () => {
+      const response = await fetchServices();
+      if (response?.data) {
+        // Filter only active services (backend already does this, but double-check)
+        const activeServices = response.data.filter(
+          (service) => service.isActive !== false,
+        );
+        setServices(activeServices);
+      }
+    };
+    loadServices();
+  }, []);
 
   const testimonials = [
     {
@@ -461,9 +464,9 @@ const Home = () => {
       </Helmet>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-cyan-50 via-white to-cyan-50 pt-6 md:pt-4">
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-cyan-50 via-white to-cyan-50 pt-6 md:pt-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 items-center">
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -472,23 +475,25 @@ const Home = () => {
             >
               <div className="inline-flex items-center space-x-2 bg-cyan-100 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold mb-3">
                 <FaStethoscope />
-                <span>Advanced Physiotherapy Center</span>
+                <span>Physiotherapy, Osteopathy, and Chiropractic Center</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-800/90 mb-6 leading-tight">
-                Your Journey to{" "}
-                <span className="bg-cyan-700/90 bg-clip-text text-transparent">
-                  Pain-Free Living
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-800/90 mb-6">
+                Journey to <br />
+                <span className="block mt-4 bg-cyan-700/90 bg-clip-text text-transparent">
+                  Pain-Free Life
                 </span>
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl">
-                Experience world-class physiotherapy with cutting-edge
-                technology and compassionate care. Our expert team is dedicated
-                to restoring your mobility and improving your quality of life.
+                Our specialized team is dedicated to helping you regain your
+                independence. We understand how important it is to move freely
+                and comfortably. Our commitment is to provide you with the best
+                possible care. We aim to significantly improve your overall
+                well-being. Your journey towards better mobility starts with us.
               </p>
 
-              <div className="flex flex-col items-center justify-start sm:flex-row gap-6 lg:gap-24 mb-10 w-full">
+              <div className="flex flex-col items-center justify-center sm:flex-row gap-6 lg:gap-14 -ml-14 mb-10 w-full">
                 {/* Book Consultation */}
                 <Link to="/appointment" className="w-full sm:w-auto">
                   <Button
@@ -526,15 +531,15 @@ const Home = () => {
                       <FaWhatsapp size={25} />
                     </div>
                     <div className="text-left">
-                      <div className="text-xs font-semibold">24/7 Support</div>
-                      <div className="font-bold">WhatsApp</div>
+                      {/* <div className="text-xs font-semibold">24/7</div> */}
+                      <div className="font-semibold text-lg">Chat With Medihope</div>
                     </div>
                   </div>
                 </a>
               </div>
 
               {/* Conditions We Treat */}
-              <div className="mb-8">
+              {/* <div className="mb-8">
                 <h3 className="text-xl font-semibold text-gray-700 mb-4">
                   Conditions We Treat:
                 </h3>
@@ -552,7 +557,7 @@ const Home = () => {
                     </motion.div>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </motion.div>
 
             <motion.div
@@ -564,14 +569,14 @@ const Home = () => {
               {/* Main Hero Image */}
               <div className="relative rounded-3xl overflow-hidden shadow-2xl transform hover:scale-[1.01] transition-transform duration-500">
                 <img
-                  src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                  src={hero}
                   alt="Physiotherapy treatment at MEDIHOPE"
                   className="w-full h-[500px] object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
                 {/* Floating Stats Card */}
-                <motion.div
+                {/* <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.5 }}
@@ -590,11 +595,11 @@ const Home = () => {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </motion.div> */}
               </div>
 
               {/* Doctor Card */}
-              <motion.div
+              {/* <motion.div
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.7 }}
@@ -626,14 +631,27 @@ const Home = () => {
                 <p className="mt-4 text-cyan-50">
                   "BPT, MPT (Sports). Osteopathy & Chiropractic Care. Certified FNMT, CDNT & Pelvic Floor Therapist. Expert in Yoga & Pilates Rehabilitation."
                 </p>
-              </motion.div>
+              </motion.div> */}
             </motion.div>
           </div>
+          <motion.div
+  initial={{ opacity: 0, y: 40 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{
+    duration: 0.8,
+    ease: "easeOut",
+  }}
+  className="w-full text-3xl flex items-center justify-center leading-relaxed text-center font-sans text-gray-700 font-semibold mt-14"
+>
+  We are the leading physiotherapy center, distinguished by our state-of-the-art equipment <br />
+  and advanced techniques.
+</motion.div>
         </div>
       </section>
 
       {/* Image Gallery Slider Section */}
-      <ImageGallerySlider/>
+      <ImageGallerySlider />
 
       {/* Stats Section */}
       <section className="py-16 md:py-20 bg-white border-b">
