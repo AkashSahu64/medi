@@ -2,9 +2,302 @@ import Appointment from '../models/Appointment.model.js';
 import Service from '../models/Service.model.js';
 import User from '../models/User.model.js';
 import { sendEmail, emailTemplates } from '../utils/emailService.js';
-import { sendWhatsAppMessage, whatsappTemplates } from '../utils/whatsappService.js';
+import { 
+  sendWhatsAppMessage, 
+  whatsappTemplates, 
+  isValidPhoneNumber, 
+  normalizePhoneNumber 
+} from '../utils/whatsappService.js';
 import Notification from '../models/Notification.model.js';
 import moment from 'moment';
+
+// Helper function to ensure appointment is properly populated
+const ensureAppointmentPopulated = async (appointment) => {
+  try {
+    console.log(`🔍 Ensuring appointment is populated: ${appointment._id}`);
+    
+    // If appointment is already populated with necessary fields, return as is
+    if (appointment && 
+        appointment.patientName && 
+        appointment.serviceName && 
+        appointment.appointmentDate && 
+        appointment.timeSlot) {
+      
+      // Still check if patientPhone exists and is valid
+      if (appointment.patientPhone && isValidPhoneNumber(appointment.patientPhone)) {
+        console.log(`✅ Appointment already populated with valid phone`);
+        return appointment;
+      }
+    }
+    
+    // Otherwise, fetch fresh from database
+    console.log(`🔄 Fetching fresh appointment data from DB`);
+    const populated = await Appointment.findById(appointment._id || appointment.id)
+      .populate('service', 'title duration')
+      .populate('patient', 'name email phone')
+      .lean();
+    
+    if (!populated) {
+      throw new Error(`Appointment ${appointment._id} not found in database`);
+    }
+    
+    console.log(`✅ Appointment successfully populated from DB`);
+    return populated;
+  } catch (error) {
+    console.error('❌ Error populating appointment:', error.message);
+    return appointment; // Return original as fallback
+  }
+};
+
+// Helper function to send notifications (non-blocking)
+const sendNotifications = async (type, appointment, additionalData = {}) => {
+  try {
+    console.log(`\n🔔 ========== START ${type} NOTIFICATIONS ==========`);
+    console.log(`📋 Appointment ID: ${appointment._id}`);
+    
+    const { ADMIN_EMAIL, ADMIN_WHATSAPP, CLIENT_URL, NODE_ENV } = process.env;
+    const adminEmail = ADMIN_EMAIL || 'admin@medihope.com';
+    const adminWhatsappRaw = ADMIN_WHATSAPP || '+916386065599';
+    const adminWhatsapp = normalizePhoneNumber(adminWhatsappRaw);
+    
+    // Log environment configuration
+    console.log(`⚙️ Environment: ${NODE_ENV}`);
+    console.log(`📧 Admin Email: ${adminEmail}`);
+    console.log(`📱 Admin WhatsApp (Raw): ${adminWhatsappRaw}`);
+    console.log(`📱 Admin WhatsApp (Normalized): ${adminWhatsapp}`);
+    
+    // Validate admin WhatsApp number
+    if (!adminWhatsapp || !isValidPhoneNumber(adminWhatsapp)) {
+      console.error(`❌ INVALID ADMIN WHATSAPP NUMBER: ${adminWhatsappRaw}`);
+      console.error(`   Normalized: ${adminWhatsapp}`);
+    } else {
+      console.log(`✅ Admin WhatsApp number is valid`);
+    }
+    
+    // Ensure appointment has all necessary data
+    console.log(`🔄 Ensuring appointment data is complete...`);
+    const populatedAppointment = await ensureAppointmentPopulated(appointment);
+    
+    if (!populatedAppointment) {
+      console.error('❌ CRITICAL: Cannot send notifications - Appointment not found');
+      return;
+    }
+    
+    // Log appointment details
+    console.log(`📋 Appointment Details:`);
+    console.log(`   Patient: ${populatedAppointment.patientName}`);
+    console.log(`   Service: ${populatedAppointment.serviceName}`);
+    console.log(`   Date: ${populatedAppointment.appointmentDate}`);
+    console.log(`   Time: ${populatedAppointment.timeSlot}`);
+    console.log(`   Status: ${populatedAppointment.status}`);
+    
+    // Validate patient phone number
+    const patientPhone = populatedAppointment.patientPhone;
+    const patientPhoneNormalized = normalizePhoneNumber(patientPhone);
+    const isValidPatientPhone = patientPhone && isValidPhoneNumber(patientPhone);
+    
+    console.log(`\n📱 PHONE NUMBER VALIDATION:`);
+    console.log(`   Patient Phone (Raw): ${patientPhone}`);
+    console.log(`   Patient Phone (Normalized): ${patientPhoneNormalized}`);
+    console.log(`   Valid: ${isValidPatientPhone}`);
+    
+    if (!isValidPatientPhone) {
+      console.warn(`⚠️ WARNING: Invalid patient phone number - WhatsApp will not be sent`);
+    }
+    
+    switch (type) {
+      case 'BOOKED':
+        console.log(`\n📨 SENDING BOOKING NOTIFICATIONS...`);
+        
+        // Send to User
+        if (populatedAppointment.patientEmail) {
+          console.log(`📧 Sending booking email to user: ${populatedAppointment.patientEmail}`);
+          try {
+            await sendEmail({
+              email: populatedAppointment.patientEmail,
+              subject: 'Appointment Request Received - MEDIHOPE',
+              html: emailTemplates.appointmentBookedUser(populatedAppointment),
+            });
+            console.log(`✅ User booking email sent successfully`);
+          } catch (emailError) {
+            console.error(`❌ User booking email failed:`, emailError.message);
+          }
+        } else {
+          console.log(`⚠️ No user email provided - skipping user email`);
+        }
+        
+        if (isValidPatientPhone) {
+          console.log(`📱 Sending booking WhatsApp to user: ${patientPhoneNormalized}`);
+          const userWhatsAppResult = await sendWhatsAppMessage(
+            patientPhoneNormalized,
+            whatsappTemplates.appointmentBookedUser(populatedAppointment),
+            'appointmentBookedUser'
+          );
+          console.log(`📱 User WhatsApp Result:`, {
+            success: userWhatsAppResult.success,
+            mock: userWhatsAppResult.mock || false,
+            error: userWhatsAppResult.error
+          });
+        } else {
+          console.warn(`⚠️ Skipping user WhatsApp - Invalid phone: ${patientPhone}`);
+        }
+        
+        // Send to Admin
+        console.log(`\n📨 SENDING ADMIN BOOKING NOTIFICATIONS...`);
+        
+        if (adminEmail) {
+          console.log(`📧 Sending booking email to admin: ${adminEmail}`);
+          try {
+            await sendEmail({
+              email: adminEmail,
+              subject: '📅 New Appointment Request - MEDIHOPE',
+              html: emailTemplates.appointmentBookedAdmin(populatedAppointment),
+            });
+            console.log(`✅ Admin booking email sent successfully`);
+          } catch (emailError) {
+            console.error(`❌ Admin booking email failed:`, emailError.message);
+          }
+        }
+        
+        if (adminWhatsapp && isValidPhoneNumber(adminWhatsapp)) {
+          console.log(`📱 Sending booking WhatsApp to admin: ${adminWhatsapp}`);
+          const adminWhatsAppResult = await sendWhatsAppMessage(
+            adminWhatsapp,
+            whatsappTemplates.appointmentBookedAdmin(populatedAppointment),
+            'appointmentBookedAdmin'
+          );
+          console.log(`📱 Admin WhatsApp Result:`, {
+            success: adminWhatsAppResult.success,
+            mock: adminWhatsAppResult.mock || false,
+            error: adminWhatsAppResult.error
+          });
+        } else {
+          console.warn(`⚠️ Skipping admin WhatsApp - Invalid admin phone or not configured`);
+        }
+        break;
+        
+      case 'STATUS_CHANGED':
+        const { oldStatus } = additionalData;
+        
+        console.log(`\n🔄 SENDING STATUS CHANGE NOTIFICATIONS...`);
+        console.log(`   Status Change: ${oldStatus} → ${populatedAppointment.status}`);
+        
+        // Send to User
+        if (populatedAppointment.patientEmail) {
+          console.log(`📧 Sending status email to user: ${populatedAppointment.patientEmail}`);
+          try {
+            await sendEmail({
+              email: populatedAppointment.patientEmail,
+              subject: `Appointment ${populatedAppointment.status.charAt(0).toUpperCase() + populatedAppointment.status.slice(1)} - MEDIHOPE`,
+              html: emailTemplates.appointmentStatusChanged(populatedAppointment, oldStatus),
+            });
+            console.log(`✅ User status email sent successfully`);
+          } catch (emailError) {
+            console.error(`❌ User status email failed:`, emailError.message);
+          }
+        }
+        
+        if (isValidPatientPhone) {
+          console.log(`📱 Sending status WhatsApp to user: ${patientPhoneNormalized}`);
+          const userWhatsAppResult = await sendWhatsAppMessage(
+            patientPhoneNormalized,
+            whatsappTemplates.appointmentStatusChanged(populatedAppointment, oldStatus),
+            'appointmentStatusChanged'
+          );
+          console.log(`📱 User Status WhatsApp Result:`, {
+            success: userWhatsAppResult.success,
+            mock: userWhatsAppResult.mock || false,
+            error: userWhatsAppResult.error
+          });
+        } else {
+          console.warn(`⚠️ Skipping user status WhatsApp - Invalid phone: ${patientPhone}`);
+        }
+        
+        // Send to Admin (record keeping)
+        console.log(`\n📨 SENDING ADMIN STATUS NOTIFICATIONS...`);
+        
+        if (adminEmail) {
+          console.log(`📧 Sending status email to admin: ${adminEmail}`);
+          try {
+            await sendEmail({
+              email: adminEmail,
+              subject: `Appointment Status Changed to ${populatedAppointment.status} - MEDIHOPE`,
+              html: emailTemplates.adminStatusChangeNotification(populatedAppointment, oldStatus),
+            });
+            console.log(`✅ Admin status email sent successfully`);
+          } catch (emailError) {
+            console.error(`❌ Admin status email failed:`, emailError.message);
+          }
+        }
+        
+        // Admin WhatsApp notification only for important status changes
+        if (['cancelled', 'confirmed', 'completed'].includes(populatedAppointment.status)) {
+          if (adminWhatsapp && isValidPhoneNumber(adminWhatsapp)) {
+            console.log(`📱 Sending status WhatsApp to admin: ${adminWhatsapp}`);
+            const adminWhatsAppResult = await sendWhatsAppMessage(
+              adminWhatsapp,
+              whatsappTemplates.adminStatusChangeNotification(populatedAppointment, oldStatus),
+              'adminStatusChangeNotification'
+            );
+            console.log(`📱 Admin Status WhatsApp Result:`, {
+              success: adminWhatsAppResult.success,
+              mock: adminWhatsAppResult.mock || false,
+              error: adminWhatsAppResult.error
+            });
+          } else {
+            console.warn(`⚠️ Skipping admin status WhatsApp - Invalid admin phone or not configured`);
+          }
+        } else {
+          console.log(`ℹ️ Admin WhatsApp skipped for status: ${populatedAppointment.status} (only for cancelled/confirmed/completed)`);
+        }
+        break;
+        
+      case 'UPDATED':
+        const { changes } = additionalData;
+        
+        console.log(`\n✏️ SENDING UPDATE NOTIFICATIONS...`);
+        console.log(`   Changes: ${changes}`);
+        
+        // Send to User
+        if (populatedAppointment.patientEmail) {
+          console.log(`📧 Sending update email to user: ${populatedAppointment.patientEmail}`);
+          try {
+            await sendEmail({
+              email: populatedAppointment.patientEmail,
+              subject: 'Appointment Details Updated - MEDIHOPE',
+              html: emailTemplates.appointmentUpdated(populatedAppointment, changes),
+            });
+            console.log(`✅ User update email sent successfully`);
+          } catch (emailError) {
+            console.error(`❌ User update email failed:`, emailError.message);
+          }
+        }
+        
+        if (isValidPatientPhone) {
+          console.log(`📱 Sending update WhatsApp to user: ${patientPhoneNormalized}`);
+          const userWhatsAppResult = await sendWhatsAppMessage(
+            patientPhoneNormalized,
+            whatsappTemplates.appointmentUpdated(populatedAppointment, changes),
+            'appointmentUpdated'
+          );
+          console.log(`📱 User Update WhatsApp Result:`, {
+            success: userWhatsAppResult.success,
+            mock: userWhatsAppResult.mock || false,
+            error: userWhatsAppResult.error
+          });
+        } else {
+          console.warn(`⚠️ Skipping user update WhatsApp - Invalid phone: ${patientPhone}`);
+        }
+        break;
+    }
+    
+    console.log(`\n✅ ========== ${type} NOTIFICATIONS COMPLETED ==========\n`);
+  } catch (notificationError) {
+    console.error('❌ CRITICAL NOTIFICATION ERROR:', notificationError.message);
+    console.error('❌ Stack trace:', notificationError.stack);
+    // Don't fail the main operation
+  }
+};
 
 // @desc    Get available time slots
 // @route   GET /api/appointments/slots/:date
@@ -119,6 +412,15 @@ export const createAppointment = async (req, res, next) => {
       });
     }
 
+    // Validate phone number
+    const normalizedPhone = normalizePhoneNumber(patientPhone);
+    if (!normalizedPhone || !isValidPhoneNumber(patientPhone)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid phone number format. Please provide a valid 10-digit phone number'
+      });
+    }
+
     // Check if service exists
     const serviceDoc = await Service.findById(service);
     if (!serviceDoc) {
@@ -150,11 +452,11 @@ export const createAppointment = async (req, res, next) => {
       });
     }
 
-    // Create appointment object
+    // Create appointment object with normalized phone
     const appointmentData = {
       patientName,
       patientEmail: patientEmail || '',
-      patientPhone,
+      patientPhone: normalizedPhone,
       service,
       serviceName: serviceDoc.title,
       appointmentDate: new Date(appointmentDate),
@@ -177,7 +479,7 @@ export const createAppointment = async (req, res, next) => {
     const populatedAppointment = await Appointment.findById(appointment._id)
       .populate('service', 'title duration');
 
-    //Create notification for new appointment
+    // Create notification for new appointment
     if (appointment.status === 'pending') {
       await Notification.create({
         title: 'New Appointment Request',
@@ -188,25 +490,19 @@ export const createAppointment = async (req, res, next) => {
         priority: 'high'
       });
     }
-    // Send notifications if status is confirmed
-    if (status === 'confirmed' && patientEmail) {
-      try {
-        await sendEmail({
-          email: patientEmail,
-          subject: 'Appointment Confirmed - MEDIHOPE',
-          html: emailTemplates.appointmentConfirmation(populatedAppointment),
-        });
-        
-        if (patientPhone) {
-          await sendWhatsAppMessage(
-            patientPhone,
-            whatsappTemplates.appointmentConfirmation(populatedAppointment)
-          );
-        }
-      } catch (notificationError) {
-        console.error('Notification error:', notificationError);
-        // Don't fail appointment creation
-      }
+
+    // Send notifications based on status (non-blocking)
+    console.log(`\n📨 Triggering notifications for new appointment...`);
+    if (status === 'pending') {
+      // Send booking notifications to both user and admin
+      sendNotifications('BOOKED', appointment).catch(err => 
+        console.error('Booking notification error:', err)
+      );
+    } else if (status === 'confirmed') {
+      // If appointment is created as confirmed, send status change notification
+      sendNotifications('STATUS_CHANGED', appointment, { oldStatus: 'pending' }).catch(err =>
+        console.error('Confirmation notification error:', err)
+      );
     }
 
     console.log('✅ Appointment created:', appointment._id);
@@ -255,6 +551,15 @@ export const createAppointmentAdmin = async (req, res, next) => {
       });
     }
 
+    // Validate phone number
+    const normalizedPhone = normalizePhoneNumber(patientPhone);
+    if (!normalizedPhone || !isValidPhoneNumber(patientPhone)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid phone number format. Please provide a valid 10-digit phone number'
+      });
+    }
+
     // Check if service exists
     const serviceDoc = await Service.findById(service);
     if (!serviceDoc) {
@@ -278,11 +583,11 @@ export const createAppointmentAdmin = async (req, res, next) => {
       });
     }
 
-    // Create appointment object
+    // Create appointment object with normalized phone
     const appointmentData = {
       patientName,
       patientEmail: patientEmail || '',
-      patientPhone,
+      patientPhone: normalizedPhone,
       service,
       serviceName: serviceDoc.title,
       appointmentDate: new Date(appointmentDate),
@@ -311,24 +616,19 @@ export const createAppointmentAdmin = async (req, res, next) => {
         priority: 'high'
       });
     }
-    // Send notifications if status is confirmed
-    if (status === 'confirmed' && patientEmail) {
-      try {
-        await sendEmail({
-          email: patientEmail,
-          subject: 'Appointment Confirmed - MEDIHOPE',
-          html: emailTemplates.appointmentConfirmation(populatedAppointment),
-        });
-        
-        if (patientPhone) {
-          await sendWhatsAppMessage(
-            patientPhone,
-            whatsappTemplates.appointmentConfirmation(populatedAppointment)
-          );
-        }
-      } catch (notificationError) {
-        console.error('Notification error:', notificationError);
-      }
+
+    // Send notifications based on status (non-blocking)
+    console.log(`\n📨 Triggering notifications for admin-created appointment...`);
+    if (status === 'pending') {
+      // Send booking notifications to both user and admin
+      sendNotifications('BOOKED', appointment).catch(err => 
+        console.error('Admin booking notification error:', err)
+      );
+    } else if (status === 'confirmed') {
+      // If appointment is created as confirmed, send status change notification
+      sendNotifications('STATUS_CHANGED', appointment, { oldStatus: 'pending' }).catch(err =>
+        console.error('Admin confirmation notification error:', err)
+      );
     }
 
     console.log('✅ Appointment created by admin:', appointment._id);
@@ -480,6 +780,26 @@ export const updateAppointment = async (req, res, next) => {
       });
     }
     
+    // Save old appointment data for change detection
+    const oldAppointment = { ...appointment.toObject() };
+    const changes = [];
+    
+    // Normalize phone number if being updated
+    if (updateData.patientPhone) {
+      const normalizedPhone = normalizePhoneNumber(updateData.patientPhone);
+      if (!normalizedPhone || !isValidPhoneNumber(updateData.patientPhone)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid phone number format'
+        });
+      }
+      updateData.patientPhone = normalizedPhone;
+      
+      if (oldAppointment.patientPhone !== normalizedPhone) {
+        changes.push(`Phone number updated`);
+      }
+    }
+    
     // If date or time is being changed, check availability
     if (updateData.appointmentDate || updateData.timeSlot) {
       const newDate = updateData.appointmentDate || appointment.appointmentDate;
@@ -498,6 +818,18 @@ export const updateAppointment = async (req, res, next) => {
           message: 'This time slot is already booked',
         });
       }
+      
+      // Track date changes
+      if (updateData.appointmentDate && 
+          new Date(updateData.appointmentDate).toDateString() !== 
+          oldAppointment.appointmentDate.toDateString()) {
+        changes.push(`Date changed to ${new Date(updateData.appointmentDate).toLocaleDateString()}`);
+      }
+      
+      // Track time slot changes
+      if (updateData.timeSlot && updateData.timeSlot !== oldAppointment.timeSlot) {
+        changes.push(`Time slot changed to ${updateData.timeSlot}`);
+      }
     }
     
     // Update service name if service ID is provided
@@ -505,7 +837,22 @@ export const updateAppointment = async (req, res, next) => {
       const service = await Service.findById(updateData.service);
       if (service) {
         updateData.serviceName = service.title;
+        
+        // Track service changes
+        if (oldAppointment.service.toString() !== updateData.service) {
+          changes.push(`Service changed to ${service.title}`);
+        }
       }
+    }
+    
+    // Track notes changes
+    if (updateData.notes && updateData.notes !== oldAppointment.notes) {
+      changes.push('Notes updated');
+    }
+    
+    // Add updatedBy field
+    if (req.user) {
+      updateData.updatedBy = req.user.name || 'Admin';
     }
     
     // Update appointment
@@ -518,6 +865,19 @@ export const updateAppointment = async (req, res, next) => {
     .populate('service', 'title duration');
     
     console.log('✅ Appointment updated:', id);
+    console.log(`   Changes detected: ${changes.length > 0 ? changes.join(', ') : 'None'}`);
+    
+    // Send update notification if there are changes
+    if (changes.length > 0) {
+      console.log(`\n📨 Triggering update notifications...`);
+      sendNotifications('UPDATED', updatedAppointment, { 
+        changes: changes.join(', ') 
+      }).catch(err =>
+        console.error('Update notification error:', err)
+      );
+    } else {
+      console.log(`ℹ️ No changes detected - skipping notifications`);
+    }
     
     res.status(200).json({
       success: true,
@@ -548,8 +908,32 @@ export const updateAppointmentStatus = async (req, res, next) => {
       });
     }
     
+    // Save old status
+    const oldStatus = appointment.status;
+    
+    // Don't send notification if status hasn't changed
+    if (oldStatus === status) {
+      console.log(`⚠️ Status unchanged (${oldStatus}), skipping notifications`);
+      
+      // Populate for response
+      const populatedAppointment = await Appointment.findById(id)
+        .populate('patient', 'name email')
+        .populate('service', 'title duration');
+      
+      return res.status(200).json({
+        success: true,
+        data: populatedAppointment,
+        message: `Appointment status is already ${status}`,
+      });
+    }
+    
     appointment.status = status;
     if (notes) appointment.notes = notes;
+    
+    // Add updatedBy field
+    if (req.user) {
+      appointment.updatedBy = req.user.name || 'Admin';
+    }
     
     await appointment.save();
     
@@ -558,7 +942,7 @@ export const updateAppointmentStatus = async (req, res, next) => {
       .populate('patient', 'name email')
       .populate('service', 'title duration');
 
-    //Create notification for status change
+    // Create notification for status change
     if (status === 'confirmed') {
       await Notification.create({
         title: 'Appointment Confirmed',
@@ -570,35 +954,11 @@ export const updateAppointmentStatus = async (req, res, next) => {
       });
     }
     
-    // Send notifications for status changes
-    if (status === 'confirmed' && appointment.patientEmail) {
-      try {
-        await sendEmail({
-          email: appointment.patientEmail,
-          subject: 'Appointment Confirmed - MEDIHOPE',
-          html: emailTemplates.appointmentConfirmation(populatedAppointment),
-        });
-        
-        if (appointment.patientPhone) {
-          await sendWhatsAppMessage(
-            appointment.patientPhone,
-            whatsappTemplates.appointmentConfirmation(populatedAppointment)
-          );
-        }
-      } catch (notificationError) {
-        console.error('Notification error:', notificationError);
-      }
-    } else if (status === 'cancelled' && appointment.patientEmail) {
-      try {
-        await sendEmail({
-          email: appointment.patientEmail,
-          subject: 'Appointment Cancelled - MEDIHOPE',
-          html: emailTemplates.appointmentCancelled(populatedAppointment),
-        });
-      } catch (notificationError) {
-        console.error('Notification error:', notificationError);
-      }
-    }
+    // Send status change notifications (non-blocking)
+    console.log(`\n📨 Triggering status change notifications...`);
+    sendNotifications('STATUS_CHANGED', populatedAppointment, { oldStatus }).catch(err =>
+      console.error('Status change notification error:', err)
+    );
     
     res.status(200).json({
       success: true,

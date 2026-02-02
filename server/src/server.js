@@ -51,7 +51,7 @@ const createDefaultAdmin = async () => {
         name: 'System Administrator',
         email: process.env.ADMIN_EMAIL || 'admin@medihope.com',
         password: hashedPassword,
-        phone: process.env.ADMIN_PHONE || '9259642281',
+        phone: process.env.ADMIN_PHONE || '6386065599',
         role: 'admin',
         isVerified: true
       });

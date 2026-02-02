@@ -206,14 +206,14 @@ const AppointmentSuccess = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
-                    href="tel:+91-9259642281"
+                    href="tel:+91-6386065599"
                     className="inline-flex items-center justify-center px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
                   >
                     <FaPhone className="mr-2" />
-                    Call: +91-9259642281
+                    Call: +91-6386065599
                   </a>
                   <a
-                    href={`https://wa.me/919259642281`}
+                    href={`https://wa.me/916386065599`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"

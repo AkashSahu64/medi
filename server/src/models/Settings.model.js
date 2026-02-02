@@ -12,7 +12,7 @@ const settingsSchema = new mongoose.Schema({
   },
   clinicPhone: {
     type: String,
-    default: '+91-9259642281'
+    default: '+91-6386065599'
   },
   clinicAddress: {
     type: String,
@@ -30,7 +30,7 @@ const settingsSchema = new mongoose.Schema({
   // Social Media
   whatsappNumber: {
     type: String,
-    default: '+91-9259642281'
+    default: '+91-6386065599'
   },
   facebookUrl: {
     type: String,

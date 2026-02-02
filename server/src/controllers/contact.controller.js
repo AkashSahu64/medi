@@ -94,7 +94,7 @@ export const sendContactMessage = async (req, res, next) => {
 
     // 2. Send WhatsApp to admin (using env variables)
     try {
-      const adminPhone = process.env.ADMIN_PHONE || process.env.WHATSAPP_NUMBER || '9259642281';
+      const adminPhone = process.env.ADMIN_PHONE || process.env.WHATSAPP_NUMBER || '6386065599';
       const whatsappMessage = `📧 New Contact Message\n\nFrom: ${name}\nEmail: ${email}\n${phone ? `Phone: ${phone}\n` : ''}Subject: ${subject}\nMessage: ${message.substring(0, 200)}${message.length > 200 ? '...' : ''}\n\n🔗 View in Admin: ${process.env.CLIENT_URL || 'http://localhost:5173'}/admin`;
       
       await sendWhatsAppMessage(adminPhone, whatsappMessage);
@@ -123,7 +123,7 @@ export const sendContactMessage = async (req, res, next) => {
             </div>
             
             <p><strong>Our Contact Information:</strong></p>
-            <p>📞 Phone: +91-9259642281<br>
+            <p>📞 Phone: +91-6386065599<br>
                📧 Email: info@medihope.com<br>
                🏥 Address: 123 Health Street, Medical City</p>
             
@@ -408,7 +408,7 @@ export const updateContactStatus = async (req, res, next) => {
               <hr style="margin: 30px 0;">
               <p style="color: #7f8c8d; font-size: 14px;">
                 MEDIHOPE Physiotherapy Centre<br>
-                📞 Phone: +91-9259642281<br>
+                📞 Phone: +91-6386065599<br>
                 📧 Email: info@medihope.com<br>
                 🏥 Address: 123 Health Street, Medical City
               </p>

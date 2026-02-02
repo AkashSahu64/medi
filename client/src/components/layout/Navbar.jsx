@@ -14,11 +14,14 @@ import {
 } from "react-icons/fa";
 import logo from "../../assets/logo.png";
 import { CLINIC_INFO } from "../../utils/constants";
+import { serviceService } from "../../services/service.service";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hoveredContact, setHoveredContact] = useState(null);
+  const [services, setServices] = useState([]);
+  const [isServicesHovered, setIsServicesHovered] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
@@ -33,13 +36,28 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await serviceService.getAllServices();
+        if (response.success && response.data) {
+          setServices(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching services for navbar:", error);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  useEffect(() => {
     setIsOpen(false);
   }, [location]);
 
   const navLinks = [
     { path: "/", label: "Home" },
     { path: "/about", label: "About Us" },
-    { path: "/services", label: "Services" },
+    // { path: "/services", label: "Services" },
     { path: "/appointment", label: "Book Appointment" },
     { path: "/contact", label: "Contact" },
   ];
@@ -106,6 +124,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
+          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
             {navLinks.map((link) => {
               const active = isActive(link.path);
@@ -139,6 +158,98 @@ const Navbar = () => {
                 </Link>
               );
             })}
+
+            {/* Services Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setIsServicesHovered(true)}
+              onMouseLeave={() => setIsServicesHovered(false)}
+            >
+              <Link
+                to="/services"
+                className={`relative px-4 py-2 text-md font-semibold whitespace-nowrap transition-colors duration-300 ${
+                  isActive("/services") || isActive("/services/")
+                    ? "text-[#0077B6]"
+                    : "text-gray-700 hover:text-[#0077B6]"
+                }`}
+              >
+                <span className="relative inline-block">
+                  Services
+                  {(isActive("/services") || isActive("/services/")) && (
+                    <motion.span
+                      layoutId="navbar-indicator"
+                      className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#0077B6] rounded-full"
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </span>
+              </Link>
+
+              {/* Services Dropdown Menu */}
+              {isServicesHovered && services.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute left-0 top-full mt-2 w-64 bg-white shadow-xl rounded-lg py-2 z-50 border border-gray-200"
+                >
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <h3 className="text-sm font-semibold text-gray-700">
+                      Our Services
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Click to view details
+                    </p>
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto">
+                    {services.map((service) => (
+                      <Link
+                        key={service._id}
+                        to={`/services/${service._id}`}
+                        className="block px-4 py-3 hover:bg-[#0077B6]/5 text-gray-700 hover:text-[#0077B6] transition-colors border-b border-gray-100 last:border-b-0"
+                        onClick={() => setIsServicesHovered(false)}
+                      >
+                        <div className="flex items-start">
+                          <div className="w-8 h-8 rounded-full bg-[#0077B6]/10 flex items-center justify-center mr-3 mt-0.5">
+                            <FaStethoscope className="text-[#0077B6] text-xs" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">
+                              {service.title}
+                            </p>
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="text-xs text-gray-500">
+                                {service.duration} mins
+                              </span>
+                              {service.showPrice && (
+                                <span className="text-xs font-semibold text-[#0077B6]">
+                                  ₹{service.price}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+
+                  <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
+                    <Link
+                      to="/services"
+                      className="block text-center text-sm font-semibold text-[#0077B6] hover:text-[#005B8D]"
+                      onClick={() => setIsServicesHovered(false)}
+                    >
+                      View All Services →
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </div>
           </div>
 
           {/* Desktop Contact Icons with Slide Animation */}
@@ -286,6 +397,45 @@ const Navbar = () => {
                 </Link>
               ))}
 
+              {/* Mobile Services Link */}
+              <Link
+                to="/services"
+                className={`block px-6 py-1 text-lg font-semibold transition-all ${
+                  isActive("/services") || isActive("/services/")
+                    ? "bg-[#0077B6]/10 text-[#0077B6] border-l-4 border-[#0077B6]"
+                    : "text-gray-700 hover:bg-[#0077B6]/5 hover:text-[#0077B6]"
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                Services
+              </Link>
+
+              {/* Mobile Services Submenu */}
+              <div className="pl-12 pr-6 py-1 bg-gray-50">
+                {services.slice(0, 5).map((service) => (
+                  <Link
+                    key={service._id}
+                    to={`/services/${service._id}`}
+                    className="block py-2 text-sm text-gray-600 hover:text-[#0077B6] border-b border-gray-200 last:border-b-0"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-[#0077B6]/50 mr-3"></div>
+                      <span className="truncate">{service.title}</span>
+                    </div>
+                  </Link>
+                ))}
+                {services.length > 5 && (
+                  <Link
+                    to="/services"
+                    className="block py-2 text-sm font-medium text-[#0077B6]"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    + {services.length - 5} more services →
+                  </Link>
+                )}
+              </div>
+
               {/* Mobile Contact Info */}
               <div className="px-6 py-2 mt-2 border-t border-gray-100 space-y-3">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
@@ -341,7 +491,7 @@ const Navbar = () => {
                           className="bg-[#0077B6] text-white hover:bg-[#005B8D]"
                           onClick={() => {
                             navigate(
-                              user?.role === "admin" ? "/admin" : "/profile"
+                              user?.role === "admin" ? "/admin" : "/profile",
                             );
                             setIsOpen(false);
                           }}

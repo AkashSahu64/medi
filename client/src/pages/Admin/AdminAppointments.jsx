@@ -26,7 +26,7 @@ import {
   FaWhatsapp,
   FaSync,
   FaSpinner,
-  FaCalendarPlus
+  FaCalendarPlus,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 
@@ -42,7 +42,7 @@ const AdminAppointments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState("view");
   const [submitting, setSubmitting] = useState(false);
-  
+
   const [filters, setFilters] = useState({
     status: searchParams.get("status") || "",
     date: searchParams.get("date") || "",
@@ -50,7 +50,7 @@ const AdminAppointments = () => {
     page: 1,
     limit: 20,
   });
-  
+
   const [totalPages, setTotalPages] = useState(1);
   const [formData, setFormData] = useState({
     patientName: "",
@@ -61,19 +61,67 @@ const AdminAppointments = () => {
     timeSlot: "",
     healthConcern: "",
     status: "pending",
-    notes: ""
+    notes: "",
   });
+
+  const generateWhatsAppMessage = (appointment) => {
+    if (!appointment) return "";
+
+    const date = format(new Date(appointment.appointmentDate), "dd MMM yyyy");
+    const time = appointment.timeSlot;
+
+    return `Hello ${appointment.patientName},
+
+Your appointment details at MEDIHOPE Physiotherapy Centre:
+
+*Service:* ${appointment.serviceName}
+*Date:* ${date}
+*Time:* ${time}
+*Ref ID:* ${appointment._id}
+
+Please arrive 10 minutes early.
+
+For queries: +91-6386065599
+
+_This message is sent from MEDIHOPE Admin Panel_`;
+  };
+
+  const normalizePhoneForWhatsApp = (phone) => {
+    if (!phone) return "";
+
+    // Remove all non-digit characters
+    const cleaned = phone.replace(/\D/g, "");
+
+    // If already 12 digits with 91 prefix, return as is for wa.me
+    if (cleaned.length === 12 && cleaned.startsWith("91")) {
+      return cleaned;
+    }
+
+    // If 10 digits, add 91
+    if (cleaned.length === 10) {
+      return `91${cleaned}`;
+    }
+
+    // If starts with +, remove it
+    if (cleaned.startsWith("91")) {
+      return cleaned;
+    }
+
+    // Default: take last 10 digits and add 91
+    return `91${cleaned.slice(-10)}`;
+  };
 
   // Helper function to get next available date (skip Sundays and past dates)
   function getNextAvailableDate() {
     let date = new Date();
     date.setDate(date.getDate() + 1);
-    
+
     // Skip Sundays
-    while (date.getDay() === 0) { // 0 = Sunday
+    while (date.getDay() === 0) {
+      // 0 = Sunday
       date.setDate(date.getDate() + 1);
     }
-    
+
     return date;
   }
 
@@ -85,33 +133,33 @@ const AdminAppointments = () => {
 
   // Load services for dropdown
   const loadServices = async () => {
-  try {
-    console.log('🔄 Loading services for appointments...');
-    
-    // For appointments, we want ALL services (including inactive)
-    // because admin might want to create appointment for any service
-    const response = await serviceService.getAllServicesForAdmin({
-      isActive: 'all' // Get all services, active and inactive
-    });
-    
-    console.log('✅ Services loaded:', {
-      success: response.success,
-      count: response.count,
-      dataLength: response.data?.length
-    });
-    
-    if (response.success && response.data) {
-      setServices(response.data);
-      console.log(`✅ Set ${response.data.length} services in state`);
-    } else {
-      console.error('❌ Failed to load services:', response);
-      toast.error('Failed to load services. Please try again.');
+    try {
+      console.log("🔄 Loading services for appointments...");
+
+      // For appointments, we want ALL services (including inactive)
+      // because admin might want to create appointment for any service
+      const response = await serviceService.getAllServicesForAdmin({
+        isActive: "all", // Get all services, active and inactive
+      });
+
+      console.log("✅ Services loaded:", {
+        success: response.success,
+        count: response.count,
+        dataLength: response.data?.length,
+      });
+
+      if (response.success && response.data) {
+        setServices(response.data);
+        console.log(`✅ Set ${response.data.length} services in state`);
+      } else {
+        console.error("❌ Failed to load services:", response);
+        toast.error("Failed to load services. Please try again.");
+      }
+    } catch (error) {
+      console.error("❌ Error loading services:", error);
+      toast.error("Failed to load services");
     }
-  } catch (error) {
-    console.error("❌ Error loading services:", error);
-    toast.error("Failed to load services");
-  }
-};
+  };
 
   // Load available slots when date changes
   useEffect(() => {
@@ -122,20 +170,20 @@ const AdminAppointments = () => {
 
   const loadAvailableSlots = async () => {
     if (!formData.appointmentDate) return;
-    
+
     setLoadingSlots(true);
     try {
-      const dateStr = format(formData.appointmentDate, 'yyyy-MM-dd');
-      console.log('🔄 Loading slots for:', dateStr);
-      
+      const dateStr = format(formData.appointmentDate, "yyyy-MM-dd");
+      console.log("🔄 Loading slots for:", dateStr);
+
       const response = await appointmentService.getAvailableSlots(dateStr);
-      console.log('📋 Slots response:', response);
-      
+      console.log("📋 Slots response:", response);
+
       if (response.success) {
         setAvailableSlots(response.data);
         // Auto-select first available slot if none selected and slots exist
         if (!formData.timeSlot && response.data.length > 0) {
-          setFormData(prev => ({ ...prev, timeSlot: response.data[0] }));
+          setFormData((prev) => ({ ...prev, timeSlot: response.data[0] }));
         }
       } else {
         setAvailableSlots([]);
@@ -155,9 +203,10 @@ const AdminAppointments = () => {
     setLoading(true);
     try {
       console.log("🔄 Loading appointments with filters:", filters);
-      
+
       const params = {};
-      if (filters.status && filters.status !== 'all') params.status = filters.status;
+      if (filters.status && filters.status !== "all")
+        params.status = filters.status;
       if (filters.date) params.date = filters.date;
       if (filters.search) params.search = filters.search;
       params.page = filters.page;
@@ -191,24 +240,39 @@ const AdminAppointments = () => {
     toast.success("Appointments refreshed");
   };
 
-  const handleStatusUpdate = async (id, status) => {
+  const handleStatusUpdate = async (id, status, closeModal = false) => {
     try {
-      const response = await appointmentService.updateAppointmentStatus(id, status);
-      
+      const response = await appointmentService.updateAppointmentStatus(
+        id,
+        status,
+      );
+
       if (response.success) {
         // Update local state
-        const updated = appointments.map(apt =>
-          apt._id === id ? { ...apt, status } : apt
+        const updated = appointments.map((apt) =>
+          apt._id === id ? { ...apt, status } : apt,
         );
         setAppointments(updated);
-        
+
         toast.success(`Appointment ${status} successfully`);
+
+        // ✅ Auto-close modal if specified
+        if (closeModal) {
+          setIsModalOpen(false);
+          setSelectedAppointment(null);
+          // Refresh appointments to get latest data
+          loadAppointments();
+        }
+
+        return true;
       } else {
         toast.error(response.message || "Failed to update status");
+        return false;
       }
     } catch (error) {
       console.error("❌ Error updating status:", error);
       toast.error("Failed to update status");
+      return false;
     }
   };
 
@@ -221,7 +285,7 @@ const AdminAppointments = () => {
   const handleEdit = (appointment) => {
     setSelectedAppointment(appointment);
     setModalType("edit");
-    
+
     // Set form data for editing
     setFormData({
       patientName: appointment.patientName,
@@ -232,16 +296,16 @@ const AdminAppointments = () => {
       timeSlot: appointment.timeSlot,
       healthConcern: appointment.healthConcern || "",
       status: appointment.status,
-      notes: appointment.notes || ""
+      notes: appointment.notes || "",
     });
-    
+
     setIsModalOpen(true);
   };
 
   const handleCreate = () => {
     setSelectedAppointment(null);
     setModalType("create");
-    
+
     // Reset form data for new appointment with next available date
     setFormData({
       patientName: "",
@@ -252,9 +316,9 @@ const AdminAppointments = () => {
       timeSlot: "",
       healthConcern: "",
       status: "pending",
-      notes: ""
+      notes: "",
     });
-    
+
     setIsModalOpen(true);
   };
 
@@ -262,14 +326,14 @@ const AdminAppointments = () => {
     if (window.confirm("Are you sure you want to cancel this appointment?")) {
       try {
         const response = await appointmentService.cancelAppointment(id);
-        
+
         if (response.success) {
           // Update local state
-          const updated = appointments.map(apt =>
-            apt._id === id ? { ...apt, status: 'cancelled' } : apt
+          const updated = appointments.map((apt) =>
+            apt._id === id ? { ...apt, status: "cancelled" } : apt,
           );
           setAppointments(updated);
-          
+
           toast.success("Appointment cancelled");
         } else {
           toast.error(response.message || "Failed to cancel appointment");
@@ -282,15 +346,19 @@ const AdminAppointments = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this appointment permanently?")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this appointment permanently?",
+      )
+    ) {
       try {
         const response = await appointmentService.deleteAppointment(id);
-        
+
         if (response.success) {
           // Remove from local state
-          const updated = appointments.filter(apt => apt._id !== id);
+          const updated = appointments.filter((apt) => apt._id !== id);
           setAppointments(updated);
-          
+
           toast.success("Appointment deleted permanently");
         } else {
           toast.error(response.message || "Failed to delete appointment");
@@ -312,15 +380,21 @@ const AdminAppointments = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
-    if (!formData.patientName || !formData.patientPhone || !formData.service || !formData.appointmentDate || !formData.timeSlot) {
+    if (
+      !formData.patientName ||
+      !formData.patientPhone ||
+      !formData.service ||
+      !formData.appointmentDate ||
+      !formData.timeSlot
+    ) {
       toast.error("Please fill all required fields");
       return;
     }
-    
+
     setSubmitting(true);
-    
+
     try {
       // Prepare appointment data
       const appointmentData = {
@@ -328,27 +402,30 @@ const AdminAppointments = () => {
         patientEmail: formData.patientEmail,
         patientPhone: formData.patientPhone,
         service: formData.service,
-        appointmentDate: format(formData.appointmentDate, 'yyyy-MM-dd'),
+        appointmentDate: format(formData.appointmentDate, "yyyy-MM-dd"),
         timeSlot: formData.timeSlot,
         healthConcern: formData.healthConcern,
         status: formData.status,
-        notes: formData.notes
+        notes: formData.notes,
       };
-      
-      console.log('📤 Submitting appointment:', appointmentData);
-      
+
+      console.log("📤 Submitting appointment:", appointmentData);
+
       let response;
-      
+
       if (modalType === "create") {
         response = await appointmentService.createAppointment(appointmentData);
       } else {
-        response = await appointmentService.updateAppointment(selectedAppointment._id, appointmentData);
+        response = await appointmentService.updateAppointment(
+          selectedAppointment._id,
+          appointmentData,
+        );
       }
-      
+
       if (response.success) {
         toast.success(response.message || "Appointment saved successfully");
         setIsModalOpen(false);
-        
+
         // Reload appointments
         loadAppointments();
       } else {
@@ -364,14 +441,14 @@ const AdminAppointments = () => {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleDateChange = (date) => {
-    setFormData(prev => ({ 
-      ...prev, 
+    setFormData((prev) => ({
+      ...prev,
       appointmentDate: date,
-      timeSlot: "" // Reset time slot when date changes
+      timeSlot: "", // Reset time slot when date changes
     }));
   };
 
@@ -534,7 +611,11 @@ const AdminAppointments = () => {
                 disabled={loading}
                 className="flex-1"
               >
-                {loading ? <FaSpinner className="mr-2 animate-spin" /> : 'Apply'}
+                {loading ? (
+                  <FaSpinner className="mr-2 animate-spin" />
+                ) : (
+                  "Apply"
+                )}
               </Button>
             </div>
           </div>
@@ -545,7 +626,9 @@ const AdminAppointments = () => {
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <Loader size="lg" />
-              <span className="ml-3 text-gray-600">Loading appointments...</span>
+              <span className="ml-3 text-gray-600">
+                Loading appointments...
+              </span>
             </div>
           ) : appointments.length === 0 ? (
             <div className="text-center py-16">
@@ -563,7 +646,9 @@ const AdminAppointments = () => {
             <>
               <div className="flex justify-between items-center p-6 border-b">
                 <p className="text-gray-600">
-                  Showing <span className="font-semibold">{appointments.length}</span> appointments
+                  Showing{" "}
+                  <span className="font-semibold">{appointments.length}</span>{" "}
+                  appointments
                 </p>
                 <Button
                   variant="outline"
@@ -571,11 +656,13 @@ const AdminAppointments = () => {
                   onClick={handleRefresh}
                   disabled={refreshing || loading}
                 >
-                  <FaSync className={`mr-2 ${refreshing || loading ? 'animate-spin' : ''}`} />
+                  <FaSync
+                    className={`mr-2 ${refreshing || loading ? "animate-spin" : ""}`}
+                  />
                   Refresh List
                 </Button>
               </div>
-              
+
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50">
@@ -685,13 +772,15 @@ const AdminAppointments = () => {
                               </>
                             )}
                             {appointment.status === "confirmed" && (
-                              <button
-                                onClick={() => handleSendReminder(appointment)}
-                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
-                                title="Send Reminder"
+                              <a
+                                href={`https://wa.me/${normalizePhoneForWhatsApp(appointment.patientPhone)}?text=${encodeURIComponent(generateWhatsAppMessage(appointment))}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg inline-flex items-center justify-center"
+                                title="Chat on WhatsApp"
                               >
                                 <FaWhatsapp />
-                              </button>
+                              </a>
                             )}
                             <button
                               onClick={() => handleEdit(appointment)}
@@ -828,12 +917,14 @@ const AdminAppointments = () => {
                   .map((status) => (
                     <button
                       key={status.value}
-                      onClick={() =>
-                        handleStatusUpdate(
+                      onClick={async () => {
+                        // ✅ Pass true to indicate we want to close modal after update
+                        await handleStatusUpdate(
                           selectedAppointment._id,
                           status.value,
-                        )
-                      }
+                          true, // This will auto-close the modal
+                        );
+                      }}
                       className={`px-4 py-2 rounded-lg border transition-colors ${
                         selectedAppointment.status === status.value
                           ? `${status.color.replace("bg-", "bg-").replace("text-", "text-")} border-transparent`
@@ -850,16 +941,27 @@ const AdminAppointments = () => {
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                 Close
               </Button>
-              <Button onClick={() => handleSendReminder(selectedAppointment)}>
-                Send Reminder
-              </Button>
+              <a
+                href={`https://wa.me/${normalizePhoneForWhatsApp(selectedAppointment?.patientPhone)}?text=${encodeURIComponent(generateWhatsAppMessage(selectedAppointment))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex"
+              >
+                <Button>
+                  <FaWhatsapp className="mr-2" />
+                  Chat on WhatsApp
+                </Button>
+              </a>
             </div>
           </div>
         )}
 
         {/* Create/Edit Appointment Form */}
         {(modalType === "edit" || modalType === "create") && (
-          <form onSubmit={handleFormSubmit} className="space-y-6 px-4 md:px-6 mb-4">
+          <form
+            onSubmit={handleFormSubmit}
+            className="space-y-6 px-4 md:px-6 mb-4"
+          >
             <Input
               label="Patient Name"
               type="text"
@@ -901,7 +1003,7 @@ const AdminAppointments = () => {
                 required
               >
                 <option value="">Select a service</option>
-                {services.map(service => (
+                {services.map((service) => (
                   <option key={service._id} value={service._id}>
                     {service.title} - ₹{service.price}
                   </option>
@@ -925,7 +1027,9 @@ const AdminAppointments = () => {
                   disabled={loadingSlots}
                 />
                 {loadingSlots && (
-                  <p className="mt-1 text-sm text-gray-500">Loading available slots...</p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Loading available slots...
+                  </p>
                 )}
               </div>
 
@@ -942,18 +1046,26 @@ const AdminAppointments = () => {
                   disabled={loadingSlots || availableSlots.length === 0}
                 >
                   <option value="">Select time slot</option>
-                  {availableSlots.map(slot => (
-                    <option key={slot} value={slot}>{slot}</option>
+                  {availableSlots.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
                   ))}
                 </select>
                 {!formData.appointmentDate ? (
-                  <p className="mt-1 text-sm text-gray-500">Please select a date first</p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Please select a date first
+                  </p>
                 ) : availableSlots.length === 0 && !loadingSlots ? (
-                  <p className="mt-1 text-sm text-yellow-500">No slots available for this date</p>
+                  <p className="mt-1 text-sm text-yellow-500">
+                    No slots available for this date
+                  </p>
                 ) : loadingSlots ? (
                   <p className="mt-1 text-sm text-gray-500">Loading slots...</p>
                 ) : (
-                  <p className="mt-1 text-sm text-gray-500">{availableSlots.length} slots available</p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {availableSlots.length} slots available
+                  </p>
                 )}
               </div>
             </div>
@@ -999,7 +1111,9 @@ const AdminAppointments = () => {
                 Cancel
               </Button>
               <Button type="submit" loading={submitting}>
-                {modalType === "edit" ? "Update Appointment" : "Create Appointment"}
+                {modalType === "edit"
+                  ? "Update Appointment"
+                  : "Create Appointment"}
               </Button>
             </div>
           </form>

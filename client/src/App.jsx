@@ -21,6 +21,7 @@ const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'));
 const AuthCallback = lazy(() => import('./pages/Auth/AuthCallback'));
 const Profile = lazy(() => import('./pages/Profile/Profile'));
 const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
+const ServiceDetails = lazy(() => import('./pages/Services/ServiceDetails'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/Admin/AdminDashboard'));
@@ -43,6 +44,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
+              <Route path="/services/:id" element={<ServiceDetails />} />
               <Route path="/appointment" element={<Appointment />} />
               <Route path="/appointment/success" element={<AppointmentSuccess />} />
               <Route path="/contact" element={<Contact />} />

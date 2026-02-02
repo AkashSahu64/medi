@@ -410,11 +410,11 @@ const AdminSettings = () => {
         const initialSettings = {
           clinicName: 'MEDIHOPE Physiotherapy Centre',
           clinicEmail: 'info@medihope.com',
-          clinicPhone: '+91-9259642281',
+          clinicPhone: '+91-6386065599',
           clinicAddress: '123 Health Street, Medical City, MC 12345',
           clinicHours: '9:00 AM - 7:00 PM',
           clinicDays: 'Monday - Saturday',
-          whatsappNumber: '+91-9259642281',
+          whatsappNumber: '+91-6386065599',
           facebookUrl: 'https://facebook.com/medihope',
           twitterUrl: 'https://twitter.com/medihope',
           instagramUrl: 'https://instagram.com/medihope',
@@ -591,11 +591,11 @@ const AdminSettings = () => {
       const defaultSettings = {
         clinicName: 'MEDIHOPE Physiotherapy Centre',
         clinicEmail: 'info@medihope.com',
-        clinicPhone: '+91-9259642281',
+        clinicPhone: '+91-6386065599',
         clinicAddress: '123 Health Street, Medical City, MC 12345',
         clinicHours: '9:00 AM - 7:00 PM',
         clinicDays: 'Monday - Saturday',
-        whatsappNumber: '+91-9259642281',
+        whatsappNumber: '+91-6386065599',
         facebookUrl: 'https://facebook.com/medihope',
         twitterUrl: 'https://twitter.com/medihope',
         instagramUrl: 'https://instagram.com/medihope',
@@ -858,7 +858,7 @@ const AdminSettings = () => {
                     label="WhatsApp Number"
                     type="tel"
                     leftIcon={<FaWhatsapp className="text-green-500" />}
-                    placeholder="+91-9259642281"
+                    placeholder="+91-6386065599"
                     {...register('whatsappNumber')}
                   />
 
