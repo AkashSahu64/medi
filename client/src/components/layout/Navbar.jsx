@@ -55,11 +55,14 @@ const Navbar = () => {
   }, [location]);
 
   const navLinks = [
-    { path: "/", label: "Home" },
-    { path: "/about", label: "About Us" },
-    // { path: "/services", label: "Services" },
-    { path: "/appointment", label: "Book Appointment" },
-    { path: "/contact", label: "Contact" },
+   { path: "/", label: "Home" },
+  { path: "/about", label: "About Us" },
+  { path: "/appointment", label: "Book Appointment" },
+  // { path: "/contact", label: "Contact" },
+  // Add these two new links
+  { path: "/fomt", label: "FOMT" },
+  { path: "/fnmt", label: "FNMT" },
+  { path: "/courses-workshop", label: "COURSES & WORKSHOP" },
   ];
 
   const contactItems = [

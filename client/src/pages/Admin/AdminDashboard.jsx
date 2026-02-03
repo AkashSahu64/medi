@@ -45,6 +45,7 @@ import Modal from "../../components/common/Modal";
 import Button from "../../components/common/Button";
 import toast from "react-hot-toast";
 import NotificationDropdown from "../../components/NotificationDropdown";
+import { FaAddressBook } from 'react-icons/fa';
 
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -278,6 +279,8 @@ useEffect(() => {
     { path: "/admin/gallery", label: "Gallery", icon: <FaImage /> },
     { path: "/admin/users", label: "Users", icon: <FaUsers /> },
     { path: "/admin/settings", label: "Settings", icon: <FaCog /> },
+    { path: "/admin/directory-management", label: "Directory", icon: <FaAddressBook /> },
+  { path: "/admin/settings", label: "Settings", icon: <FaCog /> },
   ];
 
   const statsCards = [

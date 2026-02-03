@@ -22,6 +22,10 @@ const AuthCallback = lazy(() => import('./pages/Auth/AuthCallback'));
 const Profile = lazy(() => import('./pages/Profile/Profile'));
 const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
 const ServiceDetails = lazy(() => import('./pages/Services/ServiceDetails'));
+const FOMT = lazy(() => import('./pages/FOMT'));
+const FNMT = lazy(() => import('./pages/FNMT'));
+const CoursesWorkshop = lazy(() => import('./pages/CoursesWorkshop'));
+const CourseDetail = lazy(() => import('./pages/CourseDetail'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/Admin/AdminDashboard'));
@@ -31,6 +35,7 @@ const AdminTestimonials = lazy(() => import('./pages/Admin/AdminTestimonials'));
 const AdminGallery = lazy(() => import('./pages/Admin/AdminGallery'));
 const AdminUsers = lazy(() => import('./pages/Admin/AdminUsers'));
 const AdminSettings = lazy(() => import('./pages/Admin/AdminSettings'));
+const DirectoryManagement = lazy(() => import('./pages/Admin/DirectoryManagement'));
 
 function App() {
   return (
@@ -48,6 +53,10 @@ function App() {
               <Route path="/appointment" element={<Appointment />} />
               <Route path="/appointment/success" element={<AppointmentSuccess />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/fomt" element={<FOMT />} />
+<Route path="/fnmt" element={<FNMT />} />
+<Route path="/courses-workshop" element={<CoursesWorkshop />} />
+<Route path="/courses-workshop/:courseId" element={<CourseDetail />} />
               
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
@@ -77,6 +86,7 @@ function App() {
                 <Route path="gallery" element={<AdminGallery />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="directory-management" element={<DirectoryManagement />} />
               </Route>
               
               {/* 404 Route */}
