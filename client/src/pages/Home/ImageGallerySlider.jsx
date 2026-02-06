@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FaPlay, 
-  FaPause, 
-  FaChevronLeft, 
-  FaChevronRight, 
-  FaExternalLinkAlt, 
-  FaTimes, 
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaPlay,
+  FaPause,
+  FaChevronLeft,
+  FaChevronRight,
+  FaExternalLinkAlt,
+  FaTimes,
   FaStar,
   FaInfoCircle,
-  FaImages
-} from 'react-icons/fa';
-import { galleryService } from '../../services/gallery.service';
+  FaImages,
+} from "react-icons/fa";
+import { galleryService } from "../../services/gallery.service";
 
 // Premium Gallery Detail Modal (Unchanged)
 const GalleryDetailModal = ({ item, isOpen, onClose }) => {
@@ -27,7 +27,7 @@ const GalleryDetailModal = ({ item, isOpen, onClose }) => {
           className="fixed inset-0 bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         />
-        
+
         <div className="flex min-h-full items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -60,7 +60,7 @@ const GalleryDetailModal = ({ item, isOpen, onClose }) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 h-[80vh]">
               {/* Media Display */}
               <div className="relative bg-black">
-                {item.type === 'image' ? (
+                {item.type === "image" ? (
                   <img
                     src={item.url}
                     alt={item.title}
@@ -75,7 +75,8 @@ const GalleryDetailModal = ({ item, isOpen, onClose }) => {
                       className="w-full h-full object-contain"
                     />
                     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full">
-                      {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
+                      {Math.floor(item.duration / 60)}:
+                      {(item.duration % 60).toString().padStart(2, "0")}
                     </div>
                   </div>
                 )}
@@ -85,22 +86,32 @@ const GalleryDetailModal = ({ item, isOpen, onClose }) => {
               <div className="p-8 lg:p-12 overflow-y-auto">
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">{item.title}</h2>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      {item.title}
+                    </h2>
                     <p className="text-gray-600">{item.description}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-gray-500">Category</p>
-                      <p className="font-medium text-gray-900 capitalize">{item.category}</p>
+                      <p className="text-sm font-medium text-gray-500">
+                        Category
+                      </p>
+                      <p className="font-medium text-gray-900 capitalize">
+                        {item.category}
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-gray-500">Type</p>
-                      <p className="font-medium text-gray-900 capitalize">{item.type}</p>
+                      <p className="font-medium text-gray-900 capitalize">
+                        {item.type}
+                      </p>
                     </div>
                     {item.dimensions && (
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-gray-500">Dimensions</p>
+                        <p className="text-sm font-medium text-gray-500">
+                          Dimensions
+                        </p>
                         <p className="font-medium text-gray-900">
                           {item.dimensions.width} × {item.dimensions.height}
                         </p>
@@ -108,15 +119,21 @@ const GalleryDetailModal = ({ item, isOpen, onClose }) => {
                     )}
                     {item.format && (
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-gray-500">Format</p>
-                        <p className="font-medium text-gray-900 uppercase">{item.format}</p>
+                        <p className="text-sm font-medium text-gray-500">
+                          Format
+                        </p>
+                        <p className="font-medium text-gray-900 uppercase">
+                          {item.format}
+                        </p>
                       </div>
                     )}
                   </div>
 
                   {item.tags && item.tags.length > 0 && (
                     <div>
-                      <p className="text-sm font-medium text-gray-500 mb-2">Tags</p>
+                      <p className="text-sm font-medium text-gray-500 mb-2">
+                        Tags
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {item.tags.map((tag, index) => (
                           <span
@@ -179,10 +196,10 @@ const ImageGallerySlider = () => {
     clearTimeout(timeoutRef.current);
 
     const currentItem = sliderItems[activeIndex];
-    
+
     if (!currentItem || !isPlaying || sliderItems.length <= 1) return;
 
-    if (currentItem.type === 'video') {
+    if (currentItem.type === "video") {
       // For videos, we handle slide change via video events
       return;
     }
@@ -202,7 +219,7 @@ const ImageGallerySlider = () => {
     try {
       setLoading(true);
       const response = await galleryService.getSliderItems();
-      
+
       // REMOVED THE FILTER - Backend already returns showOnSlider=true items
       // JUST SORT the items: featured first, then by date
       const sortedItems = (response.data || []).sort((a, b) => {
@@ -210,10 +227,10 @@ const ImageGallerySlider = () => {
         if (!a.featured && b.featured) return 1;
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
-      
+
       setSliderItems(sortedItems);
     } catch (error) {
-      console.error('Failed to load slider items:', error);
+      console.error("Failed to load slider items:", error);
     } finally {
       setLoading(false);
     }
@@ -229,12 +246,14 @@ const ImageGallerySlider = () => {
   }, []);
 
   const goToNextSlide = useCallback(() => {
-    setActiveIndex(prev => (prev + 1) % sliderItems.length);
+    setActiveIndex((prev) => (prev + 1) % sliderItems.length);
     setIsPlaying(true);
   }, [sliderItems.length]);
 
   const goToPrevSlide = useCallback(() => {
-    setActiveIndex(prev => (prev - 1 + sliderItems.length) % sliderItems.length);
+    setActiveIndex(
+      (prev) => (prev - 1 + sliderItems.length) % sliderItems.length,
+    );
     setIsPlaying(true);
   }, [sliderItems.length]);
 
@@ -290,29 +309,56 @@ const ImageGallerySlider = () => {
 
   return (
     <>
-      <section className="relative py-20 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+      <section className="relative py-1 lg:py-16 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 25px 25px, #000 2%, transparent 2%)`,
-            backgroundSize: '50px 50px'
-          }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `radial-gradient(circle at 25px 25px, #000 2%, transparent 2%)`,
+              backgroundSize: "50px 50px",
+            }}
+          />
         </div>
 
-        <div className="container mx-auto px-8 relative z-10">
+        <div className="container mx-auto px-4 lg:px-8 relative z-10">
           {/* Main Slider */}
           <div className="relative max-w-8xl mx-auto">
             {/* Navigation Buttons */}
             <button
               onClick={goToPrevSlide}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-sm flex items-center justify-center text-gray-700 hover:bg-white hover:scale-110 transition-all"
+              className="
+    absolute left-2 sm:left-4
+    top-1/2 -translate-y-1/2
+    z-20
+    w-10 h-10 sm:w-12 sm:h-12
+    rounded-full
+    lg:bg-white/80 lg:backdrop-blur-sm
+    shadow-sm
+    flex items-center justify-center
+    text-gray-700
+    hover:bg-white hover:scale-110
+    transition-all
+  "
             >
               <FaChevronLeft />
             </button>
-            
+
             <button
               onClick={goToNextSlide}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-sm flex items-center justify-center text-gray-700 hover:bg-white hover:scale-110 transition-all"
+              className="
+    absolute right-2 sm:right-4
+    top-1/2 -translate-y-1/2
+    z-20
+    w-10 h-10 sm:w-12 sm:h-12
+    rounded-full
+    lg:bg-white/80 lg:backdrop-blur-sm
+    shadow-sm
+    flex items-center justify-center
+    text-gray-700
+    hover:bg-white hover:scale-110
+    transition-all
+  "
             >
               <FaChevronRight />
             </button>
@@ -320,13 +366,24 @@ const ImageGallerySlider = () => {
             {/* Auto-play Toggle */}
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-sm flex items-center justify-center text-gray-700 hover:bg-white"
+              className="
+    absolute top-3 right-3 sm:top-4 sm:right-4
+    z-20
+    w-9 h-9 sm:w-10 sm:h-10
+    rounded-full
+    lg:bg-white/80 lg:backdrop-blur-sm
+    shadow-sm
+    flex items-center justify-center
+    text-gray-700
+    hover:bg-white
+    transition
+  "
             >
               {isPlaying ? <FaPause /> : <FaPlay />}
             </button>
 
             {/* Main Slider Container */}
-            <div className="relative h-[500px] md:h-[500px] rounded-3xl overflow-hidden shadow-sm">
+            <div className="relative h-[200px] sm:h-[300px] md:h-[450px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-sm">
               <AnimatePresence mode="wait">
                 {currentItem && (
                   <motion.div
@@ -338,11 +395,11 @@ const ImageGallerySlider = () => {
                     className="absolute inset-0"
                   >
                     {/* Media Display */}
-                    {currentItem.type === 'image' ? (
+                    {currentItem.type === "image" ? (
                       <img
                         src={currentItem.url}
                         alt={currentItem.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
                       />
                     ) : (
                       <div className="relative w-full h-full">
@@ -354,10 +411,13 @@ const ImageGallerySlider = () => {
                           loop={false}
                           onEnded={handleVideoEnded}
                           onPlay={handleVideoPlay}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover object-center"
                         />
                         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full">
-                          {Math.floor(currentItem.duration / 60)}:{(currentItem.duration % 60).toString().padStart(2, '0')}
+                          {Math.floor(currentItem.duration / 60)}:
+                          {(currentItem.duration % 60)
+                            .toString()
+                            .padStart(2, "0")}
                         </div>
                       </div>
                     )}
@@ -382,7 +442,7 @@ const ImageGallerySlider = () => {
                               <span className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-sm px-4 py-1.5 rounded-full">
                                 {currentItem.category}
                               </span>
-                              {currentItem.type === 'video' && (
+                              {currentItem.type === "video" && (
                                 <span className="inline-flex items-center gap-1 bg-red-500/20 backdrop-blur-sm text-white text-sm px-4 py-1.5 rounded-full border border-red-500/30">
                                   Video
                                 </span>
@@ -398,18 +458,21 @@ const ImageGallerySlider = () => {
                             </p>
 
                             {/* Tags */}
-                            {currentItem.tags && currentItem.tags.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mb-6">
-                                {currentItem.tags.slice(0, 3).map((tag, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="inline-block bg-white/10 backdrop-blur-sm text-white text-sm px-3 py-1 rounded-full"
-                                  >
-                                    #{tag}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
+                            {currentItem.tags &&
+                              currentItem.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mb-6">
+                                  {currentItem.tags
+                                    .slice(0, 3)
+                                    .map((tag, idx) => (
+                                      <span
+                                        key={idx}
+                                        className="inline-block bg-white/10 backdrop-blur-sm text-white text-sm px-3 py-1 rounded-full"
+                                      >
+                                        #{tag}
+                                      </span>
+                                    ))}
+                                </div>
+                              )}
 
                             {/* Action Buttons */}
                             <div className="flex flex-wrap gap-4">
@@ -423,9 +486,11 @@ const ImageGallerySlider = () => {
                                   <FaExternalLinkAlt className="text-sm" />
                                 </span>
                               </button>
-                              
+
                               <button
-                                onClick={() => window.open(currentItem.url, '_blank')}
+                                onClick={() =>
+                                  window.open(currentItem.url, "_blank")
+                                }
                                 className="group px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl border border-white/20 hover:bg-white/20 transition-colors"
                               >
                                 <span className="flex items-center gap-2">
@@ -452,7 +517,7 @@ const ImageGallerySlider = () => {
                     )}
 
                     {/* Progress Bar - Only for images when playing */}
-                    {currentItem.type === 'image' && isPlaying && (
+                    {currentItem.type === "image" && isPlaying && (
                       <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
                         <motion.div
                           className="h-full bg-gradient-to-r from-cyan-500 to-blue-500"
@@ -466,7 +531,7 @@ const ImageGallerySlider = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>           
+            </div>
           </div>
         </div>
       </section>

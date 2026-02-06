@@ -464,28 +464,32 @@ const Home = () => {
       </Helmet>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-cyan-50 via-white to-cyan-50 pt-6 md:pt-24">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 items-center">
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-cyan-50 via-white to-cyan-100 pt-12 md:pt-16">
+        <div className="container mx-auto px-4 sm:px-4 lg:px-10 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            {/* LEFT CONTENT */}
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
               className="text-center lg:text-left"
             >
-              <div className="inline-flex items-center space-x-2 bg-cyan-100 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold mb-3">
+              {/* Premium Badge */}
+              <div className="hidden lg:inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-cyan-100 text-cyan-700 px-5 py-2 rounded-full text-sm font-semibold shadow mb-5 ">
                 <FaStethoscope />
-                <span>Physiotherapy, Osteopathy, and Chiropractic Center</span>
+                Physiotherapy • Osteopathy • Chiropractic
               </div>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-800/90 mb-6">
-                Journey to <br />
-                <span className="block mt-4 bg-cyan-700/90 bg-clip-text text-transparent">
+              {/* Heading */}
+              <h1 className="text-5xl md:text-6xl xl:text-7xl font-extrabold text-gray-800 lg:leading-tight tracking-tight">
+                Journey to a
+                <span className="block mt-3 bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-400 bg-clip-text text-transparent">
                   Pain-Free Life
                 </span>
               </h1>
 
-              <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl">
+              {/* Description */}
+              <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 Our specialized team is dedicated to helping you regain your
                 independence. We understand how important it is to move freely
                 and comfortably. Our commitment is to provide you with the best
@@ -493,160 +497,131 @@ const Home = () => {
                 well-being. Your journey towards better mobility starts with us.
               </p>
 
-              <div className="flex flex-col items-center justify-center sm:flex-row gap-6 lg:gap-14 -ml-14 mb-10 w-full">
+              {/* CTA SECTION – FIXED */}
+              <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 {/* Book Consultation */}
                 <Link to="/appointment" className="w-full sm:w-auto">
-                  <Button
-                    size="lg"
-                    className="w-full sm:w-auto bg-gradient-to-r from-cyan-600/90 to-cyan-600 hover:from-cyan-700 hover:to-cyan-600 text-white shadow-lg hover:shadow-xl transition-all"
+                  <button
+                    className="
+                      h-[56px]
+                      w-full sm:w-auto
+                      px-8
+                      flex items-center justify-center
+                      text-lg font-semibold
+                      text-white
+                      rounded-lg
+                      bg-gradient-to-r from-cyan-600 to-cyan-500
+                      hover:from-cyan-700 hover:to-cyan-600
+                      shadow-lg hover:shadow-xl
+                      transition-all
+                    "
                   >
-                    <span className="flex items-center">
-                      Book Free Consultation
-                      <FaArrowRight className="ml-2" />
-                    </span>
-                  </Button>
+                    Book Free Consultation
+                    <FaArrowRight className="ml-3 text-lg" />
+                  </button>
                 </Link>
 
-                {/* WhatsApp */}
+                {/* WhatsApp CTA – FIXED */}
                 <a
                   href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group w-full sm:w-auto"
+                  className="w-full sm:w-auto"
                 >
                   <div
                     className="
-                        flex items-center 
-                        w-full sm:w-auto
-                        space-x-2 
-                        text-white bg-green-500 backdrop-blur-md
-                        border border-green-100/60
-                        shadow-lg py-1.5 px-4 rounded-lg 
-                        hover:text-green-700 
-                        transition-all duration-300
-                        justify-center sm:justify-start
-                      "
+                      h-[56px]
+                      px-6
+                      flex items-center gap-4
+                      rounded-lg
+                      bg-white
+                      border border-gray-200
+                      shadow-md hover:shadow-lg
+                      transition-all
+                    "
                   >
-                    <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                      <FaWhatsapp size={25} />
+                    <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                      <FaWhatsapp className="text-white text-xl" />
                     </div>
-                    <div className="text-left">
-                      {/* <div className="text-xs font-semibold">24/7</div> */}
-                      <div className="font-semibold text-lg">Chat With Medihope</div>
+
+                    <div className="leading-tight">
+                      <p className="text-xs text-gray-500">24/7 Support</p>
+                      <p className="text-base font-semibold text-gray-800">
+                        Chat With Medihope
+                      </p>
                     </div>
                   </div>
                 </a>
               </div>
-
-              {/* Conditions We Treat */}
-              {/* <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-700 mb-4">
-                  Conditions We Treat:
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {conditions.map((condition, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`${condition.color} px-4 py-2 rounded-full text-md font-medium flex items-center space-x-2 hover:${condition.hoverColor}`}
-                    >
-                      {condition.icon}
-                      <span>{condition.name}</span>
-                    </motion.div>
-                  ))}
-                </div>
-              </div> */}
             </motion.div>
 
+            {/* RIGHT IMAGE */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
+              className="relative mt-10 lg:mt-0"
             >
-              {/* Main Hero Image */}
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl transform hover:scale-[1.01] transition-transform duration-500">
+              {/* Hero Image Wrapper */}
+              <div
+                className="
+      relative overflow-hidden shadow-2xl group
+      rounded-2xl sm:rounded-3xl
+    "
+              >
                 <img
                   src={hero}
                   alt="Physiotherapy treatment at MEDIHOPE"
-                  className="w-full h-[500px] object-cover"
+                  className="
+        w-full
+        h-[320px] sm:h-[420px] lg:h-[520px]
+        object-cover
+        object-top
+        group-hover:scale-[1.03]
+        transition-transform duration-700
+      "
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
-                {/* Floating Stats Card */}
-                {/* <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="absolute top-2 right-3 bg-white/35 backdrop-blur-sm p-3 rounded-2xl shadow-xl max-w-xs"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-cyan-400 flex items-center justify-center">
-                      <FaStar className="text-white text-xl" />
-                    </div>
-                    <div>
-                      <div className="text-xl flex items-center justify-center font-bold text-gray-900">
-                        4.9/5
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        Patient Rating
-                      </div>
-                    </div>
-                  </div>
-                </motion.div> */}
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               </div>
 
-              {/* Doctor Card */}
-              {/* <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.7 }}
-                className="absolute bottom-1 lg:-bottom-8 -left-3 lg:-left-12 bg-gradient-to-r from-cyan-600 to-cyan-500 text-white p-6 rounded-2xl shadow-2xl max-w-sm"
+              {/* Floating Glass Card – MOBILE SAFE */}
+              <div
+                className="
+      absolute
+      bottom-4 sm:bottom-6
+      left-4 sm:left-6
+      right-4 sm:right-auto
+      bg-white/85 backdrop-blur-md
+      px-4 sm:px-5 py-3 sm:py-4
+      rounded-xl sm:rounded-2xl
+      shadow-xl
+    "
               >
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white/30">
-                    <img
-                      src={astha}
-                      alt="Dr. Arjun Mehta"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-bold">Dr. Akansha Bhuradia</h4>
-                    <p className="text-cyan-100">
-                      Specialist in Manual Therapy
-                    </p>
-                    <div className="flex items-center space-x-2 mt-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <FaStar
-                          key={star}
-                          className="text-yellow-300 text-sm"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <p className="mt-4 text-cyan-50">
-                  "BPT, MPT (Sports). Osteopathy & Chiropractic Care. Certified FNMT, CDNT & Pelvic Floor Therapist. Expert in Yoga & Pilates Rehabilitation."
+                <p className="text-lg sm:text-xl font-bold text-cyan-600">
+                  Trusted Care
                 </p>
-              </motion.div> */}
+                <p className="text-xs sm:text-sm text-gray-600">
+                  Advanced Physiotherapy Center
+                </p>
+              </div>
             </motion.div>
           </div>
+
+          {/* Bottom Statement */}
           <motion.div
-  initial={{ opacity: 0, y: 40 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  viewport={{ once: true }}
-  transition={{
-    duration: 0.8,
-    ease: "easeOut",
-  }}
-  className="w-full text-3xl flex items-center justify-center leading-relaxed text-center font-sans text-gray-700 font-semibold mt-14"
->
-  We are the leading physiotherapy center, distinguished by our state-of-the-art equipment <br />
-  and advanced techniques.
-</motion.div>
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="mt-10 mb-5 text-center text-2xl md:text-3xl font-semibold text-gray-700 leading-relaxed"
+          >
+            Leading physiotherapy center with
+            <span className="block text-cyan-600 mt-2">
+              state-of-the-art equipment & advanced techniques
+            </span>
+          </motion.div>
         </div>
       </section>
 
@@ -654,11 +629,11 @@ const Home = () => {
       <ImageGallerySlider />
 
       {/* Stats Section */}
-      <section className="py-16 md:py-20 bg-white border-b">
+      <section className="py-8 md:py-12 bg-white border-b">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-900/90 mb-8">
-              Trusted By Thousands of Patients
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900/90 mb-8">
+              Committed to Excellence in Physiotherapy Care
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Our commitment to excellence is reflected in the numbers. Every
@@ -739,11 +714,11 @@ const Home = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <div className="inline-flex items-center space-x-2 bg-cyan-100 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            <div className="hidden lg:inline-flex items-center space-x-2 bg-cyan-100 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
               <FaStethoscope />
               <span>Our Specialized Services</span>
             </div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-[1.8rem] md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
               Expert{" "}
               <span className="bg-gradient-to-r from-cyan-600 to-cyan-500 bg-clip-text text-transparent">
                 Physiotherapy
@@ -773,7 +748,7 @@ const Home = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {services.slice(0, 6).map((service, index) => (
+              {services.slice(0, 3).map((service, index) => (
                 <motion.div
                   key={service._id}
                   initial={{ opacity: 0, y: 30 }}
