@@ -37,7 +37,7 @@ const FNMT = () => {
   return (
     <>
       <Helmet>
-        <title>FNMT Directory | MEDIHOPE Physiotherapy</title>
+        <title>FNMT Practitioner | MEDIHOPE Physiotherapy</title>
         <meta name="description" content="Find FNMT (Friends of Naturopathy & Medical Tourism) contacts across different states" />
       </Helmet>
 
@@ -50,10 +50,10 @@ const FNMT = () => {
             className="text-center mb-12"
           >
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              FNMT Directory
+              FNMT Practitioners
             </h1>
             <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-              Find Friends of Naturopathy & Medical Tourism (FNMT) contacts across different states.
+              Fellowship in Neuro Myoskeletal Techniques (FNMT) contacts across different states.
               Connect with holistic healthcare facilitators for your wellness journey.
             </p>
           </motion.div>
@@ -65,7 +65,7 @@ const FNMT = () => {
             transition={{ delay: 0.1 }}
             className="mb-8"
           >
-            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+            <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-6 text-white">
               <div className="flex flex-wrap justify-center gap-8">
                 <div className="text-center">
                   <div className="text-3xl font-bold">

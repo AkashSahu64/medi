@@ -45,7 +45,7 @@ export const SERVICE_CATEGORY_LABELS = {
 
 export const CLINIC_INFO = {
   name: 'MEDIHOPE Physiotherapy Centre',
-  address: '123 Health Street, Medical City, MC 12345',
+  address: 'H block , Near Baba Balak Nath Temple, Aya Nagar South Delhi -110047',
   phone: '+91-6386065599',
   PHONE_FULL: '+91-6386065599',
   PHONE_MOBILE: '6386065599',

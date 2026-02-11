@@ -16,7 +16,7 @@ const settingsSchema = new mongoose.Schema({
   },
   clinicAddress: {
     type: String,
-    default: '123 Health Street, Medical City, MC 12345'
+    default: 'H block , Near Baba Balak Nath Temple, Aya Nagar South Delhi -110047'
   },
   clinicHours: {
     type: String,

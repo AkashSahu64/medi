@@ -84,20 +84,18 @@ const About = () => {
       </Helmet>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-16 bg-gradient-to-br from-primary-50 to-white">
+      <section className="pt-12 pb-8 bg-gradient-to-br from-primary-50 to-white">
         <div className="container-padding">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center max-w-4xl mx-auto"
+            className="text-center max-w-7xl mx-auto"
           >
-            <h1 className="text-4xl md:text-6xl font-bold text-secondary-900 mb-10">
+            <h1 className="text-4xl md:text-6xl font-bold text-secondary-900 mb-8">
               About <span className="text-primary-600">MEDIHOPE</span>
             </h1>
             <p className="text-xl text-secondary-600 mb-8">
-              A premier physiotherapy centre dedicated to restoring mobility,
-              reducing pain, and improving quality of life through
-              evidence-based treatments.
+              MEDIHOPE is a modern physiotherapy and rehabilitation center situated in <span className="font-semibold">Aya Nagar, South Delhi</span> dedicated to restoring mobility, alleviating pain, and improving overall quality of life through evidence-based physiotherapy interventions. We integrate advanced technology and individualized treatment strategies to achieve effective and sustainable outcomes.
             </p>
           </motion.div>
         </div>
@@ -117,26 +115,12 @@ const About = () => {
               </h2>
               <div className="space-y-4 text-secondary-600 text-md">
                 <p>
-                  Founded in 2008, MEDIHOPE began as a small clinic with a big
-                  vision: to provide accessible, high-quality physiotherapy care
-                  to our community. What started with a single treatment room
-                  has grown into a comprehensive rehabilitation centre serving
-                  thousands of patients.
+                  MEDIHOPE was established in 2025 with a focused vision to create a comprehensive Physiotherapy, Osteopathy, and Chiropractic Center where advanced clinical expertise, modern therapeutic technology, and compassionate patient care work in harmony. Located in Aya Nagar H Block , South Delhi, MEDIHOPE was developed to address the growing need for reliable, evidence-based rehabilitation and manual therapy services within the community.
                 </p>
                 <p>
-                  Over the past 15+ years, we've built a reputation for
-                  excellence through our patient-first approach and commitment
-                  to evidence-based practice. Our team of certified
-                  physiotherapists combines extensive clinical experience with
-                  ongoing professional development to deliver the most effective
-                  treatments.
+                  At MEDIHOPE, we believe that effective recovery extends beyond symptom management. Our integrated approach combines physiotherapy, osteopathy, and chiropractic care, emphasizing precise assessment, identification of underlying movement dysfunctions, and individualized treatment planning. By blending advanced techniques with personalized care, we are committed to delivering sustainable recovery, improved mobility, and long-term quality of life for every patient.
                 </p>
-                <p>
-                  Today, MEDIHOPE stands as a trusted name in physiotherapy,
-                  known for our holistic approach that addresses not just
-                  physical symptoms but also the emotional and psychological
-                  aspects of recovery.
-                </p>
+               
               </div>
             </motion.div>
 
@@ -153,14 +137,14 @@ const About = () => {
                   className="w-full h-[400px] object-cover"
                 />
               </div>
-              <div className="absolute -bottom-5 -right-5 bg-primary-500 text-white px-3 py-2 rounded-lg shadow-lg max-w-[150px]">
+              {/* <div className="absolute -bottom-5 -right-5 bg-primary-500 text-white px-3 py-2 rounded-lg shadow-lg max-w-[150px]">
                 <div className="text-lg font-semibold leading-tight">
                   15+ Years of Excellence
                 </div>
                 <p className="text-xs mt-1 text-primary-100">
                   In physiotherapy care
                 </p>
-              </div>
+              </div> */}
             </motion.div>
           </div>
         </div>
@@ -186,10 +170,7 @@ const About = () => {
               </div>
 
               <p className="text-secondary-600">
-                To empower individuals to achieve optimal physical function and
-                pain-free living through personalized, evidence-based
-                physiotherapy interventions. We strive to be the most trusted
-                rehabilitation partner in our community.
+                To empower individuals to achieve pain-free movement, functional independence, and long-term recovery through personalized, evidence-based physiotherapy interventions. We aim to be a reliable rehabilitation partner for every stage of recovery.
               </p>
             </motion.div>
 
@@ -210,10 +191,7 @@ const About = () => {
               </div>
 
               <p className="text-secondary-600">
-                To revolutionize physiotherapy care by integrating cutting-edge
-                technology with compassionate, patient-centered treatment. We
-                envision a future where everyone has access to effective
-                rehabilitation for a better quality of life.
+                To become a leading physiotherapy and rehabilitation centre in India by integrating advanced therapeutic technology, clinical expertise, patient-centric treatment and compassionate care, making effective rehabilitation accessible to all.
               </p>
             </motion.div>
           </div>

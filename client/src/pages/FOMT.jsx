@@ -37,12 +37,12 @@ const FOMT = () => {
   return (
     <>
       <Helmet>
-        <title>FOMT Directory | MEDIHOPE Physiotherapy</title>
+        <title>FOMT Practitioner | MEDIHOPE Physiotherapy</title>
         <meta name="description" content="Find FOMT (Friends of Medical Tourism) contacts across different states" />
       </Helmet>
 
       <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 py-12 max-w-7xl">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -50,10 +50,10 @@ const FOMT = () => {
             className="text-center mb-12"
           >
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              FOMT Directory
+              FOMT Practitioners
             </h1>
             <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-              Find Friends of Medical Tourism (FOMT) contacts across different states.
+              Fellowship in Orthopedic Manual Therapy (FOMT) contacts across different states.
               Connect with medical tourism facilitators for your healthcare journey.
             </p>
           </motion.div>
@@ -65,7 +65,7 @@ const FOMT = () => {
             transition={{ delay: 0.1 }}
             className="mb-8"
           >
-            <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl p-6 text-white">
+            <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-6 text-white">
               <div className="flex flex-wrap justify-center gap-8">
                 <div className="text-center">
                   <div className="text-3xl font-bold">

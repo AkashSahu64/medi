@@ -344,38 +344,35 @@ const Home = () => {
     },
   ];
 
-  const stats = [
-    {
-      icon: <FaUserMd className="text-4xl" />,
-      value: "1000+",
-      label: "Patients Treated",
-      description: "Successful recoveries",
-    },
-    {
-      icon: <FaAward className="text-4xl" />,
-      value: "15+",
-      label: "Years Experience",
-      description: "Clinical excellence",
-    },
-    {
-      icon: <FaCheckCircle className="text-4xl" />,
-      value: "100%",
-      label: "Success Rate",
-      description: "Patient satisfaction",
-    },
-    {
-      icon: <FaCalendarCheck className="text-4xl" />,
-      value: "24/7",
-      label: "Emergency Care",
-      description: "Always available",
-    },
-    {
-      icon: <FaStethoscope className="text-4xl" />,
-      value: "10+",
-      label: "Latest Technologies",
-      description: "Modern medical equipment",
-    },
-  ];
+
+const stats = [
+  {
+    icon: <FaUserMd />,
+    title: "Expert Physiotherapists",
+    description: "Qualified professionals providing personalized therapy care",
+  },
+  {
+    icon: <FaAward />,
+    title: "Trusted Clinical Practice",
+    description: "Ethical standards with proven physiotherapy methods",
+  },
+  {
+    icon: <FaCheckCircle />,
+    title: "Patient First Approach",
+    description: "Focused on comfort, safety, and recovery outcomes",
+  },
+  {
+    icon: <FaCalendarCheck />,
+    title: "Continuity of Care",
+    description: "Planned sessions with consistent follow-up care",
+  },
+  {
+    icon: <FaStethoscope />,
+    title: "Modern Equipment",
+    description: "Advanced tools for effective physiotherapy treatment",
+  },
+];
+
 
   const conditions = [
     {
@@ -629,81 +626,65 @@ const Home = () => {
       <ImageGallerySlider />
 
       {/* Stats Section */}
-      <section className="py-8 md:py-12 bg-white border-b">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900/90 mb-8">
-              Committed to Excellence in Physiotherapy Care
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Our commitment to excellence is reflected in the numbers. Every
-              statistic represents a life improved through our care.
-            </p>
-          </div>
+      <section className="py-10 md:py-14 bg-white border-b border-gray-200">
+  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="relative bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300"
-              >
-                {/* Medical Badge */}
-                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-r from-cyan-600 to-cyan-500 flex items-center justify-center shadow-lg">
-                    <div className="text-white text-2xl">{stat.icon}</div>
-                  </div>
-                </div>
+    {/* ================= HEADING ================= */}
+    <div className="text-center mb-16 max-w-7xl mx-auto">
+      <h2 className="text-4xl md:text-5xl font-bold text-gray-900/90 mb-6">
+        Committed to Excellence in Physiotherapy Care
+      </h2>
+      <p className="text-lg text-gray-600">
+        We believe in quality care, professional expertise, and patient-focused
+        physiotherapy designed for long-term well-being.
+      </p>
+    </div>
 
-                <div className="pt-8 text-center">
-                  {/* Value with Medical Styling */}
-                  <div className="mb-3">
-                    <span className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-cyan-500 bg-clip-text text-transparent">
-                      {stat.value}
-                    </span>
-                  </div>
-                  {/* Description */}
-                  <p className="text-gray-600 text-sm font-medium">
-                    {stat.description}
-                  </p>
-
-                  {/* Medical Certificate-like Border Bottom */}
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <div className="flex items-center justify-center space-x-1 text-cyan-600">
-                      <FaCheckCircle className="text-sm" />
-                      <span className="text-xs font-medium">
-                        Certified Excellence
-                      </span>
-                    </div>
-                  </div>
-                </div>
+    {/* ================= CARDS ================= */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-6">
+      {stats.map((stat, index) => (
+        <div
+          key={index}
+          className="relative bg-white rounded-2xl p-4 border border-gray-200 
+                     shadow-sm hover:shadow-md transition-shadow duration-300"
+        >
+          {/* Icon Badge */}
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-r from-cyan-600 to-cyan-500 
+                            flex items-center justify-center shadow-lg">
+              <div className="text-white text-2xl">
+                {stat.icon}
               </div>
-            ))}
+            </div>
           </div>
 
-          {/* Trust Indicators */}
-          <div className="mt-10 pt-8 border-t border-gray-200 md:-mb-10">
-            <div className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                {[
-                  { label: "ISO Certified", value: "9001:2015" },
-                  { label: "NABH Standards", value: "Compliant" },
-                  { label: "Doctors Panel", value: "25+ Experts" },
-                  { label: "Treatment Rooms", value: "15+" },
-                ].map((item, idx) => (
-                  <div key={idx} className="text-center">
-                    <div className="text-2xl font-bold text-gray-800/90 mb-2">
-                      {item.value}
-                    </div>
-                    <div className="text-sm text-gray-600 font-medium">
-                      {item.label}
-                    </div>
-                  </div>
-                ))}
+          {/* Content */}
+          <div className="pt-10 text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              {stat.title}
+            </h3>
+
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {stat.description}
+            </p>
+
+            {/* Bottom Trust Line */}
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-center gap-1 text-cyan-600">
+                <FaCheckCircle className="text-sm" />
+                <span className="text-xs font-medium">
+                  Quality Care Assurance
+                </span>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      ))}
+    </div>
+
+  </div>
+</section>
+
 
       {/* Services Section */}
       <section className="py-12 md:py-20 bg-gradient-to-b from-white to-cyan-50">
@@ -838,233 +819,234 @@ const Home = () => {
 
       {/* Emergency CTA Section */}
       <section className="py-16 md:py-20 bg-gradient-to-r from-cyan-600 to-cyan-800">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            {/* Main Card */}
-            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-2">
-                {/* Left Side - Emergency Info */}
-                <div className="bg-gradient-to-br from-cyan-600 to-cyan-600 text-white p-8 md:p-12">
-                  <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                      <FaStethoscope className="text-2xl" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-cyan-100">
-                        24/7 EMERGENCY
-                      </div>
-                      <div className="text-xl font-bold">
-                        Critical Care Unit
-                      </div>
-                    </div>
+  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-6xl mx-auto">
+
+      {/* ================= MAIN CARD ================= */}
+      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+
+          {/* ================= LEFT : HOME VISIT INFO ================= */}
+          <div className="bg-gradient-to-br from-cyan-600 to-cyan-700 text-white p-8 md:p-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight overflow-hidden">
+              Professional Physiotherapy at Your Home
+            </h2>
+
+            <p className="text-cyan-100 mb-8 text-lg leading-relaxed">
+              Our home visit physiotherapy service brings expert care directly
+              to your doorstep. Ideal for elderly patients, post-surgery
+              recovery, mobility limitations, or those who prefer treatment
+              in the comfort of home.
+            </p>
+
+            {/* Home Visit Features */}
+            <div className="space-y-4 mb-10">
+              {[
+                {
+                  icon: <FaUserMd />,
+                  text: "Experienced Physiotherapist Visit",
+                },
+                {
+                  icon: <FaClock />,
+                  text: "Flexible Appointment Scheduling",
+                },
+                {
+                  icon: <FaHandsHelping />,
+                  text: "Personalized One-on-One Therapy",
+                },
+                {
+                  icon: <FaCheckCircle />,
+                  text: "Safe, Hygienic & Professional Care",
+                },
+              ].map((feature, idx) => (
+                <div key={idx} className="flex items-start space-x-3">
+                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                    {feature.icon}
                   </div>
+                  <span className="text-cyan-50 leading-snug">
+                    {feature.text}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-                  <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                    Immediate Medical Attention When You Need
-                  </h2>
+            {/* Contact Box */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+              <h4 className="text-xl font-semibold mb-4">
+                Book a Home Visit
+              </h4>
 
-                  <p className="text-cyan-100 mb-8 text-lg">
-                    Our emergency physiotherapy unit is equipped to handle acute
-                    pain, sports injuries, and post-surgical complications.
-                    Immediate consultation available 24/7.
-                  </p>
-
-                  {/* Emergency Features */}
-                  <div className="space-y-4 mb-10">
-                    {[
-                      {
-                        icon: <FaClock />,
-                        text: "Immediate Response - Under 30 Minutes",
-                      },
-                      {
-                        icon: <FaUserMd />,
-                        text: "Senior Specialist Available 24/7",
-                      },
-                      {
-                        icon: <FaCheckCircle />,
-                        text: "Advanced Emergency Equipment",
-                      },
-                      {
-                        icon: <FaHandsHelping />,
-                        text: "Ambulance Service Available",
-                      },
-                    ].map((feature, idx) => (
-                      <div key={idx} className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                          {feature.icon}
-                        </div>
-                        <span className="text-cyan-50">{feature.text}</span>
-                      </div>
-                    ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-sm text-cyan-200 mb-1">
+                    Call for Appointment
                   </div>
-
-                  {/* Emergency Numbers */}
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-                    <h4 className="text-xl font-bold mb-4">
-                      Emergency Contact Numbers
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-sm text-cyan-200 mb-1">
-                          Medical Emergency
-                        </div>
-                        <a
-                          href={`tel:${CLINIC_INFO.phone}`}
-                          className="text-2xl font-bold hover:text-white transition-colors"
-                        >
-                          {CLINIC_INFO.phone}
-                        </a>
-                      </div>
-                      <div>
-                        <div className="text-sm text-cyan-200 mb-1">
-                          Ambulance Service
-                        </div>
-                        <div className="text-2xl font-bold">102 / 108</div>
-                      </div>
-                    </div>
-                  </div>
+                  <a
+                    href={`tel:${CLINIC_INFO.phone}`}
+                    className="text-2xl font-bold hover:text-white transition-colors"
+                  >
+                    {CLINIC_INFO.phone}
+                  </a>
                 </div>
 
-                {/* Right Side - CTA Form */}
-                <div className="p-8 md:p-12">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                      Book Emergency Appointment
-                    </h3>
-                    <p className="text-gray-600">
-                      Fill this form for immediate medical attention
-                    </p>
+                <div>
+                  <div className="text-sm text-cyan-200 mb-1">
+                    WhatsApp Support
                   </div>
-
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Patient Name *
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                          placeholder="Full Name"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Phone Number *
-                        </label>
-                        <input
-                          type="tel"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                          placeholder="+91 XXXXX XXXXX"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Emergency Type *
-                      </label>
-                      <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
-                        <option>Select Emergency Type</option>
-                        <option>Severe Pain</option>
-                        <option>Sports Injury</option>
-                        <option>Post-Surgical Complication</option>
-                        <option>Accident/ Trauma</option>
-                        <option>Other Emergency</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Additional Details
-                      </label>
-                      <textarea
-                        rows="8"
-                        className="w-full px-4 py-3 resize-none border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                        placeholder="Brief description of the emergency..."
-                      ></textarea>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <Link to="/appointment" className="flex-1">
-                        <button className="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-semibold py-3.5 rounded-lg hover:from-cyan-700 hover:to-cyan-600 transition-all shadow-lg">
-                          Submit Emergency Request
-                        </button>
-                      </Link>
-
-                      <a
-                        href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1"
-                      >
-                        <button className="w-full flex items-center justify-center space-x-2 bg-green-100 text-green-700 font-semibold py-3.5 rounded-lg hover:bg-green-200 transition-colors border border-green-200">
-                          <FaWhatsapp className="text-lg" />
-                          <span>Chat on WhatsApp</span>
-                        </button>
-                      </a>
-                    </div>
-
-                    <div className="text-center text-sm text-gray-500">
-                      <p>Our emergency team will contact you within minutes</p>
-                    </div>
-                  </div>
+                  <a
+                    href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-2xl font-bold hover:text-white transition-colors"
+                  >
+                    Chat Now
+                  </a>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Quick Contact Bar */}
-            <div className="mt-8 bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <FaPhoneAlt className="text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm text-cyan-200">
-                      Non-Emergency Inquiries
-                    </div>
-                    <a
-                      href={`tel:${CLINIC_INFO.phone}`}
-                      className="text-xl font-bold text-white hover:text-cyan-100 transition-colors"
-                    >
-                      {CLINIC_INFO.phone}
-                    </a>
-                  </div>
+          {/* ================= RIGHT : HOME VISIT FORM ================= */}
+          <div className="p-8 md:p-12">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                Request Home Visit
+              </h3>
+              <p className="text-gray-600">
+                Fill in your details and our team will contact you shortly
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Patient Name *
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
+                    placeholder="Full Name"
+                  />
                 </div>
 
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <FaWhatsapp className="text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm text-cyan-200">
-                      General Consultation
-                    </div>
-                    <a
-                      href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xl font-bold text-white hover:text-cyan-100 transition-colors"
-                    >
-                      Chat on WhatsApp
-                    </a>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
+                    placeholder="+91 XXXXX XXXXX"
+                  />
                 </div>
+              </div>
 
-                <Link to="/contact">
-                  <button className="bg-white text-cyan-600 font-semibold px-6 py-3 rounded-lg hover:bg-cyan-50 transition-colors">
-                    Visit Contact Page
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred Visit Type *
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg
+                             focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
+                >
+                  <option>Select Visit Type</option>
+                  <option>Post-Surgery Rehabilitation</option>
+                  <option>Back / Neck Pain</option>
+                  <option>Stroke Rehabilitation</option>
+                  <option>Elderly Mobility Care</option>
+                  <option>Sports Injury</option>
+                  <option>Other Physiotherapy Needs</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Address & Additional Details
+                </label>
+                <textarea
+                  rows="6"
+                  className="w-full px-4 py-3 resize-none border border-gray-300 rounded-lg
+                             focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
+                  placeholder="Complete address and brief description of the condition..."
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link to="/appointment" className="flex-1">
+                  <button
+                    className="w-full bg-gradient-to-r from-cyan-600 to-cyan-500
+                               text-white font-semibold py-3.5 rounded-lg
+                               hover:from-cyan-700 hover:to-cyan-600
+                               transition-all shadow-lg"
+                  >
+                    Submit Home Visit Request
                   </button>
                 </Link>
+
+                <a
+                  href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1"
+                >
+                  <button
+                    className="w-full flex items-center justify-center gap-2
+                               bg-green-100 text-green-700 font-semibold py-3.5
+                               rounded-lg hover:bg-green-200 transition-colors
+                               border border-green-200"
+                  >
+                    <FaWhatsapp className="text-lg" />
+                    <span>WhatsApp Us</span>
+                  </button>
+                </a>
+              </div>
+
+              <div className="text-center text-sm text-gray-500">
+                Our team will confirm the visit at your preferred time
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+
+      {/* ================= QUICK CONTACT BAR ================= */}
+      <div className="mt-8 bg-white/10 backdrop-blur-sm rounded-xl p-6 overflow-hidden">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+              <FaPhoneAlt className="text-white" />
+            </div>
+            <div>
+              <div className="text-sm text-cyan-200">
+                Home Visit Enquiries
+              </div>
+              <a
+                href={`tel:${CLINIC_INFO.phone}`}
+                className="text-xl font-bold text-white hover:text-cyan-100"
+              >
+                {CLINIC_INFO.phone}
+              </a>
+            </div>
+          </div>
+
+          <Link to="/contact">
+            <button className="bg-white text-cyan-600 font-semibold px-6 py-3 rounded-lg hover:bg-cyan-50 transition-colors">
+              Visit Contact Page
+            </button>
+          </Link>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 
       {/* Clinic Location Section */}
-      <section className="py-16 md:py-20 bg-white">
+      <section className="py-16 md:py-20 bg-cyan-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             {/* Section Header */}
@@ -1149,20 +1131,6 @@ const Home = () => {
                       </div>
                     ))}
                   </div>
-
-                  <div className="mt-6 p-3 bg-cyan-50 rounded-xl">
-                    <div className="flex items-center">
-                      <FaClock className="text-cyan-600 mr-3" />
-                      <div>
-                        <div className="text-sm font-semibold text-cyan-700">
-                          Emergency Services
-                        </div>
-                        <div className="text-sm text-gray-700">
-                          Available 24/7 with prior appointment
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Facilities Card */}
@@ -1188,9 +1156,9 @@ const Home = () => {
                       { name: "AC Treatment Rooms", icon: "❄️" },
                       { name: "WiFi Lounge", icon: "📶" },
                       { name: "Pharmacy", icon: "💊" },
-                      { name: "Cafeteria", icon: "☕" },
-                      { name: "Ambulance Service", icon: "🚑" },
-                      { name: "Insurance Desk", icon: "📄" },
+                      // { name: "Cafeteria", icon: "☕" },
+                      { name: "Pick & Drop", icon: "🚑" },
+                      // { name: "Insurance Desk", icon: "📄" },
                     ].map((facility, idx) => (
                       <div
                         key={idx}
@@ -1209,7 +1177,7 @@ const Home = () => {
               {/* Middle Column - Map */}
               <div className="lg:col-span-2">
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden h-full">
-                  <div className="p-6 border-b border-gray-200">
+                  <div className="p-2 px-4 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-xl font-bold text-gray-900">
@@ -1277,7 +1245,7 @@ const Home = () => {
                             Metro Station
                           </div>
                           <div className="text-sm text-gray-600">
-                            500m from MG Road
+                            3 km from Arjangargh
                           </div>
                         </div>
                       </div>
@@ -1287,10 +1255,10 @@ const Home = () => {
                         </div>
                         <div>
                           <div className="font-medium text-gray-900">
-                            Bus Stop
+                            Cab Stand
                           </div>
                           <div className="text-sm text-gray-600">
-                            100m from clinic
+                            500m from clinic
                           </div>
                         </div>
                       </div>
@@ -1304,60 +1272,6 @@ const Home = () => {
                           </div>
                           <div className="text-sm text-gray-600">
                             50+ slots available
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-2">
-                      <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-xl p-2">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                            <FaPhoneAlt className="text-lg" />
-                          </div>
-                          <div>
-                            <h4 className="text-xs">Phone Consultation</h4>
-                            <a
-                              href={`tel:${CLINIC_INFO.phone}`}
-                              className="text-sm md:text-md semi-bold hover:text-cyan-100"
-                            >
-                              {CLINIC_INFO.PHONE_FULL}
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-gradient-to-r from-cyan-600 to-cyan-500 text-white rounded-xl p-2">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                            <FaWhatsapp className="text-lg" />
-                          </div>
-                          <div>
-                            <h4 className="text-xs">WhatsApp Support</h4>
-                            <a
-                              href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className=" text-sm md:text-md semi-bold hover:text-cyan-100"
-                            >
-                              Chat Now
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-gradient-to-r from-cyan-800 to-cyan-900 text-white rounded-xl p-2">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                            <FaClock className="text-md" />
-                          </div>
-                          <div>
-                            <h4 className="text-xs">Email Support</h4>
-                            <a
-                              href={`mailto:${CLINIC_INFO.email}`}
-                              className="text-sm md:text-md semi-bold hover:text-gray-100"
-                            >
-                              {CLINIC_INFO.email}
-                            </a>
                           </div>
                         </div>
                       </div>

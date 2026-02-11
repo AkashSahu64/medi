@@ -81,7 +81,9 @@ const Navbar = () => {
     { path: "/appointment", label: "Appointment" },
     { path: "/fomt", label: "FOMT" },
     { path: "/fnmt", label: "FNMT" },
-    { path: "/courses-workshop", label: "WORKSHOP" },
+    { path: "/courses-workshop", label: "Workshop" },
+    { path: "/nutritions", label: "Nutritions" },
+  { path: "/store", label: "Store" },
   ];
 
   const contactItems = [
