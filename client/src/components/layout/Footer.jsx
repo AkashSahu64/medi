@@ -1,49 +1,50 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  FaPhoneAlt, 
-  FaEnvelope, 
-  FaMapMarkerAlt, 
-  FaFacebook, 
-  FaTwitter, 
-  FaInstagram, 
+import React from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  FaPhoneAlt,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaFacebook,
+  FaTwitter,
+  FaInstagram,
   FaLinkedin,
   FaWhatsapp,
-  FaClock
-} from 'react-icons/fa';
-import { CLINIC_INFO } from '../../utils/constants';
+  FaClock,
+} from "react-icons/fa";
+import { CLINIC_INFO } from "../../utils/constants";
+import logo from "../../assets/logo.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const quickLinks = [
-    { path: '/', label: 'Home' },
-    { path: '/about', label: 'About Us' },
-    { path: '/services', label: 'Services' },
-    { path: '/appointment', label: 'Book Appointment' },
-    { path: '/contact', label: 'Contact' },
+    { path: "/", label: "Home" },
+    { path: "/about", label: "About Us" },
+    { path: "/services", label: "Services" },
+    { path: "/appointment", label: "Book Appointment" },
+    { path: "/contact", label: "Contact" },
   ];
 
   const services = [
-    'Musculoskeletal Physiotherapy',
-    'Sports Injury Rehabilitation',
-    'Neurological Rehabilitation',
-    'Pediatric Physiotherapy',
-    'Geriatric Care',
-    'Post-Operative Rehabilitation',
+    "Musculoskeletal Physiotherapy",
+    "Sports Injury Rehabilitation",
+    "Neurological Rehabilitation",
+    "Pediatric Physiotherapy",
+    "Geriatric Care",
+    "Post-Operative Rehabilitation",
   ];
 
   const socialLinks = [
-    { icon: FaFacebook, href: '#', label: 'Facebook' },
-    { icon: FaTwitter, href: '#', label: 'Twitter' },
-    { icon: FaInstagram, href: '#', label: 'Instagram' },
-    { icon: FaLinkedin, href: '#', label: 'LinkedIn' },
+    { icon: FaFacebook, href: "#", label: "Facebook" },
+    { icon: FaTwitter, href: "#", label: "Twitter" },
+    { icon: FaInstagram, href: "#", label: "Instagram" },
+    { icon: FaLinkedin, href: "#", label: "LinkedIn" },
   ];
 
   return (
     <footer className="bg-secondary-900 text-white">
-      <div className="container-padding py-12">
+      <div className="container-padding py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Clinic Info */}
           <motion.div
@@ -51,17 +52,33 @@ const Footer = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <div className="flex items-center space-x-2 mb-6">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-primary-600 font-bold text-xl">M</span>
+            <div className="flex items-center space-x-3 mb-4">
+              {/* Logo */}
+              <div className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center">
+                <img
+                  src={logo}
+                  alt="MEDIHOPE Logo"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src =
+                      "https://img.icons8.com/color/96/000000/hospital.png";
+                  }}
+                />
               </div>
+
+              {/* Text */}
               <div>
-                <h3 className="text-xl font-bold">MEDIHOPE</h3>
-                <p className="text-secondary-300 text-sm">Physiotherapy Centre</p>
+                <h3 className="text-2xl md:text-3xl font-bold text-primary-500/90 tracking-tight flex items-center space-x-1 justify-center">
+                  Medi<span className="text-red-500">hope</span>
+                </h3>
+                {/* <p className="text-secondary-300 text-sm">
+                  Physiotherapy Centre
+                </p> */}
               </div>
             </div>
             <p className="text-secondary-300 mb-6">
-              Professional physiotherapy care for a pain-free life. 
+              Professional physiotherapy care for a pain-free life.
               Evidence-based treatments for pain relief, mobility & recovery.
             </p>
             <div className="flex space-x-4">
@@ -111,7 +128,10 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-6">Our Services</h4>
             <ul className="space-y-3">
               {services.map((service, index) => (
-                <li key={index} className="text-secondary-300 hover:text-white transition-colors">
+                <li
+                  key={index}
+                  className="text-secondary-300 hover:text-white transition-colors"
+                >
                   {service}
                 </li>
               ))}
@@ -131,36 +151,42 @@ const Footer = () => {
                 <FaMapMarkerAlt className="text-primary-400 mt-1" />
                 <p className="text-secondary-300">{CLINIC_INFO.address}</p>
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 <FaPhoneAlt className="text-primary-400" />
-                <a 
+                <a
                   href={`tel:${CLINIC_INFO.phone}`}
                   className="text-secondary-300 hover:text-white transition-colors"
                 >
                   {CLINIC_INFO.phone}
                 </a>
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 <FaEnvelope className="text-primary-400" />
-                <a 
+                <a
                   href={`mailto:${CLINIC_INFO.email}`}
                   className="text-secondary-300 hover:text-white transition-colors"
                 >
                   {CLINIC_INFO.email}
                 </a>
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 <FaClock className="text-primary-400" />
                 <div>
-                  <p className="text-secondary-300">Mon-Fri: {CLINIC_INFO.workingHours.weekdays}</p>
-                  <p className="text-secondary-300">Saturday: {CLINIC_INFO.workingHours.saturday}</p>
-                  <p className="text-secondary-300">Sunday: {CLINIC_INFO.workingHours.sunday}</p>
+                  <p className="text-secondary-300">
+                    Mon-Fri: {CLINIC_INFO.workingHours.weekdays}
+                  </p>
+                  <p className="text-secondary-300">
+                    Saturday: {CLINIC_INFO.workingHours.saturday}
+                  </p>
+                  <p className="text-secondary-300">
+                    Sunday: {CLINIC_INFO.workingHours.sunday}
+                  </p>
                 </div>
               </div>
-              
+
               <a
                 href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
                 target="_blank"
@@ -180,13 +206,20 @@ const Footer = () => {
         <div className="container-padding py-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-secondary-400 text-sm">
-              &copy; {currentYear} MEDIHOPE Physiotherapy Centre. All rights reserved.
+              &copy; {currentYear} MEDIHOPE Physiotherapy Centre. All rights
+              reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link to="/privacy" className="text-secondary-400 hover:text-white text-sm">
+              <Link
+                to="/privacy"
+                className="text-secondary-400 hover:text-white text-sm"
+              >
                 Privacy Policy
               </Link>
-              <Link to="/terms" className="text-secondary-400 hover:text-white text-sm">
+              <Link
+                to="/terms"
+                className="text-secondary-400 hover:text-white text-sm"
+              >
                 Terms of Service
               </Link>
             </div>

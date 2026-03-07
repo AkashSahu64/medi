@@ -14,7 +14,7 @@ import {
   FaSignOutAlt,
   FaTachometerAlt,
   FaChevronRight,
-  FaArrowRight
+  FaArrowRight,
 } from "react-icons/fa";
 import logo from "../../assets/logo.png";
 import { CLINIC_INFO } from "../../utils/constants";
@@ -83,7 +83,7 @@ const Navbar = () => {
     { path: "/fnmt", label: "FNMT" },
     { path: "/courses-workshop", label: "Workshop" },
     { path: "/nutritions", label: "Nutritions" },
-  { path: "/store", label: "Store" },
+    { path: "/store", label: "Store" },
   ];
 
   const contactItems = [

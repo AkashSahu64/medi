@@ -71,7 +71,7 @@ const CourseCard = ({ course }) => {
           </div>
 
           {/* INFO */}
-          <div className="space-y-2">
+          <div className="space-y-2 mt-64">
             <h3 className="text-xl font-bold">{course.title}</h3>
             <p className="text-sm font-medium text-white/90">
               {course.subtitle}

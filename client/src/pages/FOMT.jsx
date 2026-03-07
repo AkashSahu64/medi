@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { motion } from 'framer-motion';
-import Loader from '../components/common/Loader';
-import DirectoryList from '../components/directory/DirectoryList';
-import { directoryService } from '../services/directory.service';
+import React, { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
+import { motion } from "framer-motion";
+import Loader from "../components/common/Loader";
+import DirectoryList from "../components/directory/DirectoryList";
+import { directoryService } from "../services/directory.service";
 
 const FOMT = () => {
   const [data, setData] = useState([]);
@@ -18,17 +18,17 @@ const FOMT = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await directoryService.getDirectories('FOMT');
-      
+
+      const response = await directoryService.getDirectories("FOMT");
+
       if (response.success) {
         setData(response.data);
       } else {
-        setError(response.message || 'Failed to load FOMT data');
+        setError(response.message || "Failed to load FOMT data");
       }
     } catch (error) {
-      console.error('Error loading FOMT data:', error);
-      setError('Failed to load FOMT directory. Please try again later.');
+      console.error("Error loading FOMT data:", error);
+      setError("Failed to load FOMT directory. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -38,44 +38,52 @@ const FOMT = () => {
     <>
       <Helmet>
         <title>FOMT Practitioner | MEDIHOPE Physiotherapy</title>
-        <meta name="description" content="Find FOMT (Friends of Medical Tourism) contacts across different states" />
+        <meta
+          name="description"
+          content="Find FOMT (Friends of Medical Tourism) contacts across different states"
+        />
       </Helmet>
 
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-12 max-w-7xl">
-          {/* Header */}
+          {/* Header + Stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            className="mb-12"
           >
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              FOMT Practitioners
-            </h1>
-            <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-              Fellowship in Orthopedic Manual Therapy (FOMT) contacts across different states.
-              Connect with medical tourism facilitators for your healthcare journey.
-            </p>
-          </motion.div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-center">
+              {/* Left Content (3/4) */}
+              <div className="lg:col-span-3">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                  FOMT Practitioners
+                </h1>
+                <p className="text-gray-600 text-lg max-w-3xl">
+                  Fellowship in Orthopedic Manual Therapy (FOMT) contacts across
+                  different states. Connect with medical tourism facilitators
+                  for your healthcare journey.
+                </p>
+              </div>
 
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8"
-          >
-            <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-6 text-white">
-              <div className="flex flex-wrap justify-center gap-8">
-                <div className="text-center">
-                  <div className="text-3xl font-bold">
-                    {data.reduce((total, state) => total + state.entries.length, 0)}
+              {/* Right Stats (1/4) */}
+              <div className="bg-transparent border rounded-xl p-6 text-white">
+                <div className="flex justify-between items-center text-center">
+                  <div>
+                    <div className="text-3xl font-bold text-gray-600">
+                      {data.reduce(
+                        (total, state) => total + state.entries.length,
+                        0,
+                      )}
+                    </div>
+                    <div className="text-gray-700 text-sm">Total Contacts</div>
                   </div>
-                  <div className="text-primary-100">Total Contacts</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold">{data.length}</div>
-                  <div className="text-primary-100">States Covered</div>
+
+                  <div>
+                    <div className="text-3xl font-bold text-gray-600">
+                      {data.length}
+                    </div>
+                    <div className="text-gray-700 text-sm">States Covered</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -111,7 +119,7 @@ const FOMT = () => {
           </motion.div>
 
           {/* Info Section */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -122,16 +130,18 @@ const FOMT = () => {
             </h2>
             <div className="prose max-w-none text-gray-600">
               <p>
-                FOMT (Friends of Medical Tourism) are dedicated facilitators who assist 
-                patients in navigating medical tourism opportunities. They provide guidance 
-                on treatment options, hospital selection, travel arrangements, and local support.
+                FOMT (Friends of Medical Tourism) are dedicated facilitators who
+                assist patients in navigating medical tourism opportunities.
+                They provide guidance on treatment options, hospital selection,
+                travel arrangements, and local support.
               </p>
               <p className="mt-4">
-                This directory helps patients connect with trusted FOMT professionals across 
-                different states for seamless medical tourism experiences.
+                This directory helps patients connect with trusted FOMT
+                professionals across different states for seamless medical
+                tourism experiences.
               </p>
             </div>
-          </motion.div>
+          </motion.div> */}
         </div>
       </div>
     </>
