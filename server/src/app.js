@@ -35,6 +35,7 @@ app.set('trust proxy', 1);
 const allowedOrigins = [
   'http://localhost:5173',
   'https://www.medihope-phi.com',
+  'https://medihope-phi.com'
 ];
 
 app.use(
