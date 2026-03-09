@@ -101,10 +101,10 @@ const NotFound = () => {
                 Need immediate help?
               </p>
               <a
-                href="tel:+91-6386065599"
+                href="tel:+91-8076839661"
                 className="text-primary-600 hover:text-primary-700 font-semibold"
               >
-                Call: +91-6386065599
+                Call: +91-8076839661
               </a>
             </div>
           </motion.div>

@@ -29,7 +29,7 @@ router.get('/email', async (req, res) => {
 router.get('/whatsapp', async (req, res) => {
   try {
     const result = await sendWhatsAppMessage(
-      '6386065599', // without +91
+      '8076839661', // without +91
       'Hello Akash 👋 WhatsApp system working perfectly!'
     );
 
@@ -52,7 +52,7 @@ router.get('/both', async (req, res) => {
     });
 
     await sendWhatsAppMessage(
-      '6386065599',
+      '8076839661',
       'Email + WhatsApp dono successfully kaam kar rahe hain 🎉'
     );
 

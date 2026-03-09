@@ -46,11 +46,11 @@ export const SERVICE_CATEGORY_LABELS = {
 export const CLINIC_INFO = {
   name: 'MEDIHOPE Physiotherapy Centre',
   address: 'H block , Near Baba Balak Nath Temple, Aya Nagar South Delhi -110047',
-  phone: '+91-6386065599',
-  PHONE_FULL: '+91-6386065599',
-  PHONE_MOBILE: '6386065599',
+  phone: '+91-8076839661',
+  PHONE_FULL: '+91-8076839661',
+  PHONE_MOBILE: '8076839661',
   email: 'info@medihope.com',
-  whatsapp: '+916386065599',
+  whatsapp: '+918076839661',
   workingHours: {
     weekdays: '9:00 AM - 7:00 PM',
     saturday: '9:00 AM - 2:00 PM',

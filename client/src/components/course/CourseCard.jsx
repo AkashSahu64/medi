@@ -11,7 +11,7 @@ const CourseCard = ({ course }) => {
     e.preventDefault();
     e.stopPropagation();
     const message = `Hi, I'm interested in the ${course.title} course. Can you provide more details?`;
-    const url = `https://wa.me/${course.whatsappNumber || '6386065599'}?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/${course.whatsappNumber || '8076839661'}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   };
 

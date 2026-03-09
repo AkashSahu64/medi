@@ -171,14 +171,14 @@ appointmentBookedUser: (appointment) => `
       </div>
       
       <p>Our team will review your request and confirm the appointment within 24 hours.</p>
-      <p>For any queries, call us at +91-6386065599</p>
+      <p>For any queries, call us at +91-8076839661</p>
       
       <hr style="margin: 30px 0;">
       <p style="color: #7f8c8d; font-size: 14px;">
         MEDIHOPE Physiotherapy Centre<br>
         Address Line 1, Address Line 2<br>
         City, State - PIN Code<br>
-        Phone: +91-6386065599
+        Phone: +91-8076839661
       </p>
     </div>
   `,
@@ -237,12 +237,12 @@ appointmentBookedUser: (appointment) => `
         ` : ''}
       </div>
       
-      <p>If you have any questions about these changes, please contact us at +91-6386065599</p>
+      <p>If you have any questions about these changes, please contact us at +91-8076839661</p>
       
       <hr style="margin: 30px 0;">
       <p style="color: #7f8c8d; font-size: 14px;">
         MEDIHOPE Physiotherapy Centre<br>
-        Phone: +91-6386065599
+        Phone: +91-8076839661
       </p>
     </div>
   `,
@@ -273,12 +273,12 @@ appointmentBookedUser: (appointment) => `
         <p>Thank you for choosing MEDIHOPE. We hope your session was beneficial.</p>
       ` : ''}
       
-      <p>For any queries, call us at +91-6386065599</p>
+      <p>For any queries, call us at +91-8076839661</p>
       
       <hr style="margin: 30px 0;">
       <p style="color: #7f8c8d; font-size: 14px;">
         MEDIHOPE Physiotherapy Centre<br>
-        Phone: +91-6386065599
+        Phone: +91-8076839661
       </p>
     </div>
   `,

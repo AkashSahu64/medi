@@ -457,11 +457,11 @@ const Appointment = () => {
                     For emergencies or severe pain, call us directly:
                   </p>
                   <a
-                    href="tel:+91-6386065599"
+                    href="tel:+91-8076839661"
                     className="inline-flex items-center justify-center w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
                   >
                     <FaPhone className="mr-2" />
-                    Emergency: +91-6386065599
+                    Emergency: +91-8076839661
                   </a>
                 </div>
               </div>

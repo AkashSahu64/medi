@@ -81,7 +81,7 @@ Your appointment details at MEDIHOPE Physiotherapy Centre:
 
 Please arrive 10 minutes early.
 
-For queries: +91-6386065599
+For queries: +91-8076839661
 
 _This message is sent from MEDIHOPE Admin Panel_`;
   };

@@ -57,7 +57,7 @@ const sendNotifications = async (type, appointment, additionalData = {}) => {
     
     const { ADMIN_EMAIL, ADMIN_WHATSAPP, CLIENT_URL, NODE_ENV } = process.env;
     const adminEmail = ADMIN_EMAIL || 'admin@medihope.com';
-    const adminWhatsappRaw = ADMIN_WHATSAPP || '+916386065599';
+    const adminWhatsappRaw = ADMIN_WHATSAPP || '+918076839661';
     const adminWhatsapp = normalizePhoneNumber(adminWhatsappRaw);
     
     // Log environment configuration

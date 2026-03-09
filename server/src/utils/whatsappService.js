@@ -218,7 +218,7 @@ Status: Pending Confirmation
 
 We'll confirm your appointment within 24 hours.
 
-For queries: +91-6386065599
+For queries: +91-8076839661
 
 _This is an automated message. Please do not reply._
   `.trim(),
@@ -255,7 +255,7 @@ Status: ${appointment.status}
 
 ${changes ? `Changes: ${changes}` : ''}
 
-Contact: +91-6386065599 for queries.
+Contact: +91-8076839661 for queries.
 
 _This is an automated update._
   `.trim(),
@@ -278,7 +278,7 @@ Ref ID: ${appointment._id}
 ${appointment.status === 'confirmed' ? '✅ Please arrive 10 minutes early.' : ''}
 ${appointment.status === 'cancelled' ? '❌ Please contact us to reschedule.' : ''}
 
-Contact: +91-6386065599
+Contact: +91-8076839661
 
 _This is an automated notification._
   `.trim(),
@@ -312,7 +312,7 @@ Ref ID: ${appointment._id}
 
 Please arrive 10 minutes early.
 
-For queries: +91-6386065599
+For queries: +91-8076839661
 
 _This is an automated message. Please do not reply._
   `.trim(),
@@ -326,7 +326,7 @@ Time: ${appointment.timeSlot}
 Date: ${new Date(appointment.appointmentDate).toLocaleDateString()}
 Service: ${appointment.serviceName}
 
-Please call +91-6386065599 if you need to reschedule.
+Please call +91-8076839661 if you need to reschedule.
 
 _This is an automated reminder._
   `.trim(),
