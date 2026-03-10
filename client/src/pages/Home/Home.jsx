@@ -449,10 +449,11 @@ const stats = [
   return (
     <>
       <Helmet>
-        <title>MEDIHOPE - Advanced Physiotherapy & Rehabilitation Center</title>
+        <title>MEDIHOPE - Advanced Physiotherapy & Rehabilitation Center | Best Physiotherapy Clinic | MediHope PHI | Pain Relief & Rehabilitation</title>
         <meta
           name="description"
-          content="Evidence-based physiotherapy treatments for pain relief, mobility & recovery. Book your appointment today for professional care."
+          content="MediHope PHI provides expert physiotherapy treatment for back pain, sports injuries, and rehabilitation with advanced therapy techniques.
+          Evidence-based physiotherapy treatments for pain relief, mobility & recovery. Book your appointment today for professional care."
         />
         <meta
           name="keywords"
