@@ -375,25 +375,14 @@ const ImageGallerySlider = () => {
             {/* Auto-play Toggle */}
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className="
-    absolute top-3 right-3 sm:top-4 sm:right-4
-    z-20
-    w-11 h-11
-    rounded-full
-    lg:bg-white/80 lg:backdrop-blur-sm
-    shadow-sm
-    flex items-center justify-center
-    text-gray-700
-    hover:bg-white
-    transition
-  "
+              className=" absolute top-3 right-3 sm:top-4 sm:right-4 z-20 w-11 h-11 rounded-full lg:bg-white/80 lg:backdrop-blur-sm shadow-sm flex items-center justify-center text-gray-700 hover:bg-white transition"
               aria-label={isPlaying ? "Pause gallery autoplay" : "Play gallery autoplay"}
             >
               {isPlaying ? <FaPause /> : <FaPlay />}
             </button>
 
             {/* Main Slider Container */}
-            <div className="relative h-[220px] min-[390px]:h-[260px] sm:h-[320px] md:h-[450px] xl:h-[520px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-sm">
+            <div className="relative h-[160px] sm:h-[320px] md:h-[450px] xl:h-[520px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-sm">
               <AnimatePresence mode="wait">
                 {currentItem && (
                   <motion.div

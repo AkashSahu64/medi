@@ -325,7 +325,7 @@ const Home = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="mt-10 mb-5 text-center text-xl sm:text-2xl md:text-3xl font-semibold text-gray-700 leading-relaxed"
+            className="mt-10 mb-5 text-center text-xl sm:text-2xl md:text-3xl font-semibold text-gray-700 leading-relaxed tracking-tighter"
           >
             Leading physiotherapy center with
             <span className="block text-cyan-600 mt-2">
