@@ -165,14 +165,6 @@ const About = () => {
                   className="w-full h-[400px] object-cover"
                 />
               </div>
-              {/* <div className="absolute -bottom-5 -right-5 bg-primary-500 text-white px-3 py-2 rounded-lg shadow-lg max-w-[150px]">
-                <div className="text-lg font-semibold leading-tight">
-                  15+ Years of Excellence
-                </div>
-                <p className="text-xs mt-1 text-primary-100">
-                  In physiotherapy care
-                </p>
-              </div> */}
             </motion.div>
           </div>
         </div>
