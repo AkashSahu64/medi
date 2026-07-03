@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FaClock,
@@ -11,7 +11,7 @@ import {
 } from 'react-icons/fa';
 import { SERVICE_CATEGORY_LABELS } from '../../utils/constants';
 
-const ServiceCard = ({ service }) => {
+const ServiceCard = memo(({ service }) => {
   const {
     _id,
     title,
@@ -44,16 +44,18 @@ const ServiceCard = ({ service }) => {
   };
 
   return (
-    <div className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full">
+    <div className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full min-w-0">
       
       {/* IMAGE */}
-      <div className="relative aspect-[16/7] overflow-hidden">
+      <div className="relative aspect-[16/8] sm:aspect-[16/7] overflow-hidden bg-gray-100">
         <img
           src={
             image?.url ||
             'https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
           }
           alt={title}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
@@ -61,7 +63,7 @@ const ServiceCard = ({ service }) => {
 
         {/* Category */}
         <div className="absolute top-3 left-3">
-          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
+          <div className="flex max-w-[calc(100vw-3.5rem)] items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
             <span className="text-cyan-600 text-sm">
               {getCategoryIcon(category)}
             </span>
@@ -82,7 +84,7 @@ const ServiceCard = ({ service }) => {
       </div>
 
       {/* CONTENT */}
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-4 flex flex-col flex-grow min-w-0">
         
         {/* Title */}
         <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-cyan-600 transition-colors">
@@ -124,7 +126,7 @@ const ServiceCard = ({ service }) => {
         <div className="border-t border-gray-200 my-1" />
 
         {/* FOOTER */}
-        <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 -mb-2">
+        <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           
           {/* Price */}
           <div>
@@ -156,7 +158,7 @@ const ServiceCard = ({ service }) => {
 
           {/* CTA */}
           <Link to={`/appointment?service=${_id}`} className="w-full sm:w-auto">
-            <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white px-5 py-3 rounded-lg font-semibold text-sm transition-all shadow-md">
+            <button className="min-h-11 w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white px-5 py-3 rounded-lg font-semibold text-sm transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
               {showPrice && price ? 'Book Now' : 'Inquire Now'}
               <FaArrowRight className="text-sm" />
             </button>
@@ -165,6 +167,8 @@ const ServiceCard = ({ service }) => {
       </div>
     </div>
   );
-};
+});
+
+ServiceCard.displayName = 'ServiceCard';
 
 export default ServiceCard;

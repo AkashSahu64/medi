@@ -16,6 +16,7 @@ import anshika from "../../assets/about/anshika.jpeg";
 import akansha from "../../assets/about/akansha.jpeg";
 import saloni from "../../assets/about/saloni.jpeg";
 import amit from "../../assets/about/amit.jpeg";
+import about from "../../assets/image/about.png";
 
 const About = () => {
   const teamMembers = [
@@ -157,9 +158,9 @@ const About = () => {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="rounded-2xl overflow-hidden shadow-xl">
+              <div className="rounded-2xl overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1638636246913-8b3e8d282269?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fHBoeXNpb3RoZXJhcHklMjBjYXJlJTIwQ2xpbmljJTIwSW50ZXJpb3J8ZW58MHx8MHx8fDA%3D"
+                  src={about}
                   alt="MEDIHOPE Clinic Interior"
                   className="w-full h-[400px] object-cover"
                 />

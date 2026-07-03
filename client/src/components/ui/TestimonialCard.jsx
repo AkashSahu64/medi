@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   FaStar,
   FaQuoteLeft,
@@ -7,7 +7,7 @@ import {
   FaCheckCircle
 } from 'react-icons/fa';
 
-const TestimonialCard = ({ testimonial }) => {
+const TestimonialCard = memo(({ testimonial }) => {
   const {
     patientName,
     patientAge,
@@ -47,6 +47,7 @@ const TestimonialCard = ({ testimonial }) => {
         h-full flex flex-col
         mb-2
         min-h-[360px] md:min-h-[420px]
+        overflow-hidden min-w-0
       "
     >
       {/* ================= Header ================= */}
@@ -73,6 +74,8 @@ const TestimonialCard = ({ testimonial }) => {
                   'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80'
                 }
                 alt={patientName}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -84,8 +87,8 @@ const TestimonialCard = ({ testimonial }) => {
           </div>
 
           {/* Name & Meta */}
-          <div className="flex-1">
-            <h4 className="text-lg sm:text-xl font-bold">
+          <div className="flex-1 min-w-0">
+            <h4 className="text-lg sm:text-xl font-bold truncate">
               {patientName}
             </h4>
 
@@ -97,7 +100,7 @@ const TestimonialCard = ({ testimonial }) => {
 
               <span className="h-3 w-px bg-cyan-400 hidden sm:block" />
 
-              <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] sm:text-xs">
+              <span className="max-w-full bg-white/20 px-2 py-0.5 rounded-full text-[10px] sm:text-xs truncate">
                 {condition}
               </span>
             </div>
@@ -112,9 +115,9 @@ const TestimonialCard = ({ testimonial }) => {
             gap-2
             text-xs sm:text-sm
           ">
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               <FaCalendarAlt className="mr-2" />
-              <span className="font-medium">{treatment}</span>
+              <span className="font-medium truncate">{treatment}</span>
             </div>
 
             <div className="bg-white/20 px-3 py-1 rounded-full font-semibold w-fit">
@@ -173,6 +176,8 @@ const TestimonialCard = ({ testimonial }) => {
       </div>
     </div>
   );
-};
+});
+
+TestimonialCard.displayName = 'TestimonialCard';
 
 export default TestimonialCard;

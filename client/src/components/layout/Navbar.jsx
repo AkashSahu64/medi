@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../hooks/useAuth";
@@ -13,12 +13,66 @@ import {
   FaChevronDown,
   FaSignOutAlt,
   FaTachometerAlt,
-  FaChevronRight,
   FaArrowRight,
 } from "react-icons/fa";
 import logo from "../../assets/logo.png";
 import { CLINIC_INFO } from "../../utils/constants";
 import { serviceService } from "../../services/service.service";
+
+const navLinks = [
+  { path: "/", label: "Home" },
+  { path: "/about", label: "About" },
+  { path: "/appointment", label: "Appointment" },
+  { path: "/fomt", label: "FOMT" },
+  { path: "/fnmt", label: "FNMT" },
+  { path: "/courses-workshop", label: "Workshop" },
+  { path: "/nutritions", label: "Nutritions" },
+  { path: "/store", label: "Store" },
+];
+
+const ProfileDropdown = memo(({ isOpen, user, onDashboard, onLogout }) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="absolute right-0 top-full mt-3 w-[min(16rem,calc(100vw-2rem))] bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden"
+        role="menu"
+      >
+        <div className="p-4 border-b border-gray-100">
+          <p className="font-bold text-gray-900 text-sm truncate">
+            {user?.name}
+          </p>
+          <p className="text-xs text-gray-500 truncate mt-1">{user?.email}</p>
+        </div>
+
+        <div className="p-2">
+          <button
+            onClick={onDashboard}
+            className="min-h-11 w-full flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-600 rounded-lg transition-colors group focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+            role="menuitem"
+          >
+            <FaTachometerAlt className="mr-3 text-gray-400 group-hover:text-cyan-500 transition-colors" />
+            Dashboard
+          </button>
+
+          <button
+            onClick={onLogout}
+            className="min-h-11 w-full flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors group mt-1 focus:outline-none focus:ring-2 focus:ring-red-500/30"
+            role="menuitem"
+          >
+            <FaSignOutAlt className="mr-3 text-gray-400 group-hover:text-red-500 transition-colors" />
+            Logout
+          </button>
+        </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+));
+
+ProfileDropdown.displayName = "ProfileDropdown";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,18 +129,7 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const navLinks = [
-    { path: "/", label: "Home" },
-    { path: "/about", label: "About" },
-    { path: "/appointment", label: "Appointment" },
-    { path: "/fomt", label: "FOMT" },
-    { path: "/fnmt", label: "FNMT" },
-    { path: "/courses-workshop", label: "Workshop" },
-    { path: "/nutritions", label: "Nutritions" },
-    { path: "/store", label: "Store" },
-  ];
-
-  const contactItems = [
+  const contactItems = useMemo(() => [
     {
       id: "phone",
       icon: <FaPhoneAlt />,
@@ -106,9 +149,26 @@ const Navbar = () => {
       bgColor: "bg-[#25D366]/10",
       target: "_blank",
     },
-  ];
+  ], []);
 
   const isActive = (path) => location.pathname === path;
+
+  const closeMobileMenu = useCallback(() => {
+    setIsOpen(false);
+    setIsMobileServicesOpen(false);
+  }, []);
+
+  const handleDashboard = useCallback(() => {
+    navigate(user?.role === "admin" ? "/admin" : "/profile");
+    setIsProfileDropdownOpen(false);
+    closeMobileMenu();
+  }, [closeMobileMenu, navigate, user?.role]);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    setIsProfileDropdownOpen(false);
+    closeMobileMenu();
+  }, [closeMobileMenu, logout]);
 
   const getDesktopDropdownColumns = () => {
     if (services.length <= 5) return "grid-cols-1";
@@ -122,71 +182,27 @@ const Navbar = () => {
     return "min-w-[36rem]"; // ~576px
   };
 
-  const ProfileDropdown = () => (
-    <AnimatePresence>
-      {isProfileDropdownOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -10, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -10, scale: 0.95 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="absolute right-0 top-full mt-3 w-64 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden"
-        >
-          <div className="p-4 border-b border-gray-100">
-            <p className="font-bold text-gray-900 text-sm truncate">
-              {user?.name}
-            </p>
-            <p className="text-xs text-gray-500 truncate mt-1">{user?.email}</p>
-          </div>
-
-          <div className="p-2">
-            <button
-              onClick={() => {
-                navigate(user?.role === "admin" ? "/admin" : "/profile");
-                setIsProfileDropdownOpen(false);
-              }}
-              className="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-600 rounded-lg transition-colors group"
-            >
-              <FaTachometerAlt className="mr-3 text-gray-400 group-hover:text-cyan-500 transition-colors" />
-              Dashboard
-            </button>
-
-            <button
-              onClick={() => {
-                logout();
-                setIsProfileDropdownOpen(false);
-              }}
-              className="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors group mt-1"
-            >
-              <FaSignOutAlt className="mr-3 text-gray-400 group-hover:text-red-500 transition-colors" />
-              Logout
-            </button>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-
   return (
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      className={`fixed top-0 w-full z-50 overflow-x-clip transition-all duration-300 ${
         scrolled
           ? "bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100"
           : "bg-white"
       }`}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="container mx-auto max-w-screen-2xl px-3 sm:px-5 lg:px-6 xl:px-8">
+        <div className="flex items-center justify-between gap-3 min-h-16 lg:min-h-[4.5rem]">
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center space-x-3 flex-shrink-0 hover:opacity-90 transition-opacity"
+            className="flex min-w-0 flex-shrink-0 items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-cyan-500/30 rounded-lg"
+            aria-label="Medihope home"
           >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex items-center justify-center shrink-0">
                 <img
                   src={logo}
                   alt="MEDIHOPE Logo"
@@ -200,8 +216,8 @@ const Navbar = () => {
               </div>
 
               <div>
-                <div className="hidden items-center space-x-1 sm:flex">
-                  <h1 className="text-xl md:text-3xl font-bold text-primary-500/90 tracking-tight">
+                <div className="hidden items-center sm:flex">
+                  <h1 className="text-xl md:text-2xl xl:text-3xl font-bold text-primary-500/90 tracking-tight leading-none">
                     Medi<span className="text-red-500">hope</span>
                   </h1>
                 </div>
@@ -210,7 +226,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1 mx-auto">
+          <div className="hidden lg:flex min-w-0 flex-1 items-center justify-center gap-0.5 xl:gap-1 mx-3 xl:mx-6">
             {navLinks.map((link) => {
               const active = isActive(link.path);
 
@@ -218,7 +234,7 @@ const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`relative px-4 py-2 text-[15px] font-medium whitespace-nowrap transition-colors duration-200 ${
+                  className={`relative px-2.5 xl:px-3.5 py-2 text-[13px] xl:text-[15px] font-medium whitespace-nowrap transition-colors duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500/30 ${
                     active
                       ? "text-[#0077B6] font-semibold"
                       : "text-gray-600 hover:text-[#0077B6]"
@@ -250,7 +266,7 @@ const Navbar = () => {
             >
               <Link
                 to="/services"
-                className={`relative px-4 py-2 text-[15px] font-medium whitespace-nowrap transition-colors duration-200 ${
+                className={`relative px-2.5 xl:px-3.5 py-2 text-[13px] xl:text-[15px] font-medium whitespace-nowrap transition-colors duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500/30 ${
                   isActive("/services") || isActive("/services/")
                     ? "text-[#0077B6] font-semibold"
                     : "text-gray-600 hover:text-[#0077B6]"
@@ -284,7 +300,7 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   transition={{ duration: 0.2 }}
-                  className={`absolute -right-16 -translate-x-1/2 top-full -mt-3 ${getDesktopDropdownWidth()} bg-white shadow-lg rounded-xl z-50 border border-gray-100 overflow-hidden`}
+                  className={`absolute left-1/2 -translate-x-1/2 top-full mt-1 ${getDesktopDropdownWidth()} max-w-[calc(100vw-2rem)] bg-white shadow-lg rounded-xl z-50 border border-gray-100 overflow-hidden`}
                   style={{
                     filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.04))",
                   }}
@@ -306,7 +322,7 @@ const Navbar = () => {
                         <Link
                           key={service._id}
                           to={`/services/${service._id}`}
-                          className="block px-2 py-2.5 hover:bg-cyan-50/50 text-gray-700 hover:text-cyan-600 transition-colors rounded-lg group"
+                          className="block px-2 py-2.5 hover:bg-cyan-50/50 text-gray-700 hover:text-cyan-600 transition-colors rounded-lg group focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                           onClick={() => setIsServicesHovered(false)}
                         >
                           <div className="flex items-center">
@@ -340,7 +356,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Contact Icons & Auth */}
-          <div className="hidden lg:flex items-center space-x-5">
+          <div className="hidden lg:flex items-center justify-end gap-3 xl:gap-4 shrink-0">
             {/* Contact Items */}
             {contactItems.map((item) => (
               <div key={item.id} className="relative">
@@ -348,14 +364,14 @@ const Navbar = () => {
                   href={item.href}
                   target={item.target}
                   rel={item.target ? "noopener noreferrer" : undefined}
-                  className="flex items-center overflow-hidden"
+                  className="flex min-h-11 items-center overflow-hidden rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                   onMouseEnter={() => setHoveredContact(item.id)}
                   onMouseLeave={() => setHoveredContact(null)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <div
-                    className={`${item.bgColor} rounded-full p-2 ${item.color} transition-all duration-300 hover:shadow-sm`}
+                    className={`${item.bgColor} rounded-full p-2.5 ${item.color} transition-all duration-300 hover:shadow-sm`}
                   >
                     <div className="text-[16px]">{item.icon}</div>
                   </div>
@@ -381,35 +397,41 @@ const Navbar = () => {
             ))}
 
             {/* Auth Section */}
-            <div className="flex items-center space-x-4 ml-2">
+            <div className="flex items-center gap-2 xl:gap-3">
               {isAuthenticated ? (
                 <div className="relative" ref={profileRef}>
                   <button
                     onClick={() =>
                       setIsProfileDropdownOpen(!isProfileDropdownOpen)
                     }
-                    className="flex items-center focus:outline-none focus:ring-2 focus:ring-cyan-500/30 rounded-full"
+                    className="min-h-11 min-w-11 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-cyan-500/30 rounded-full"
                     aria-label="Profile menu"
+                    aria-expanded={isProfileDropdownOpen}
                   >
                     <div className="w-9 h-9 rounded-full bg-cyan-100 flex items-center justify-center hover:bg-cyan-200 transition-colors border border-cyan-100">
                       <FaUser className="text-cyan-600 text-md" />
                     </div>
                   </button>
-                  <ProfileDropdown />
+                  <ProfileDropdown
+                    isOpen={isProfileDropdownOpen}
+                    user={user}
+                    onDashboard={handleDashboard}
+                    onLogout={handleLogout}
+                  />
                 </div>
               ) : (
                 <>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-cyan-600 text-cyan-600 hover:bg-cyan-50 hover:border-cyan-700 hover:text-cyan-700 text-sm px-4 py-2"
+                    className="min-h-11 border-cyan-600 text-cyan-600 hover:bg-cyan-50 hover:border-cyan-700 hover:text-cyan-700 text-sm px-4 py-2"
                     onClick={() => navigate("/login")}
                   >
                     Login
                   </Button>
                   <Button
                     size="sm"
-                    className="bg-cyan-600 hover:bg-cyan-700 text-white text-sm px-4 py-2 shadow-sm"
+                    className="min-h-11 bg-cyan-600 hover:bg-cyan-700 text-white text-sm px-4 py-2 shadow-sm"
                     onClick={() => navigate("/register")}
                   >
                     Register
@@ -420,16 +442,16 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center space-x-3">
+          <div className="lg:hidden flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Mobile Contact Icons */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {contactItems.map((item) => (
                 <a
                   key={item.id}
                   href={item.href}
                   target={item.target}
                   rel={item.target ? "noopener noreferrer" : undefined}
-                  className={`w-9 h-9 rounded-full ${item.bgColor} flex items-center justify-center ${item.color} hover:shadow-sm transition-shadow`}
+                  className={`w-10 h-10 rounded-full ${item.bgColor} flex items-center justify-center ${item.color} hover:shadow-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-cyan-500/30`}
                   aria-label={item.id === "phone" ? "Call us" : "WhatsApp"}
                 >
                   {item.icon}
@@ -438,9 +460,10 @@ const Navbar = () => {
             </div>
 
             <button
-              className="w-10 h-10 rounded-full bg-cyan-600 flex items-center justify-center text-white hover:bg-cyan-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+              className="w-11 h-11 rounded-full bg-cyan-600 flex items-center justify-center text-white hover:bg-cyan-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
               onClick={() => setIsOpen(!isOpen)}
               aria-label={isOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isOpen}
             >
               {isOpen ? (
                 <FaTimes size={18} className="transition-transform" />
@@ -462,19 +485,18 @@ const Navbar = () => {
               transition={{ duration: 0.25, ease: "easeInOut" }}
               className="lg:hidden bg-white shadow-lg rounded-b-xl overflow-hidden border-t border-gray-100"
             >
-              <div className="max-h-[calc(100vh-5rem)] overflow-y-auto py-2 no-scrollbar">
+              <div className="max-h-[calc(100vh-4rem)] overflow-y-auto py-2 no-scrollbar">
                 {navLinks.map((link) => (
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`block px-6 py-2.5 text-base font-medium transition-all ${
+                    className={`block min-h-11 px-5 sm:px-6 py-2.5 text-base font-medium transition-all focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500/30 ${
                       isActive(link.path)
                         ? "bg-cyan-50 text-cyan-600 border-l-3 border-cyan-600"
                         : "text-gray-700 hover:bg-gray-50 hover:text-cyan-600"
                     }`}
                     onClick={() => {
-                      setIsOpen(false);
-                      setIsMobileServicesOpen(false);
+                      closeMobileMenu();
                     }}
                   >
                     {link.label}
@@ -487,7 +509,7 @@ const Navbar = () => {
                     onClick={() =>
                       setIsMobileServicesOpen(!isMobileServicesOpen)
                     }
-                    className={`w-full flex items-center justify-between px-6 py-2.5 text-base font-medium transition-all ${
+                    className={`min-h-11 w-full flex items-center justify-between px-5 sm:px-6 py-2.5 text-base font-medium transition-all focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500/30 ${
                       isActive("/services") || isActive("/services/")
                         ? "bg-cyan-50 text-cyan-600 border-l-3 border-cyan-600"
                         : "text-gray-700 hover:bg-gray-50 hover:text-cyan-600"
@@ -512,15 +534,14 @@ const Navbar = () => {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="pl-9 pr-6 py-2 bg-gray-50/50">
+                        <div className="pl-7 sm:pl-9 pr-4 sm:pr-6 py-2 bg-gray-50/50">
                           {services.slice(0, 5).map((service) => (
                             <Link
                               key={service._id}
                               to={`/services/${service._id}`}
-                              className="block py-2 text-sm text-gray-600 hover:text-cyan-600 border-b border-gray-200/50 last:border-b-0"
+                              className="block min-h-11 py-2 text-sm text-gray-600 hover:text-cyan-600 border-b border-gray-200/50 last:border-b-0 focus:outline-none focus:text-cyan-600"
                               onClick={() => {
-                                setIsOpen(false);
-                                setIsMobileServicesOpen(false);
+                                closeMobileMenu();
                               }}
                             >
                               <div className="flex items-center">
@@ -536,11 +557,10 @@ const Navbar = () => {
                               to="/services"
                               className="block py-2 text-sm font-medium text-cyan-600 hover:text-cyan-700"
                               onClick={() => {
-                                setIsOpen(false);
-                                setIsMobileServicesOpen(false);
+                                closeMobileMenu();
                               }}
                             >
-                              + {services.length - 5} more services →
+                              + {services.length - 5} more services &gt;
                             </Link>
                           )}
                         </div>
@@ -550,7 +570,7 @@ const Navbar = () => {
                 </div>
 
                 {/* Mobile Contact Info */}
-                <div className="px-6 py-4 border-t border-gray-100 space-y-4">
+                <div className="px-4 sm:px-6 py-4 border-t border-gray-100 space-y-4">
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
                     Quick Contact
                   </h3>
@@ -560,10 +580,9 @@ const Navbar = () => {
                       href={item.href}
                       target={item.target}
                       rel={item.target ? "noopener noreferrer" : undefined}
-                      className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex min-h-11 items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                       onClick={() => {
-                        setIsOpen(false);
-                        setIsMobileServicesOpen(false);
+                        closeMobileMenu();
                       }}
                     >
                       <div
@@ -601,16 +620,12 @@ const Navbar = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <Button
                             fullWidth
-                            className="bg-cyan-600 text-white hover:bg-cyan-700 text-sm py-2.5"
+                            className="min-h-11 bg-cyan-600 text-white hover:bg-cyan-700 text-sm py-2.5"
                             onClick={() => {
-                              navigate(
-                                user?.role === "admin" ? "/admin" : "/profile",
-                              );
-                              setIsOpen(false);
-                              setIsMobileServicesOpen(false);
+                              handleDashboard();
                             }}
                           >
                             Dashboard
@@ -618,11 +633,9 @@ const Navbar = () => {
                           <Button
                             variant="outline"
                             fullWidth
-                            className="border-cyan-600 text-cyan-600 hover:bg-cyan-50 text-sm py-2.5"
+                            className="min-h-11 border-cyan-600 text-cyan-600 hover:bg-cyan-50 text-sm py-2.5"
                             onClick={() => {
-                              logout();
-                              setIsOpen(false);
-                              setIsMobileServicesOpen(false);
+                              handleLogout();
                             }}
                           >
                             Logout
@@ -630,14 +643,13 @@ const Navbar = () => {
                         </div>
                       </>
                     ) : (
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Button
                           fullWidth
-                          className="bg-cyan-600 text-white hover:bg-cyan-700 text-sm py-2.5"
+                          className="min-h-11 bg-cyan-600 text-white hover:bg-cyan-700 text-sm py-2.5"
                           onClick={() => {
                             navigate("/login");
-                            setIsOpen(false);
-                            setIsMobileServicesOpen(false);
+                            closeMobileMenu();
                           }}
                         >
                           Login
@@ -645,11 +657,10 @@ const Navbar = () => {
                         <Button
                           variant="outline"
                           fullWidth
-                          className="border-cyan-600 text-cyan-600 hover:bg-cyan-50 text-sm py-2.5"
+                          className="min-h-11 border-cyan-600 text-cyan-600 hover:bg-cyan-50 text-sm py-2.5"
                           onClick={() => {
                             navigate("/register");
-                            setIsOpen(false);
-                            setIsMobileServicesOpen(false);
+                            closeMobileMenu();
                           }}
                         >
                           Register

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaPlay,
@@ -14,7 +14,7 @@ import {
 import { galleryService } from "../../services/gallery.service";
 
 // Premium Gallery Detail Modal (Unchanged)
-const GalleryDetailModal = ({ item, isOpen, onClose }) => {
+const GalleryDetailModal = memo(({ item, isOpen, onClose }) => {
   if (!isOpen || !item) return null;
 
   return (
@@ -33,12 +33,12 @@ const GalleryDetailModal = ({ item, isOpen, onClose }) => {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-6xl bg-white rounded-3xl overflow-hidden shadow-2xl"
+              className="relative w-full max-w-6xl bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="absolute top-0 left-0 right-0 z-20 flex justify-between items-center p-6 bg-gradient-to-b from-black/50 to-transparent">
-              <div className="flex items-center gap-3">
+            <div className="absolute top-0 left-0 right-0 z-20 flex justify-between items-center gap-3 p-4 sm:p-6 bg-gradient-to-b from-black/50 to-transparent">
+              <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
                 {item.featured && (
                   <span className="inline-flex items-center gap-1 bg-yellow-500 text-white text-sm px-3 py-1 rounded-full">
                     <FaStar className="text-xs" /> Featured
@@ -50,16 +50,17 @@ const GalleryDetailModal = ({ item, isOpen, onClose }) => {
               </div>
               <button
                 onClick={onClose}
-                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                className="w-10 h-10 shrink-0 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-label="Close gallery details"
               >
                 <FaTimes />
               </button>
             </div>
 
             {/* Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 h-[80vh]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 max-h-[88vh] lg:h-[80vh] overflow-y-auto lg:overflow-hidden">
               {/* Media Display */}
-              <div className="relative bg-black">
+              <div className="relative bg-black min-h-[260px] sm:min-h-[360px] lg:min-h-0">
                 {item.type === "image" ? (
                   <img
                     src={item.url}
@@ -83,16 +84,16 @@ const GalleryDetailModal = ({ item, isOpen, onClose }) => {
               </div>
 
               {/* Details Panel */}
-              <div className="p-8 lg:p-12 overflow-y-auto">
+              <div className="p-5 sm:p-8 lg:p-12 overflow-y-auto">
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 leading-tight">
                       {item.title}
                     </h2>
                     <p className="text-gray-600">{item.description}</p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-gray-500">
                         Category
@@ -112,7 +113,7 @@ const GalleryDetailModal = ({ item, isOpen, onClose }) => {
                         <p className="text-sm font-medium text-gray-500">
                           Dimensions
                         </p>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-gray-900 break-words">
                           {item.dimensions.width} × {item.dimensions.height}
                         </p>
                       </div>
@@ -171,7 +172,9 @@ const GalleryDetailModal = ({ item, isOpen, onClose }) => {
       </div>
     </AnimatePresence>
   );
-};
+});
+
+GalleryDetailModal.displayName = "GalleryDetailModal";
 
 // Premium Image Gallery Slider Component
 const ImageGallerySlider = () => {
@@ -185,37 +188,7 @@ const ImageGallerySlider = () => {
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
 
-  // Get slider items from API
-  useEffect(() => {
-    fetchSliderItems();
-  }, []);
-
-  // Video-aware autoplay system
-  useEffect(() => {
-    clearInterval(intervalRef.current);
-    clearTimeout(timeoutRef.current);
-
-    const currentItem = sliderItems[activeIndex];
-
-    if (!currentItem || !isPlaying || sliderItems.length <= 1) return;
-
-    if (currentItem.type === "video") {
-      // For videos, we handle slide change via video events
-      return;
-    }
-
-    // For images, use interval (5 seconds)
-    intervalRef.current = setInterval(() => {
-      goToNextSlide();
-    }, 5000);
-
-    return () => {
-      clearInterval(intervalRef.current);
-      clearTimeout(timeoutRef.current);
-    };
-  }, [activeIndex, isPlaying, sliderItems]);
-
-  const fetchSliderItems = async () => {
+  const fetchSliderItems = useCallback(async () => {
     try {
       setLoading(true);
       const response = await galleryService.getSliderItems();
@@ -234,15 +207,6 @@ const ImageGallerySlider = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleVideoEnded = useCallback(() => {
-    goToNextSlide();
-  }, []);
-
-  const handleVideoPlay = useCallback(() => {
-    setIsPlaying(false);
-    clearInterval(intervalRef.current);
   }, []);
 
   const goToNextSlide = useCallback(() => {
@@ -267,15 +231,58 @@ const ImageGallerySlider = () => {
     setShowDetailModal(true);
   }, []);
 
+  const handleVideoEnded = useCallback(() => {
+    goToNextSlide();
+  }, [goToNextSlide]);
+
+  const handleVideoPlay = useCallback(() => {
+    setIsPlaying(false);
+    clearInterval(intervalRef.current);
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    setShowDetailModal(false);
+  }, []);
+
+  // Get slider items from API
+  useEffect(() => {
+    fetchSliderItems();
+  }, [fetchSliderItems]);
+
+  // Video-aware autoplay system
+  useEffect(() => {
+    clearInterval(intervalRef.current);
+    clearTimeout(timeoutRef.current);
+
+    const currentItem = sliderItems[activeIndex];
+
+    if (!currentItem || !isPlaying || sliderItems.length <= 1) return;
+
+    if (currentItem.type === "video") {
+      // For videos, we handle slide change via video events
+      return;
+    }
+
+    // For images, use interval (5 seconds)
+    intervalRef.current = setInterval(() => {
+      goToNextSlide();
+    }, 5000);
+
+    return () => {
+      clearInterval(intervalRef.current);
+      clearTimeout(timeoutRef.current);
+    };
+  }, [activeIndex, goToNextSlide, isPlaying, sliderItems]);
+
   // Get current active item
   const currentItem = sliderItems[activeIndex];
 
   if (loading) {
     return (
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+      <section className="py-12 md:py-20 bg-white">
+        <div className="container mx-auto max-w-screen-2xl px-4">
           <div className="flex justify-center">
-            <div className="w-full max-w-6xl h-96 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-2xl animate-pulse" />
+            <div className="w-full max-w-6xl h-56 sm:h-72 md:h-96 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-2xl animate-pulse" />
           </div>
         </div>
       </section>
@@ -285,13 +292,13 @@ const ImageGallerySlider = () => {
   // FIX: Show message when no slider items instead of returning null
   if (sliderItems.length === 0) {
     return (
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center py-16 bg-gray-50 rounded-2xl">
+      <section className="py-12 md:py-20 bg-white">
+        <div className="container mx-auto max-w-screen-2xl px-4">
+          <div className="text-center py-12 md:py-16 px-4 bg-gray-50 rounded-2xl">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-cyan-100 mb-6">
               <FaImages className="text-3xl text-cyan-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3">
               No Slider Items Configured
             </h3>
             <p className="text-gray-600 max-w-md mx-auto mb-6">
@@ -309,7 +316,7 @@ const ImageGallerySlider = () => {
 
   return (
     <>
-      <section className="relative py-1 lg:py-16 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+      <section className="relative py-8 lg:py-16 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div
@@ -321,9 +328,9 @@ const ImageGallerySlider = () => {
           />
         </div>
 
-        <div className="container mx-auto px-4 lg:px-8 relative z-10">
+        <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Main Slider */}
-          <div className="relative max-w-8xl mx-auto">
+          <div className="relative mx-auto">
             {/* Navigation Buttons */}
             <button
               onClick={goToPrevSlide}
@@ -331,7 +338,7 @@ const ImageGallerySlider = () => {
     absolute left-2 sm:left-4
     top-1/2 -translate-y-1/2
     z-20
-    w-10 h-10 sm:w-12 sm:h-12
+    w-11 h-11 sm:w-12 sm:h-12
     rounded-full
     lg:bg-white/80 lg:backdrop-blur-sm
     shadow-sm
@@ -340,6 +347,7 @@ const ImageGallerySlider = () => {
     hover:bg-white hover:scale-110
     transition-all
   "
+              aria-label="Previous gallery slide"
             >
               <FaChevronLeft />
             </button>
@@ -350,7 +358,7 @@ const ImageGallerySlider = () => {
     absolute right-2 sm:right-4
     top-1/2 -translate-y-1/2
     z-20
-    w-10 h-10 sm:w-12 sm:h-12
+    w-11 h-11 sm:w-12 sm:h-12
     rounded-full
     lg:bg-white/80 lg:backdrop-blur-sm
     shadow-sm
@@ -359,6 +367,7 @@ const ImageGallerySlider = () => {
     hover:bg-white hover:scale-110
     transition-all
   "
+              aria-label="Next gallery slide"
             >
               <FaChevronRight />
             </button>
@@ -369,7 +378,7 @@ const ImageGallerySlider = () => {
               className="
     absolute top-3 right-3 sm:top-4 sm:right-4
     z-20
-    w-9 h-9 sm:w-10 sm:h-10
+    w-11 h-11
     rounded-full
     lg:bg-white/80 lg:backdrop-blur-sm
     shadow-sm
@@ -378,12 +387,13 @@ const ImageGallerySlider = () => {
     hover:bg-white
     transition
   "
+              aria-label={isPlaying ? "Pause gallery autoplay" : "Play gallery autoplay"}
             >
               {isPlaying ? <FaPause /> : <FaPlay />}
             </button>
 
             {/* Main Slider Container */}
-            <div className="relative h-[200px] sm:h-[300px] md:h-[450px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-sm">
+            <div className="relative h-[220px] min-[390px]:h-[260px] sm:h-[320px] md:h-[450px] xl:h-[520px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-sm">
               <AnimatePresence mode="wait">
                 {currentItem && (
                   <motion.div
@@ -413,7 +423,7 @@ const ImageGallerySlider = () => {
                           onPlay={handleVideoPlay}
                           className="w-full h-full object-cover object-center"
                         />
-                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full">
+                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm">
                           {Math.floor(currentItem.duration / 60)}:
                           {(currentItem.duration % 60)
                             .toString()
@@ -430,37 +440,37 @@ const ImageGallerySlider = () => {
                         <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
 
                         {/* Content Overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+                        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-10 lg:p-12">
                           <div className="max-w-3xl">
                             {/* Badges */}
-                            <div className="flex flex-wrap gap-2 mb-4">
+                            <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
                               {currentItem.featured && (
-                                <span className="inline-flex items-center gap-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white text-sm px-4 py-1.5 rounded-full">
+                                <span className="inline-flex items-center gap-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 rounded-full">
                                   <FaStar className="text-xs" /> Featured
                                 </span>
                               )}
-                              <span className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-sm px-4 py-1.5 rounded-full">
+                              <span className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 rounded-full">
                                 {currentItem.category}
                               </span>
                               {currentItem.type === "video" && (
-                                <span className="inline-flex items-center gap-1 bg-red-500/20 backdrop-blur-sm text-white text-sm px-4 py-1.5 rounded-full border border-red-500/30">
+                                <span className="inline-flex items-center gap-1 bg-red-500/20 backdrop-blur-sm text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 rounded-full border border-red-500/30">
                                   Video
                                 </span>
                               )}
                             </div>
 
                             {/* Title & Description */}
-                            <h3 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                            <h3 className="text-xl sm:text-2xl md:text-4xl font-bold text-white mb-2 sm:mb-3 leading-tight">
                               {currentItem.title}
                             </h3>
-                            <p className="text-lg text-white/90 mb-6 line-clamp-2">
+                            <p className="text-sm sm:text-base md:text-lg text-white/90 mb-4 sm:mb-6 line-clamp-2">
                               {currentItem.description}
                             </p>
 
                             {/* Tags */}
                             {currentItem.tags &&
                               currentItem.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mb-6">
+                                <div className="hidden sm:flex flex-wrap gap-2 mb-6">
                                   {currentItem.tags
                                     .slice(0, 3)
                                     .map((tag, idx) => (
@@ -475,10 +485,10 @@ const ImageGallerySlider = () => {
                               )}
 
                             {/* Action Buttons */}
-                            <div className="flex flex-wrap gap-4">
+                            <div className="flex flex-col min-[420px]:flex-row flex-wrap gap-3 sm:gap-4">
                               <button
                                 onClick={() => handleDetailClick(currentItem)}
-                                className="group relative px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
+                                className="group relative min-h-11 px-5 sm:px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-cyan-300"
                               >
                                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <span className="relative flex items-center gap-2 font-semibold">
@@ -491,7 +501,7 @@ const ImageGallerySlider = () => {
                                 onClick={() =>
                                   window.open(currentItem.url, "_blank")
                                 }
-                                className="group px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl border border-white/20 hover:bg-white/20 transition-colors"
+                                className="group min-h-11 px-5 sm:px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl border border-white/20 hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/40"
                               >
                                 <span className="flex items-center gap-2">
                                   Open Full Size
@@ -507,8 +517,9 @@ const ImageGallerySlider = () => {
                         {currentItem.showDetailButton === false && (
                           <button
                             onClick={() => handleDetailClick(currentItem)}
-                            className="group w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors"
+                            className="group w-11 h-11 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors focus:outline-none focus:ring-2 focus:ring-white/40"
                             title="Show Details"
+                            aria-label="Show gallery details"
                           >
                             <FaInfoCircle className="text-white text-lg" />
                           </button>
@@ -540,7 +551,7 @@ const ImageGallerySlider = () => {
       <GalleryDetailModal
         item={selectedItem}
         isOpen={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
+        onClose={handleModalClose}
       />
     </>
   );

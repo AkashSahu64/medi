@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -14,268 +14,25 @@ import {
   FaClock,
   FaHandsHelping,
   FaStethoscope,
-  FaHeartbeat,
-  FaWalking,
-  FaUserInjured,
   FaArrowRight,
   FaStar,
   FaCalendarCheck,
   FaAward,
-  FaChevronLeft,
-  FaChevronRight,
 } from "react-icons/fa";
 import { CLINIC_INFO } from "../../utils/constants";
 import { useApi } from "../../hooks/useApi";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import astha from "../../assets/image/astha.png";
-import hero from "../../assets/image/hero.jpeg";
+import hero from "../../assets/image/home.png";
 import ImageGallerySlider from "./ImageGallerySlider";
 
-// Image Gallery Slider Component
-// const ImageGallerySlider = () => {
-//   const sliderRef = useRef(null);
-//   const intervalRef = useRef(null);
-//   const [activeIndex, setActiveIndex] = useState(0);
-
-//   const images = [
-//     "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80",
-//     "https://images.unsplash.com/photo-1706353399656-210cca727a33?auto=format&fit=crop&w=1200&q=80",
-//     "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=80",
-//     "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80",
-//     "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
-//     "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=1200&q=80",
-//     "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=1200&q=80",
-//   ];
-
-//   // 👇 Loop illusion (last me first duplicate)
-//   const loopImages = [...images, images[0]];
-
-//   // Auto slide
-//   useEffect(() => {
-//     const container = sliderRef.current;
-//     if (!container) return;
-
-//     const slide = () => {
-//       const itemWidth = container.children[0].offsetWidth;
-//       const gap = 24;
-//       const scrollAmount = itemWidth + gap;
-
-//       container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-//       setActiveIndex((prev) => prev + 1);
-//     };
-
-//     intervalRef.current = setInterval(slide, 3000);
-//     return () => clearInterval(intervalRef.current);
-//   }, []);
-
-//   // Seamless reset logic
-//   useEffect(() => {
-//     const container = sliderRef.current;
-//     if (!container) return;
-
-//     const realLength = images.length;
-//     const itemWidth = container.children[0].offsetWidth;
-//     const gap = 24;
-//     const scrollAmount = itemWidth + gap;
-
-//     // Jab duplicate slide par aaye
-//     if (activeIndex === realLength) {
-//       setTimeout(() => {
-//         container.scrollLeft = 0; // invisible jump
-//         setActiveIndex(0);
-//       }, 400);
-//     }
-//   }, [activeIndex, images.length]);
-
-//   // Dots click
-//   const goToSlide = (index) => {
-//     const container = sliderRef.current;
-//     if (!container) return;
-
-//     const itemWidth = container.children[0].offsetWidth;
-//     const gap = 24;
-
-//     container.scrollTo({
-//       left: (itemWidth + gap) * index,
-//       behavior: "smooth",
-//     });
-//     setActiveIndex(index);
-//   };
-
-//   return (
-//     <section className="py-20 bg-white">
-//       <div className="container mx-auto px-4">
-//         {/* Slider */}
-//         <div
-//           ref={sliderRef}
-//           className="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-hide"
-//         >
-//           {loopImages.map((img, i) => (
-//             <div
-//               key={i}
-//               className="flex-shrink-0 w-[320px] md:w-[360px] lg:w-[1450px] snap-start"
-//             >
-//               <div className="overflow-hidden rounded-2xl shadow-md">
-//                 <img
-//                   src={img}
-//                   alt={`Gallery ${i + 1}`}
-//                   className="w-full h-[260px] md:h-[320px] lg:h-[450px] object-cover"
-//                 />
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-
-//         {/* Dots */}
-//         <div className="flex justify-center items-center gap-3 mt-6 leading-none">
-//           {images.map((_, i) => (
-//             <button
-//               key={i}
-//               onClick={() => goToSlide(i)}
-//               className={`flex items-center justify-center rounded-full transition-all ${
-//                 activeIndex === i
-//                   ? "w-3 h-3 bg-cyan-600"
-//                   : "w-2 h-2 bg-gray-300"
-//               }`}
-//             />
-//           ))}
-//         </div>
-
-//         <style>{`
-//           .scrollbar-hide::-webkit-scrollbar { display: none; }
-//           .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-//         `}</style>
-//       </div>
-//     </section>
-//   );
-// };
 const Home = () => {
   const [services, setServices] = useState([]);
   const { execute: fetchServices, loading: servicesLoading } = useApi(
     serviceService.getAllServices,
   );
   const [hoveredService, setHoveredService] = useState(null);
-
-  // const dummyServices = [
-  //   {
-  //     _id: "1",
-  //     title: "Musculoskeletal Physiotherapy",
-  //     description:
-  //       "Comprehensive treatment for back pain, neck pain, and joint disorders using evidence-based techniques.",
-  //     duration: 60,
-  //     price: "800",
-  //     category: "musculoskeletal",
-  //     image:
-  //       "https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  //     benefits: [
-  //       "Pain relief",
-  //       "Improved mobility",
-  //       "Strength restoration",
-  //       "Posture correction",
-  //     ],
-  //     featured: true,
-  //   },
-  //   {
-  //     _id: "2",
-  //     title: "Neurological Rehabilitation",
-  //     description:
-  //       "Specialized care for stroke, Parkinson's, and other neurological conditions to improve function.",
-  //     duration: 45,
-  //     price: "1200",
-  //     category: "neurological",
-  //     image:
-  //       "https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  //     benefits: [
-  //       "Neuroplasticity training",
-  //       "Balance improvement",
-  //       "Functional independence",
-  //     ],
-  //     featured: true,
-  //   },
-  //   {
-  //     _id: "3",
-  //     title: "Sports Injury Management",
-  //     description:
-  //       "Advanced techniques for athletes including injury prevention, treatment, and performance enhancement.",
-  //     duration: 60,
-  //     price: "1500",
-  //     category: "sports",
-  //     image:
-  //       "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  //     benefits: [
-  //       "Rapid recovery",
-  //       "Performance optimization",
-  //       "Injury prevention",
-  //       "Sport-specific training",
-  //     ],
-  //     featured: true,
-  //   },
-  //   {
-  //     _id: "4",
-  //     title: "Geriatric Physiotherapy",
-  //     description:
-  //       "Age-appropriate exercises and treatments to maintain mobility and independence in older adults.",
-  //     duration: 45,
-  //     price: "700",
-  //     category: "geriatric",
-  //     image:
-  //       "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  //     benefits: [
-  //       "Fall prevention",
-  //       "Balance training",
-  //       "Pain management",
-  //       "Mobility enhancement",
-  //     ],
-  //   },
-  //   {
-  //     _id: "5",
-  //     title: "Post-Surgical Rehabilitation",
-  //     description:
-  //       "Structured recovery programs for patients after orthopedic and other surgeries.",
-  //     duration: 60,
-  //     price: "1000",
-  //     category: "postoperative",
-  //     image:
-  //       "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  //     benefits: [
-  //       "Faster recovery",
-  //       "Reduced complications",
-  //       "Scar management",
-  //       "Strength rebuilding",
-  //     ],
-  //   },
-  //   {
-  //     _id: "6",
-  //     title: "Pediatric Physiotherapy",
-  //     description:
-  //       "Specialized care for children with developmental delays, cerebral palsy, and other conditions.",
-  //     duration: 45,
-  //     price: "900",
-  //     category: "pediatric",
-  //     image:
-  //       "https://images.unsplash.com/photo-1524860697450-60a5f14d13b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  //     benefits: [
-  //       "Developmental support",
-  //       "Play-based therapy",
-  //       "Parent education",
-  //       "Milestone achievement",
-  //     ],
-  //   },
-  // ];
-
-  // useEffect(() => {
-  //   const loadServices = async () => {
-  //     const response = await fetchServices({ featured: "true" });
-  //     if (response?.data && response.data.length > 0) {
-  //       setServices(response.data);
-  //     } else {
-  //       setServices(dummyServices);
-  //     }
-  //   };
-  //   loadServices();
-  // }, []);
 
   useEffect(() => {
     const loadServices = async () => {
@@ -291,7 +48,7 @@ const Home = () => {
     loadServices();
   }, []);
 
-  const testimonials = [
+  const testimonials = useMemo(() => [
     {
       id: 1,
       patientName: "Rajesh Kumar",
@@ -342,73 +99,38 @@ const Home = () => {
       treatment: "Post-Surgical Rehab",
       duration: "12 Weeks",
     },
-  ];
+  ], []);
 
 
-const stats = [
-  {
-    icon: <FaUserMd />,
-    title: "Expert Physiotherapists",
-    description: "Qualified professionals providing personalized therapy care",
-  },
-  {
-    icon: <FaAward />,
-    title: "Trusted Clinical Practice",
-    description: "Ethical standards with proven physiotherapy methods",
-  },
-  {
-    icon: <FaCheckCircle />,
-    title: "Patient First Approach",
-    description: "Focused on comfort, safety, and recovery outcomes",
-  },
-  {
-    icon: <FaCalendarCheck />,
-    title: "Continuity of Care",
-    description: "Planned sessions with consistent follow-up care",
-  },
-  {
-    icon: <FaStethoscope />,
-    title: "Modern Equipment",
-    description: "Advanced tools for effective physiotherapy treatment",
-  },
-];
-
-
-  const conditions = [
+  const stats = useMemo(() => [
     {
-      icon: <FaHeartbeat />,
-      name: "Back & Neck Pain",
-      color: "bg-red-100 text-red-600",
-      hoverColor: "bg-red-100 text-red-600",
+      icon: <FaUserMd />,
+      title: "Expert Physiotherapists",
+      description: "Qualified professionals providing personalized therapy care",
     },
     {
-      icon: <FaWalking />,
-      name: "Arthritis",
-      color: "bg-cyan-100 text-cyan-600",
+      icon: <FaAward />,
+      title: "Trusted Clinical Practice",
+      description: "Ethical standards with proven physiotherapy methods",
     },
     {
-      icon: <FaUserInjured />,
-      name: "Sports Injuries",
-      color: "bg-cyan-100 text-cyan-600",
+      icon: <FaCheckCircle />,
+      title: "Patient First Approach",
+      description: "Focused on comfort, safety, and recovery outcomes",
     },
     {
-      icon: <FaHeartbeat />,
-      name: "Neurological Disorders",
-      color: "bg-red-100 text-red-600",
+      icon: <FaCalendarCheck />,
+      title: "Continuity of Care",
+      description: "Planned sessions with consistent follow-up care",
     },
     {
       icon: <FaStethoscope />,
-      name: "Post-Surgical Rehab",
-      color: "bg-cyan-100 text-cyan-600",
+      title: "Modern Equipment",
+      description: "Advanced tools for effective physiotherapy treatment",
     },
-    {
-      icon: <FaWalking />,
-      name: "Stroke Rehabilitation",
-      color: "bg-cyan-100 text-cyan-600",
-    },
-  ];
+  ], []);
 
-  const sliderSettings = {
+  const sliderSettings = useMemo(() => ({
     dots: true,
     infinite: true,
     speed: 500,
@@ -431,7 +153,7 @@ const stats = [
           slidesToShow: 1,
           slidesToScroll: 1,
           centerMode: true,
-          centerPadding: "60px",
+          centerPadding: "32px",
         },
       },
       {
@@ -439,12 +161,20 @@ const stats = [
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          centerMode: true,
-          centerPadding: "30px",
+          centerMode: false,
+          centerPadding: "0px",
         },
       },
     ],
-  };
+  }), []);
+
+  const handleServiceEnter = useCallback((serviceId) => {
+    setHoveredService(serviceId);
+  }, []);
+
+  const handleServiceLeave = useCallback(() => {
+    setHoveredService(null);
+  }, []);
 
   return (
     <>
@@ -461,16 +191,17 @@ const stats = [
         />
       </Helmet>
 
+      <main className="overflow-x-hidden">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-cyan-50 via-white to-cyan-100 pt-12 md:pt-16">
-        <div className="container mx-auto px-4 sm:px-4 lg:px-10 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-cyan-50 via-white to-cyan-100 pt-24 pb-12 sm:pt-28 md:pt-32 lg:pt-20 lg:pb-10">
+        <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-10 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 lg:gap-16 xl:gap-20 items-center">
             {/* LEFT CONTENT */}
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="text-center lg:text-left"
+              className="text-center lg:text-left min-w-0"
             >
               {/* Premium Badge */}
               <div className="hidden lg:inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-cyan-100 text-cyan-700 px-5 py-2 rounded-full text-sm font-semibold shadow mb-5 ">
@@ -479,15 +210,15 @@ const stats = [
               </div>
 
               {/* Heading */}
-              <h1 className="text-5xl md:text-6xl xl:text-7xl font-extrabold text-gray-800 lg:leading-tight tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl font-extrabold text-gray-800 leading-tight tracking-tight">
                 Journey to a
-                <span className="block mt-3 bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-400 bg-clip-text text-transparent">
+                <span className="block mt-2 sm:mt-3 bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-400 bg-clip-text text-transparent">
                   Pain-Free Life
                 </span>
               </h1>
 
               {/* Description */}
-              <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="mt-5 sm:mt-6 text-base sm:text-lg xl:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 Our specialized team is dedicated to helping you regain your
                 independence. We understand how important it is to move freely
                 and comfortably. Our commitment is to provide you with the best
@@ -496,16 +227,16 @@ const stats = [
               </p>
 
               {/* CTA SECTION – FIXED */}
-              <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
                 {/* Book Consultation */}
                 <Link to="/appointment" className="w-full sm:w-auto">
                   <button
                     className="
-                      h-[56px]
+                      min-h-[52px] sm:min-h-[56px]
                       w-full sm:w-auto
-                      px-8
+                      px-5 sm:px-8
                       flex items-center justify-center
-                      text-lg font-semibold
+                      text-base sm:text-lg font-semibold
                       text-white
                       rounded-lg
                       bg-gradient-to-r from-cyan-600 to-cyan-500
@@ -515,7 +246,7 @@ const stats = [
                     "
                   >
                     Book Free Consultation
-                    <FaArrowRight className="ml-3 text-lg" />
+                    <FaArrowRight className="ml-2 sm:ml-3 text-base sm:text-lg shrink-0" />
                   </button>
                 </Link>
 
@@ -528,8 +259,8 @@ const stats = [
                 >
                   <div
                     className="
-                      h-[56px]
-                      px-6
+                      min-h-[52px] sm:min-h-[56px]
+                      px-4 sm:px-6
                       flex items-center gap-4
                       rounded-lg
                       bg-white
@@ -538,13 +269,13 @@ const stats = [
                       transition-all
                     "
                   >
-                    <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
                       <FaWhatsapp className="text-white text-xl" />
                     </div>
 
-                    <div className="leading-tight">
+                    <div className="leading-tight min-w-0 text-left">
                       <p className="text-xs text-gray-500">24/7 Support</p>
-                      <p className="text-base font-semibold text-gray-800">
+                      <p className="text-sm sm:text-base font-semibold text-gray-800 truncate">
                         Chat With Medihope
                       </p>
                     </div>
@@ -558,26 +289,16 @@ const stats = [
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative mt-10 lg:mt-0"
+              className="relative mt-8 lg:mt-0 min-w-0"
             >
               {/* Hero Image Wrapper */}
               <div
-                className="
-      relative overflow-hidden shadow-2xl group
-      rounded-2xl sm:rounded-3xl
-    "
+                className="relative overflow-hidden group rounded-2xl sm:rounded-3xl"
               >
                 <img
                   src={hero}
                   alt="Physiotherapy treatment at MEDIHOPE"
-                  className="
-        w-full
-        h-[320px] sm:h-[420px] lg:h-[520px]
-        object-cover
-        object-top
-        group-hover:scale-[1.03]
-        transition-transform duration-700
-      "
+                  className=" w-full h-full object-cover object-top group-hover:scale-[1.03] transition-transform duration-700"
                 />
 
                 {/* Gradient overlay */}
@@ -586,16 +307,7 @@ const stats = [
 
               {/* Floating Glass Card – MOBILE SAFE */}
               <div
-                className="
-      absolute
-      bottom-4 sm:bottom-6
-      left-4 sm:left-6
-      right-4 sm:right-auto
-      bg-white/85 backdrop-blur-md
-      px-4 sm:px-5 py-3 sm:py-4
-      rounded-xl sm:rounded-2xl
-      shadow-xl
-    "
+                className=" absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-auto bg-white/85 backdrop-blur-md px-4 sm:px-5 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-xl"
               >
                 <p className="text-lg sm:text-xl font-bold text-cyan-600">
                   Trusted Care
@@ -613,7 +325,7 @@ const stats = [
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="mt-10 mb-5 text-center text-2xl md:text-3xl font-semibold text-gray-700 leading-relaxed"
+            className="mt-10 mb-5 text-center text-xl sm:text-2xl md:text-3xl font-semibold text-gray-700 leading-relaxed"
           >
             Leading physiotherapy center with
             <span className="block text-cyan-600 mt-2">
@@ -627,26 +339,26 @@ const stats = [
       <ImageGallerySlider />
 
       {/* Stats Section */}
-      <section className="py-10 md:py-14 bg-white border-b border-gray-200">
-  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 md:py-14 bg-white border-b border-gray-200">
+  <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
 
     {/* ================= HEADING ================= */}
-    <div className="text-center mb-16 max-w-7xl mx-auto">
-      <h2 className="text-4xl md:text-5xl font-bold text-gray-900/90 mb-6">
+    <div className="text-center mb-12 md:mb-16 max-w-7xl mx-auto">
+      <h2 className="text-2xl sm:text-3xl md:text-4xl xl:text-5xl font-bold text-gray-900/90 mb-4 md:mb-6 leading-tight">
         Committed to Excellence in Physiotherapy Care
       </h2>
-      <p className="text-lg text-gray-600">
+      <p className="text-base sm:text-lg text-gray-600 max-w-4xl mx-auto">
         We believe in quality care, professional expertise, and patient-focused
         physiotherapy designed for long-term well-being.
       </p>
     </div>
 
     {/* ================= CARDS ================= */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-y-10 gap-x-5 lg:gap-x-4 xl:gap-x-6">
       {stats.map((stat, index) => (
         <div
           key={index}
-          className="relative bg-white rounded-2xl p-4 border border-gray-200 
+          className="relative h-full bg-white rounded-2xl p-4 border border-gray-200 
                      shadow-sm hover:shadow-md transition-shadow duration-300"
         >
           {/* Icon Badge */}
@@ -661,7 +373,7 @@ const stats = [
 
           {/* Content */}
           <div className="pt-10 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+            <h3 className="text-base xl:text-lg font-semibold text-gray-900 mb-3 leading-snug">
               {stat.title}
             </h3>
 
@@ -673,7 +385,7 @@ const stats = [
             <div className="mt-4 pt-3 border-t border-gray-100">
               <div className="flex items-center justify-center gap-1 text-cyan-600">
                 <FaCheckCircle className="text-sm" />
-                <span className="text-xs font-medium">
+                <span className="text-xs font-medium leading-tight">
                   Quality Care Assurance
                 </span>
               </div>
@@ -689,25 +401,25 @@ const stats = [
 
       {/* Services Section */}
       <section className="py-12 md:py-20 bg-gradient-to-b from-white to-cyan-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-10 md:mb-16"
           >
             <div className="hidden lg:inline-flex items-center space-x-2 bg-cyan-100 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
               <FaStethoscope />
               <span>Our Specialized Services</span>
             </div>
-            <h2 className="text-[1.8rem] md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
               Expert{" "}
               <span className="bg-gradient-to-r from-cyan-600 to-cyan-500 bg-clip-text text-transparent">
                 Physiotherapy
               </span>{" "}
               Services
             </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">
               We offer comprehensive physiotherapy treatments using advanced
               technology and evidence-based practices to ensure optimal
               recovery.
@@ -715,7 +427,7 @@ const stats = [
           </motion.div>
 
           {servicesLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="card animate-pulse rounded-2xl">
                   <div className="h-48 bg-gradient-to-r from-gray-200 to-gray-300 rounded-t-2xl mb-6"></div>
@@ -729,7 +441,7 @@ const stats = [
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {services.slice(0, 3).map((service, index) => (
                 <motion.div
                   key={service._id}
@@ -737,8 +449,9 @@ const stats = [
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  onMouseEnter={() => setHoveredService(service._id)}
-                  onMouseLeave={() => setHoveredService(null)}
+                  onMouseEnter={() => handleServiceEnter(service._id)}
+                  onMouseLeave={handleServiceLeave}
+                  className="h-full"
                 >
                   <ServiceCard
                     service={service}
@@ -754,16 +467,16 @@ const stats = [
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mt-12 -mb-8"
+            className="text-center mt-10 md:mt-12 md:-mb-8"
           >
             <Link to="/services">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white shadow-lg hover:shadow-xl px-8"
+                className="min-h-11 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white shadow-lg hover:shadow-xl px-6 sm:px-8"
               >
-                <span className="flex items-center">
+                <span className="flex items-center justify-center gap-2">
                   View All Services
-                  <FaArrowRight className="ml-2" />
+                  <FaArrowRight className="shrink-0" />
                 </span>
               </Button>
             </Link>
@@ -772,34 +485,34 @@ const stats = [
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-br from-gray-50 to-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-14 md:py-24 bg-gradient-to-br from-gray-50 to-white overflow-hidden">
+        <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-10 md:mb-16"
           >
             <div className="inline-flex items-center space-x-2 bg-cyan-100 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
               <FaStar />
               <span>Patient Success Stories</span>
             </div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
               Hear From Our{" "}
               <span className="bg-gradient-to-r from-cyan-600 to-cyan-500 bg-clip-text text-transparent">
                 Patients
               </span>
             </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">
               Real stories from real patients who transformed their lives with
               our expert physiotherapy treatments.
             </p>
           </motion.div>
 
-          <div className="testimonial-slider md:px-4">
+          <div className="testimonial-slider px-0 md:px-4">
             <Slider {...sliderSettings}>
               {testimonials.map((testimonial, index) => (
-                <div key={testimonial.id} className="px-1 md:px-4">
+                <div key={testimonial.id} className="px-1 sm:px-2 md:px-4">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
@@ -819,8 +532,8 @@ const stats = [
       </section>
 
       {/* Emergency CTA Section */}
-      <section className="py-16 md:py-20 bg-gradient-to-r from-cyan-600 to-cyan-800">
-  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-14 md:py-20 bg-gradient-to-r from-cyan-600 to-cyan-800">
+  <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
     <div className="max-w-6xl mx-auto">
 
       {/* ================= MAIN CARD ================= */}
@@ -828,12 +541,12 @@ const stats = [
         <div className="grid grid-cols-1 lg:grid-cols-2">
 
           {/* ================= LEFT : HOME VISIT INFO ================= */}
-          <div className="bg-gradient-to-br from-cyan-600 to-cyan-700 text-white p-8 md:p-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight overflow-hidden">
+          <div className="bg-gradient-to-br from-cyan-600 to-cyan-700 text-white p-5 sm:p-8 md:p-12 min-w-0">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 md:mb-6 leading-tight">
               Professional Physiotherapy at Your Home
             </h2>
 
-            <p className="text-cyan-100 mb-8 text-lg leading-relaxed">
+            <p className="text-cyan-100 mb-6 md:mb-8 text-base sm:text-lg leading-relaxed">
               Our home visit physiotherapy service brings expert care directly
               to your doorstep. Ideal for elderly patients, post-surgery
               recovery, mobility limitations, or those who prefer treatment
@@ -841,7 +554,7 @@ const stats = [
             </p>
 
             {/* Home Visit Features */}
-            <div className="space-y-4 mb-10">
+            <div className="space-y-3 sm:space-y-4 mb-8 md:mb-10">
               {[
                 {
                   icon: <FaUserMd />,
@@ -860,7 +573,7 @@ const stats = [
                   text: "Safe, Hygienic & Professional Care",
                 },
               ].map((feature, idx) => (
-                <div key={idx} className="flex items-start space-x-3">
+                <div key={idx} className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
                     {feature.icon}
                   </div>
@@ -872,19 +585,19 @@ const stats = [
             </div>
 
             {/* Contact Box */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 overflow-hidden">
               <h4 className="text-xl font-semibold mb-4">
                 Book a Home Visit
               </h4>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
                 <div>
                   <div className="text-sm text-cyan-200 mb-1">
                     Call for Appointment
                   </div>
                   <a
                     href={`tel:${CLINIC_INFO.phone}`}
-                    className="text-2xl font-bold hover:text-white transition-colors"
+                    className="text-xl sm:text-2xl font-bold hover:text-white transition-colors break-words"
                   >
                     {CLINIC_INFO.phone}
                   </a>
@@ -898,7 +611,7 @@ const stats = [
                     href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-2xl font-bold hover:text-white transition-colors"
+                    className="text-xl sm:text-2xl font-bold hover:text-white transition-colors"
                   >
                     Chat Now
                   </a>
@@ -908,25 +621,25 @@ const stats = [
           </div>
 
           {/* ================= RIGHT : HOME VISIT FORM ================= */}
-          <div className="p-8 md:p-12">
+          <div className="p-5 sm:p-8 md:p-12 min-w-0">
             <div className="text-center mb-8">
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">
                 Request Home Visit
               </h3>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 Fill in your details and our team will contact you shortly
               </p>
             </div>
 
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-5 sm:space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Patient Name *
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg
+                    className="min-h-11 w-full px-4 py-3 border border-gray-300 rounded-lg
                                focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
                     placeholder="Full Name"
                   />
@@ -938,7 +651,7 @@ const stats = [
                   </label>
                   <input
                     type="tel"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg
+                    className="min-h-11 w-full px-4 py-3 border border-gray-300 rounded-lg
                                focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
                     placeholder="+91 XXXXX XXXXX"
                   />
@@ -950,7 +663,7 @@ const stats = [
                   Preferred Visit Type *
                 </label>
                 <select
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg
+                  className="min-h-11 w-full px-4 py-3 border border-gray-300 rounded-lg
                              focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
                 >
                   <option>Select Visit Type</option>
@@ -976,10 +689,10 @@ const stats = [
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/appointment" className="flex-1">
+                <Link to="/appointment" className="flex-1 min-w-0">
                   <button
-                    className="w-full bg-gradient-to-r from-cyan-600 to-cyan-500
-                               text-white font-semibold py-3.5 rounded-lg
+                    className="min-h-11 w-full bg-gradient-to-r from-cyan-600 to-cyan-500
+                               text-white font-semibold px-4 py-3.5 rounded-lg
                                hover:from-cyan-700 hover:to-cyan-600
                                transition-all shadow-lg"
                   >
@@ -991,16 +704,16 @@ const stats = [
                   href={`https://wa.me/${CLINIC_INFO.whatsapp}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1"
+                  className="flex-1 min-w-0"
                 >
                   <button
-                    className="w-full flex items-center justify-center gap-2
-                               bg-green-100 text-green-700 font-semibold py-3.5
+                    className="min-h-11 w-full flex items-center justify-center gap-2
+                               bg-green-100 text-green-700 font-semibold px-4 py-3.5
                                rounded-lg hover:bg-green-200 transition-colors
                                border border-green-200"
                   >
                     <FaWhatsapp className="text-lg" />
-                    <span>WhatsApp Us</span>
+                    <span className="truncate">WhatsApp Us</span>
                   </button>
                 </a>
               </div>
@@ -1014,27 +727,27 @@ const stats = [
       </div>
 
       {/* ================= QUICK CONTACT BAR ================= */}
-      <div className="mt-8 bg-white/10 backdrop-blur-sm rounded-xl p-6 overflow-hidden">
+      <div className="mt-8 bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 overflow-hidden">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center space-x-4">
+          <div className="flex w-full min-w-0 items-center gap-3 sm:gap-4 md:w-auto">
             <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
               <FaPhoneAlt className="text-white" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="text-sm text-cyan-200">
                 Home Visit Enquiries
               </div>
               <a
                 href={`tel:${CLINIC_INFO.phone}`}
-                className="text-xl font-bold text-white hover:text-cyan-100"
+                className="text-lg sm:text-xl font-bold text-white hover:text-cyan-100 break-words"
               >
                 {CLINIC_INFO.phone}
               </a>
             </div>
           </div>
 
-          <Link to="/contact">
-            <button className="bg-white text-cyan-600 font-semibold px-6 py-3 rounded-lg hover:bg-cyan-50 transition-colors">
+          <Link to="/contact" className="w-full md:w-auto">
+            <button className="min-h-11 w-full md:w-auto bg-white text-cyan-600 font-semibold px-6 py-3 rounded-lg hover:bg-cyan-50 transition-colors">
               Visit Contact Page
             </button>
           </Link>
@@ -1047,25 +760,25 @@ const stats = [
 
 
       {/* Clinic Location Section */}
-      <section className="py-16 md:py-20 bg-cyan-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-14 md:py-20 bg-cyan-50">
+        <div className="container mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             {/* Section Header */}
-            <div className="text-center mb-16">
+            <div className="text-center mb-10 md:mb-16">
               <div className="inline-flex items-center space-x-3 mb-6">
                 <div className="text-center">
-                  <div className="inline-flex items-center space-x-2 bg-cyan-50 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold">
+                  <div className="inline-flex items-center gap-2 bg-cyan-50 text-cyan-700 px-4 py-2 rounded-full text-sm font-semibold">
                     <FaClock />
                     <span>Visit Our Facility</span>
                   </div>
                 </div>
               </div>
 
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
                 Our <span className="text-cyan-600">Medical Center</span>
               </h2>
 
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">
                 State-of-the-art facility equipped with advanced medical
                 technology for comprehensive physiotherapy care.
               </p>
@@ -1075,8 +788,8 @@ const stats = [
               {/* Left Column - Clinic Information */}
               <div className="space-y-8">
                 {/* Clinic Hours Card */}
-                <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8">
-                  <div className="flex items-center space-x-3 mb-3">
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-5 sm:p-8">
+                  <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 rounded-xl bg-cyan-100 flex items-center justify-center">
                       <FaClock className="text-2xl text-cyan-600" />
                     </div>
@@ -1110,7 +823,7 @@ const stats = [
                     ].map((schedule, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between py-3 border-b border-gray-100"
+                        className="flex flex-col min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between gap-2 py-3 border-b border-gray-100"
                       >
                         <div>
                           <div className="font-semibold text-gray-900">
@@ -1135,8 +848,8 @@ const stats = [
                 </div>
 
                 {/* Facilities Card */}
-                <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8">
-                  <div className="flex items-center space-x-3 mb-6">
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-5 sm:p-8">
+                  <div className="flex items-center gap-3 mb-6">
                     <div className="w-12 h-12 rounded-xl bg-cyan-100 flex items-center justify-center">
                       <FaAward className="text-2xl text-cyan-600" />
                     </div>
@@ -1150,7 +863,7 @@ const stats = [
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-3 sm:gap-4">
                     {[
                       { name: "Wheelchair Access", icon: "♿" },
                       { name: "Free Parking", icon: "🅿️" },
@@ -1163,7 +876,7 @@ const stats = [
                     ].map((facility, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
                       >
                         <span className="text-lg">{facility.icon}</span>
                         <span className="text-sm font-medium text-gray-700">
@@ -1178,16 +891,16 @@ const stats = [
               {/* Middle Column - Map */}
               <div className="lg:col-span-2">
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden h-full">
-                  <div className="p-2 px-4 border-b border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div>
+                  <div className="p-4 border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="min-w-0">
                         <h3 className="text-xl font-bold text-gray-900">
                           Location & Directions
                         </h3>
-                        <p className="text-gray-600">{CLINIC_INFO.address}</p>
+                        <p className="text-sm sm:text-base text-gray-600 break-words">{CLINIC_INFO.address}</p>
                       </div>
-                      <Link to="/contact">
-                        <button className="flex items-center space-x-2 text-cyan-600 hover:text-cyan-700 font-semibold">
+                      <Link to="/contact" className="w-full sm:w-auto">
+                        <button className="min-h-11 w-full sm:w-auto flex items-center justify-center gap-2 text-cyan-600 hover:text-cyan-700 font-semibold">
                           <span>Get Directions</span>
                           <FaArrowRight />
                         </button>
@@ -1196,7 +909,7 @@ const stats = [
                   </div>
 
                   {/* Enhanced Map Container */}
-                  <div className="relative h-[500px]">
+                  <div className="relative h-[320px] sm:h-[420px] lg:h-[500px]">
                     <iframe
                       src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.123456789012!2d77.594566!3d12.971599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b44e6d%3A0xf8dfc3e8517e4fe0!2sBangalore%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1691234567890!5m2!1sen!2sin"
                       width="100%"
@@ -1210,8 +923,8 @@ const stats = [
                     ></iframe>
 
                     {/* Map Overlay Info */}
-                    <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg max-w-xs">
-                      <div className="flex items-center space-x-3 mb-2">
+                    <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:bottom-6 sm:left-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg sm:max-w-xs">
+                      <div className="flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center">
                           <FaStethoscope className="text-cyan-600" />
                         </div>
@@ -1232,12 +945,12 @@ const stats = [
                   </div>
 
                   {/* Transportation Options */}
-                  <div className="p-6 border-t border-gray-200">
+                  <div className="p-4 sm:p-6 border-t border-gray-200">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                       How to Reach
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <div className="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center">
                           <span className="text-cyan-600 font-bold">🚇</span>
                         </div>
@@ -1250,7 +963,7 @@ const stats = [
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
                           <span className="text-green-600 font-bold">🚌</span>
                         </div>
@@ -1263,7 +976,7 @@ const stats = [
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
                           <span className="text-purple-600 font-bold">🚗</span>
                         </div>
@@ -1284,6 +997,7 @@ const stats = [
           </div>
         </div>
       </section>
+      </main>
     </>
   );
 };
